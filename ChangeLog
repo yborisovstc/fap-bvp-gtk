@@ -1,0 +1,12 @@
+
+ver. 0.0.3_Logging 2010-03-29 Yuri Borisov 
+	Bug#132 - Added asserts for state Man into state constructor
+	Bug#133 - Disabled default trans curr>>new (see FAP_REQ_STA_01)
+	ut_simple_increase - small synch to fapws update 
+
+ver. 0.0.2:
+	Added logging and creation form XML spec - initial
+
+ver. 0.0.1:
+	Initial version coming from Win32
+	Adaptation to GTK
