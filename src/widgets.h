@@ -7,9 +7,27 @@
 
 using namespace std;
 
-// Base wrapper classes
+class CagBase
+{
+public:
+	virtual ~CagBase() {};
+	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type())); };
+	void* GetObj(const char *aType) {return DoGetObj(aType); };
+protected:
+	virtual void *DoGetObj(const char *aName) = 0;
+};
 
-class CagWidget 
+
+class CagWidget;
+// Widget resolver iface
+class MWidgetRes
+{
+    public:
+	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL) = 0;
+};
+
+// Base wrapper classes
+class CagWidget: public CagBase, public MWidgetRes 
 {
     public:
 	// Embedded GC type (as stored in style)
@@ -20,8 +38,11 @@ class CagWidget
     public:
 	CagWidget(GType aType, const string& aName);
 	virtual ~CagWidget();
+	static inline const char* Type(); 
 	const string& Name() {return iName;};
 	void Show();
+	void Hide();
+	TBool IsVisible();
 	void SetParent(CagWidget* aParent);
 	void ResetParent(CagWidget* aParent);
 	void SizeAllocate(GtkAllocation* aAlloc);
@@ -29,6 +50,8 @@ class CagWidget
 	void Allocation(GtkAllocation *aAlloc);
 	void SetState(GtkStateType aState);
 	GtkStateType State();
+	// From MWidgetRes
+	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:
 	CagWidget(GtkWidget* aWidget, const string& aName, TBool aOwned = ETrue);
 	void Construct();
@@ -48,6 +71,8 @@ class CagWidget
 	GtkStyle* Style();
 	GdkGC* Gc(TGcType aType = EGt_Fg);
 	PangoContext* PangoCtext();
+	// From CAE_Base
+	virtual void *DoGetObj(const char *aName);
     private:
 	static gboolean handle_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data);
 	static gboolean handle_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
@@ -65,5 +90,7 @@ class CagWidget
 	TBool iOwned;
 	string iName;
 };
+
+inline const char* CagWidget::Type() { return "CagWidget";} 
 
 #endif 

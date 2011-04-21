@@ -1,14 +1,18 @@
-#ifndef __FAPBVP_GTK_SYS_H
-#define __FAPBVP_GTK_SYS_H
+#ifndef __FAPBVP_GTK_CPLUG_H
+#define __FAPBVP_GTK_CPLUG_H
 
 #include <fapbase.h>
 #include "caglayout.h"
+#include "cagbutton.h"
+#include "capbutton.h"
+#include "capdect.h"
 
-class CapSysHead: public CagLayout
+// Pair in Connection terminator
+class CapCtermPair: public CagButton
 {
     public:
-	CapSysHead(const string& aName, CAE_Object::Ctrl& aSys);
-	virtual ~CapSysHead();
+	CapCtermPair(const string& aName, CAE_ConnPointBase& aCp);
+	virtual ~CapCtermPair();
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);
@@ -20,17 +24,18 @@ class CapSysHead: public CagLayout
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
     private:
-	CAE_Object::Ctrl& iSys;
+	CAE_ConnPointBase& iCp;
+	string iLabel;
 };
 
-class CapComp;
-class CapCterm;
-class MagSysObserver;
-class CapSys: public CagLayout
+// Connection terminator
+class CapCterm: public CagLayout, public MDectObserver
 {
     public:
-	CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObserver);
-	virtual ~CapSys();
+	CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft);
+	virtual ~CapCterm();
+	TBool IsLeft() const { return iLeft;};
+	const CAE_ConnPointBase& Cp() const { return iCp;};
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);
@@ -41,15 +46,14 @@ class CapSys: public CagLayout
 	virtual void OnEnter(GdkEventCrossing *aEvent);
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
-	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState);
+	// From MDectObserver
+	virtual void OnDetLevelChanged(int aLevel);
     private:
-	CapComp* Comp(CagWidget* aWidget);
-    private:
-	CapSysHead* iHead; // Not owned
-	CAE_Object::Ctrl& iSys;
-	map<CAE_Object*, CapComp*> iComps; // Components
-	map<CAE_ConnPointBase*, CapCterm*> iCterms; // Connections terminators
-	MagSysObserver* iObserver;
+	CAE_ConnPointBase& iCp;
+	CapDect* iContr; // Controller
+	CagButton* iInfo; // Info. Shown when multiple pairs, and  minimized
+	map<CAE_ConnPointBase*, CapCtermPair*> iPairs; // Connection pairs
+	TBool iLeft; // Connected from left (i.e to comp output)
 };
 
 #endif 

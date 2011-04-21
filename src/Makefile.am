@@ -8,6 +8,12 @@ libfapbvpgtk_la_SOURCES = \
 		       capcommon.h \
 		       capcomphead.cpp \
 		       capcomphead.h \
+		       capdect.cpp \
+		       capdect.h \
+		       capbutton.cpp \
+		       capbutton.h \
+		       capcterm.cpp \
+		       capcterm.h \
 		       capcp.cpp \
 		       capcp.h \
 		       capcomp.cpp \
@@ -26,6 +32,8 @@ libfapbvpgtk_la_SOURCES = \
 		       caglayout.h \
 		       cagbin.cpp \
 		       cagbin.h \
+		       cagbutton.cpp \
+		       cagbutton.h \
 		       cagwindow.cpp \
 		       cagwindow.h 
 

@@ -4,7 +4,14 @@
 #include <fapbase.h>
 #include <fapfact.h>
 #include <gtk/gtk.h>
-#include "capsys.h"
+
+
+class MagSysObserver
+{
+    public:
+	virtual void OnCompSelected(CAE_Object* aComp) = 0;
+	virtual void OnHeadSelected() = 0;
+};
 
 class CapSys;
 class CagWindow;

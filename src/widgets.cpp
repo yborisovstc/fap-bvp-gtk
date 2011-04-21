@@ -2,7 +2,7 @@
 #include <map>
 
 CagWidget::CagWidget(GType aType, const string& aName): 
-    iName(aName), iWidget(gtk_widget_new(aType, iName.c_str())), iParent(NULL)
+    iName(aName), iWidget(gtk_widget_new(aType, NULL)), iParent(NULL)
 {
     if (iOwned)
 	Construct();
@@ -13,6 +13,11 @@ CagWidget::CagWidget(GtkWidget* aWidget, const string& aName, TBool aOwned):
 {
     if (iOwned)
 	Construct();
+}
+
+void* CagWidget::DoGetObj(const char *aName)
+{
+    return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
 void CagWidget::Construct()
@@ -33,7 +38,22 @@ void CagWidget::Construct()
 
 CagWidget::~CagWidget()
 {
-    gtk_widget_destroy(iWidget);
+    // It is possible that the widget is already unreferenced
+    if (GTK_IS_WIDGET(iWidget)) {
+	gtk_widget_destroy(iWidget);
+    }
+}
+
+CagWidget* CagWidget::GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester)
+{
+    CagWidget* res = NULL;
+    if (iWidget == aGtkWidget) {
+	res = this;
+    }
+    else if (iParent != NULL && iParent != aRequester) {
+	res = iParent->GetWidget(aGtkWidget);	
+    }
+    return res;
 }
 
 void CagWidget::SetParent(CagWidget* aParent)
@@ -51,6 +71,16 @@ void CagWidget::ResetParent(CagWidget* aParent)
 void CagWidget::Show()
 {
     gtk_widget_show(iWidget);
+}
+
+void CagWidget::Hide()
+{
+    gtk_widget_hide(iWidget);
+}
+
+TBool CagWidget::IsVisible()
+{
+    return  gtk_widget_get_visible(iWidget);
 }
 
 void CagWidget::SizeAllocate(GtkAllocation* aAlloc)

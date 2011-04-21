@@ -69,9 +69,10 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libfapbvpgtk_la_LIBADD =
-am_libfapbvpgtk_la_OBJECTS = capcomphead.lo capcp.lo capcomp.lo \
-	capsys.lo cagstyle.lo cagproxy.lo widgets.lo cagcontainer.lo \
-	caglayout.lo cagbin.lo cagwindow.lo
+am_libfapbvpgtk_la_OBJECTS = capcomphead.lo capdect.lo capbutton.lo \
+	capcterm.lo capcp.lo capcomp.lo capsys.lo cagstyle.lo \
+	cagproxy.lo widgets.lo cagcontainer.lo caglayout.lo cagbin.lo \
+	cagbutton.lo cagwindow.lo
 libfapbvpgtk_la_OBJECTS = $(am_libfapbvpgtk_la_OBJECTS)
 libfapbvpgtk_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -235,6 +236,12 @@ libfapbvpgtk_la_SOURCES = \
 		       capcommon.h \
 		       capcomphead.cpp \
 		       capcomphead.h \
+		       capdect.cpp \
+		       capdect.h \
+		       capbutton.cpp \
+		       capbutton.h \
+		       capcterm.cpp \
+		       capcterm.h \
 		       capcp.cpp \
 		       capcp.h \
 		       capcomp.cpp \
@@ -253,6 +260,8 @@ libfapbvpgtk_la_SOURCES = \
 		       caglayout.h \
 		       cagbin.cpp \
 		       cagbin.h \
+		       cagbutton.cpp \
+		       cagbutton.h \
 		       cagwindow.cpp \
 		       cagwindow.h 
 
@@ -335,14 +344,18 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/cagbin.Plo
+include ./$(DEPDIR)/cagbutton.Plo
 include ./$(DEPDIR)/cagcontainer.Plo
 include ./$(DEPDIR)/caglayout.Plo
 include ./$(DEPDIR)/cagproxy.Plo
 include ./$(DEPDIR)/cagstyle.Plo
 include ./$(DEPDIR)/cagwindow.Plo
+include ./$(DEPDIR)/capbutton.Plo
 include ./$(DEPDIR)/capcomp.Plo
 include ./$(DEPDIR)/capcomphead.Plo
 include ./$(DEPDIR)/capcp.Plo
+include ./$(DEPDIR)/capcterm.Plo
+include ./$(DEPDIR)/capdect.Plo
 include ./$(DEPDIR)/capsys.Plo
 include ./$(DEPDIR)/widgets.Plo
 
