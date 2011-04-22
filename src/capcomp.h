@@ -16,6 +16,7 @@ class CapComp: public CagLayout
 	const CAE_Object& Comp() const { return iComp;};
 	const CAE_EBase* CompEBase() const { CAE_EBase* res = iComp.GetFbObj(res); return res;};
 	int GetInpTermY(CAE_ConnPointBase* aCp);
+	int GetOutpTermY(CAE_ConnPointBase* aCp);
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);

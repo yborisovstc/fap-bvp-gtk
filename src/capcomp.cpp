@@ -40,6 +40,13 @@ int CapComp::GetInpTermY(CAE_ConnPointBase* aCp)
     return alc.y + alc.height/2;
 }
 
+int CapComp::GetOutpTermY(CAE_ConnPointBase* aCp)
+{
+    _FAP_ASSERT(iOutps.count(aCp) > 0);
+    GtkAllocation alc; iOutps[aCp]->Allocation(&alc);
+    return alc.y + alc.height/2;
+}
+
 void CapComp::OnExpose(GdkEventExpose* aEvent)
 {
     GtkAllocation alc; Allocation(&alc);

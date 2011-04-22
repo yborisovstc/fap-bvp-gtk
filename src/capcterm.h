@@ -36,6 +36,7 @@ class CapCterm: public CagLayout, public MDectObserver
 	virtual ~CapCterm();
 	TBool IsLeft() const { return iLeft;};
 	const CAE_ConnPointBase& Cp() const { return iCp;};
+	int GetTermConnY() const;
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);

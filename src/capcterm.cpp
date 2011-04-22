@@ -68,9 +68,9 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft):
     iContr = new CapDect("CtermCtrl." + iCp.Name());
     Add(iContr);
     iContr->SetObserver(this);
-    iContr->SetLevel(1);
     iContr->SetLowerLim(1);
     iContr->SetUpperLim(2);
+    iContr->SetLevel(1);
     iContr->Show();
     // Create info
     char* buf = (char *) malloc(9);
@@ -96,6 +96,11 @@ CapCterm::~CapCterm()
 {
 }
 
+int CapCterm::GetTermConnY() const
+{
+    GtkRequisition ctrl_req; iContr->SizeRequest(&ctrl_req);
+    return ctrl_req.height/2;
+}
 
 void CapCterm::OnExpose(GdkEventExpose* aEvent)
 {
@@ -113,21 +118,27 @@ void CapCterm::OnSizeAllocate(GtkAllocation* aAllc)
 {
     // Allocate size for controller
     GtkRequisition ctrl_req; iContr->SizeRequest(&ctrl_req);
-    GtkAllocation ctrl_all = { 0, 0, ctrl_req.width, ctrl_req.height};
+    GtkAllocation ctrl_all = (GtkAllocation) { iLeft ? aAllc->width - ctrl_req.width : 0, 0, ctrl_req.width, ctrl_req.height};
     iContr->SizeAllocate(&ctrl_all);
     // Allocate size for info
     GtkRequisition info_req; iInfo->SizeRequest(&info_req);
-    GtkAllocation info_alc = { ctrl_all.width + KViewConnGapWidth, 0, info_req.width, info_req.height};
+    GtkAllocation info_alc = { iLeft ? 0 : ctrl_all.width + KViewConnGapWidth, 0, info_req.width, info_req.height};
     iInfo->SizeAllocate(&info_alc);
     // Allocate size for pairs
-    int pairb_x = info_alc.x; 
+    int pairb_x = iLeft ? 0 : info_alc.x; 
     int pairb_y = info_alc.y + info_alc.height + KViewConnGapHeight; 
     for (map<CAE_ConnPointBase*, CapCtermPair*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 	CapCtermPair* pairw = it->second;
 	GtkRequisition pair_req; pairw->SizeRequest(&pair_req);
-	GtkAllocation pair_alc = (GtkAllocation) { pairb_x, pairb_y, pair_req.width, pair_req.height};
+	GtkAllocation pair_alc = (GtkAllocation) { pairb_x, pairb_y, 0, 0};
+	if (iContr->Level() <= 1) {
+	    pair_alc.width = pair_req.width; pair_alc.height = pair_req.height;
+	}
+	else if (iContr->Level() == 2) {
+	    pair_alc.width = pair_req.width; pair_alc.height = pair_req.height;
+	    pairb_y += pair_alc.height + KViewConnGapHeight;
+	}
 	pairw->SizeAllocate(&pair_alc);
-	pairb_y += pair_alc.height + KViewConnGapHeight;
     }
 }
 
@@ -144,7 +155,9 @@ void CapCterm::OnSizeRequest(GtkRequisition* aReq)
 	CapCtermPair* pairw = it->second;
 	GtkRequisition pair_req; pairw->SizeRequest(&pair_req);
 	pair_w = max(pair_w, pair_req.width);
-	pair_h += pair_req.height + KViewConnGapHeight;
+	if (iContr->Level() == 2) {
+	    pair_h += pair_req.height + KViewConnGapHeight;
+	}
     }
     *aReq = (GtkRequisition) {ctrl_req.width + pair_w + KViewConnGapWidth, max(ctrl_req.height, info_req.height + pair_h)};
 }

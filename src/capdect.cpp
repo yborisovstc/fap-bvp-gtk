@@ -3,29 +3,25 @@
 #include "cagbutton.h"
 #include "capcommon.h"
 
-CapDect::CapDect(const string& aName): CagLayout(aName), iObserver(NULL)
+CapDect::CapDect(const string& aName): 
+    CagLayout(aName), iObserver(NULL), iLevel(0), iLowerLim(0), iUpperLim(0)
 {
     // Create Less
     iLess = new CagButton("Less");
     Add(iLess);
     iLess->SetImage("dect_btn_less.png");
+    iLess->SetObs(this);
     iLess->Show();
-    GtkSettings* sett = gtk_settings_get_default();
-    GValue imgbut = {0};
-    g_value_init(&imgbut, G_TYPE_BOOLEAN);
-    g_object_get_property(G_OBJECT(sett), "gtk-button-images", &imgbut);
-    gboolean imgbutb = g_value_get_boolean(&imgbut);
 
     GValue prop = {0};
     g_value_init(&prop, GTK_TYPE_BORDER);
     gtk_widget_style_get_property(iLess->iWidget, "inner-border", &prop);
-    iLess->SetObs(this);
     // Create More
     iMore = new CagButton("More");
     Add(iMore);
     iMore->SetImage("dect_btn_more.png");
-    iMore->Show();
     iMore->SetObs(this);
+    iMore->Show();
 }
 
 CapDect::~CapDect()
@@ -38,6 +34,8 @@ void* CapDect::DoGetObj(const char *aName)
 	return this;
     else if (strcmp(aName, MCagButtonObs::Type()) == 0) 
 	return (MCagButtonObs*) this;
+    else if (strcmp(aName, MWidgetObs::Type()) == 0) 
+	return (MWidgetObs*) this;
     else 
 	return CagLayout::DoGetObj(aName);
 }
@@ -101,12 +99,10 @@ void CapDect::OnStateChanged(GtkStateType state)
 void CapDect::OnClicked(CagButton* aBtn)
 {
     if (aBtn == iLess) {
-	iLevel--;
-	HandleLevelChanged();
+	SetLevel(iLevel - 1);
     }
     else {
-	iLevel++;
-	HandleLevelChanged();
+	SetLevel(iLevel + 1);
     }
 }
 
@@ -120,7 +116,8 @@ void CapDect::SetLevel(int aLevel)
     else if (iLevel > iUpperLim) {
 	iLevel = iUpperLim;
     }
-    if (iLevel != prev) {
+    if (aLevel != prev) {
+	iLevel = aLevel;
 	HandleLevelChanged();
     }
 }
@@ -128,42 +125,52 @@ void CapDect::SetLevel(int aLevel)
 void CapDect::SetLowerLim(int aLim)
 {
     iLowerLim = aLim;
+    gboolean upd = false;
     if (iLevel < iLowerLim) {
 	iLevel = iLowerLim;
-	HandleLevelChanged();
+	upd = true;
     }
+    if (iUpperLim < iLowerLim) {
+	iUpperLim = iLowerLim;
+	upd = true;
+    }
+    if (upd)
+	HandleLevelChanged();
 }
 
 void CapDect::SetUpperLim(int aLim)
 {
     iUpperLim = aLim;
+    gboolean upd = false;
     if (iLevel > iUpperLim) {
 	iLevel = iUpperLim;
-	HandleLevelChanged();
+	upd = true;
     }
+    if (iLowerLim > iUpperLim) {
+	iLowerLim = iUpperLim;
+	upd = true;
+    }
+    if (upd)
+	HandleLevelChanged();
 }
 
 void CapDect::HandleLevelChanged()
 {
     if (iLevel == iLowerLim) {
-	iLess->Hide();
-	if (iLevel < iUpperLim && !iMore->IsVisible()) {
-	    iMore->Show();
+	iLess->SetSensitive(false);
+	if (iLevel < iUpperLim && !iMore->IsSensitive()) {
+	    iMore->SetSensitive(true);
 	}
     }
     else if (iLevel == iUpperLim) {
-	iMore->Hide();
-	if (iLevel > iLowerLim && !iLess->IsVisible()) {
-	    iLess->Show();
+	iMore->SetSensitive(false);
+	if (iLevel > iLowerLim && !iLess->IsSensitive()) {
+	    iLess->SetSensitive(true);
 	}
     }
     else {
-	if (!iMore->IsVisible()) {
-	    iMore->Show();
-	}
-	if (!iLess->IsVisible()) {
-	    iLess->Show();
-	}
+	    iMore->SetSensitive(true);
+	    iLess->SetSensitive(true);
     }
     NotifyLevelChanged();
 }
@@ -173,5 +180,10 @@ void CapDect::NotifyLevelChanged()
     if (iObserver != NULL) {
 	iObserver->OnDetLevelChanged(iLevel);
     }
+}
+
+TBool CapDect::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent)
+{
+    return EFalse;
 }
 

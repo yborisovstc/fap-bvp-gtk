@@ -16,13 +16,14 @@ inline const char* MDectObserver::Type() { return "DectObsr";}
 
 class CagButton;
 // Detalisation control
-class CapDect: public CagLayout, public MCagButtonObs
+class CapDect: public CagLayout, public MWidgetObs, public MCagButtonObs
 {
     public:
 	CapDect(const string& aName);
 	virtual ~CapDect();
 	static inline const char* Type(); 
 	void SetObserver(MDectObserver* aObs);
+	int Level() const { return iLevel;};
 	void SetLevel(int aLevel);
 	void SetLowerLim(int aLim);
 	void SetUpperLim(int aLim);
@@ -42,6 +43,8 @@ class CapDect: public CagLayout, public MCagButtonObs
 	virtual void OnClicked(CagButton* aBtn);
 	// From CAE_Base
 	virtual void *DoGetObj(const char *aName);
+	// From MWidgetObs
+	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent);
     private:
 	CagButton* iLess;
 	CagButton* iMore;

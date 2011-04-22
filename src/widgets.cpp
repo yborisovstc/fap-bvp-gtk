@@ -83,6 +83,16 @@ TBool CagWidget::IsVisible()
     return  gtk_widget_get_visible(iWidget);
 }
 
+void CagWidget::SetSensitive(gboolean aSet)
+{
+    gtk_widget_set_sensitive(iWidget, aSet);
+}
+
+gboolean CagWidget::IsSensitive() const
+{
+    return gtk_widget_is_sensitive(iWidget);
+}
+
 void CagWidget::SizeAllocate(GtkAllocation* aAlloc)
 {
     gtk_widget_size_allocate(iWidget, aAlloc);
@@ -202,4 +212,19 @@ void     CagWidget::handle_state_changed_event( GtkWidget *widget, GtkStateType 
 }
 
 
+void CagWidget::SetWidgetObs(CagWidget* aObs)
+{
+    MWidgetObs* obs = aObs->GetObj(obs);
+    _FAP_ASSERT(obs != NULL);
+    g_signal_connect(G_OBJECT(iWidget), "button_press_event", G_CALLBACK (handle_widget_button_press_event), aObs);
+}
 
+gboolean CagWidget::handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    CagWidget* hler = (CagWidget*) data;
+    MWidgetObs* obs = hler->GetObj(obs);
+    _FAP_ASSERT(obs != NULL);
+    CagWidget* wid = hler->GetWidget(GTK_WIDGET(widget));
+    _FAP_ASSERT(wid != NULL);
+    return obs->OnWidgetButtonPress(wid, event);
+}

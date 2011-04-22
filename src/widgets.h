@@ -26,6 +26,17 @@ class MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL) = 0;
 };
 
+// Widget observer iface
+class MWidgetObs
+{
+    public:
+	static inline const char* Type(); 
+    public:
+	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent) = 0;
+};
+
+inline const char* MWidgetObs::Type() { return "CagWidgetObs";} 
+
 // Base wrapper classes
 class CagWidget: public CagBase, public MWidgetRes 
 {
@@ -49,7 +60,10 @@ class CagWidget: public CagBase, public MWidgetRes
 	void SizeRequest(GtkRequisition* aReq);
 	void Allocation(GtkAllocation *aAlloc);
 	void SetState(GtkStateType aState);
+	void SetSensitive(gboolean aSet);
+	gboolean IsSensitive() const;
 	GtkStateType State();
+	void SetWidgetObs(CagWidget* aObs);
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:
@@ -57,8 +71,8 @@ class CagWidget: public CagBase, public MWidgetRes
 	void Construct();
     public:
 	virtual void OnExpose(GdkEventExpose* aEvent) {};
-	virtual TBool OnButtonPress(GdkEventButton* aEvent) { return ETrue;};
-	virtual TBool OnButtonRelease(GdkEventButton* aEvent) { return ETrue;};
+	virtual TBool OnButtonPress(GdkEventButton* aEvent) { return EFalse;};
+	virtual TBool OnButtonRelease(GdkEventButton* aEvent) { return EFalse;};
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation)  {};
 	virtual void OnSizeRequest(GtkRequisition* aRequisition) {};
 	virtual void OnMotion(GdkEventMotion *aEvent) {};
@@ -83,6 +97,9 @@ class CagWidget: public CagBase, public MWidgetRes
 	static gboolean handle_enter_notify_event( GtkWidget *widget, GdkEventCrossing *event, gpointer data);
 	static gboolean handle_leave_notify_event( GtkWidget *widget, GdkEventCrossing *event, gpointer data);
 	static void     handle_state_changed_event( GtkWidget *widget, GtkStateType state, gpointer data);
+
+	static gboolean handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
+	static gboolean handle_widget_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
     public:
 	GtkWidget* iWidget;
 	CagWidget* iParent;
