@@ -148,7 +148,7 @@ void CapCterm::OnSizeRequest(GtkRequisition* aReq)
     GtkRequisition ctrl_req; iContr->SizeRequest(&ctrl_req);
     // Get size request for info
     GtkRequisition info_req = {0, 0}; iInfo->SizeRequest(&info_req);
-    int pair_w = info_req.width;
+    int pair_w = 0;
     int pair_h = 0;
     // Get size request for pairs
     for (map<CAE_ConnPointBase*, CapCtermPair*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
@@ -159,7 +159,8 @@ void CapCterm::OnSizeRequest(GtkRequisition* aReq)
 	    pair_h += pair_req.height + KViewConnGapHeight;
 	}
     }
-    *aReq = (GtkRequisition) {ctrl_req.width + pair_w + KViewConnGapWidth, max(ctrl_req.height, info_req.height + pair_h)};
+    int pw = (iContr->Level() <= 1) ? info_req.width : max(info_req.width, pair_w);
+    *aReq = (GtkRequisition) {ctrl_req.width + KViewConnGapWidth + pw, max(ctrl_req.height, info_req.height + pair_h)};
 }
 
 void CapCterm::OnMotion(GdkEventMotion *aEvent)

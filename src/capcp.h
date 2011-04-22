@@ -3,12 +3,16 @@
 
 #include <fapbase.h>
 #include "caglayout.h"
+#include "caglabel.h"
 
+
+class CapCterm;
 class CapCp: public CagLayout
 {
     public:
-	CapCp(const string& aName, CAE_ConnPointBase& aCp);
+	CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft);
 	virtual ~CapCp();
+	int GetLabelWidth() const;
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);
@@ -21,6 +25,9 @@ class CapCp: public CagLayout
 	virtual void OnStateChanged(GtkStateType state);
     private:
 	CAE_ConnPointBase& iCp;
+	CagLabel* iLabel;
+	CapCterm* iTerm; // Connections terminator
+	TBool iLeft;
 };
 
 #endif 

@@ -71,8 +71,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libfapbvpgtk_la_LIBADD =
 am_libfapbvpgtk_la_OBJECTS = capcomphead.lo capdect.lo capbutton.lo \
 	capcterm.lo capcp.lo capcomp.lo capsys.lo cagstyle.lo \
-	cagproxy.lo widgets.lo cagcontainer.lo caglayout.lo cagbin.lo \
-	cagbutton.lo cagwindow.lo
+	cagproxy.lo widgets.lo cagcontainer.lo caglayout.lo cagmisc.lo \
+	caglabel.lo cagbin.lo cagbutton.lo cagwindow.lo
 libfapbvpgtk_la_OBJECTS = $(am_libfapbvpgtk_la_OBJECTS)
 libfapbvpgtk_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -258,6 +258,10 @@ libfapbvpgtk_la_SOURCES = \
 		       cagcontainer.h \
 		       caglayout.cpp \
 		       caglayout.h \
+		       cagmisc.cpp \
+		       cagmisc.h \
+		       caglabel.cpp \
+		       caglabel.h \
 		       cagbin.cpp \
 		       cagbin.h \
 		       cagbutton.cpp \
@@ -346,7 +350,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagbin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagbutton.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagcontainer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/caglabel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/caglayout.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagmisc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagproxy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagstyle.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cagwindow.Plo@am__quote@

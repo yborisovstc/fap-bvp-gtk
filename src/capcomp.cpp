@@ -14,7 +14,7 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
     // Add Inputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Inputs().begin(); it != iComp.Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp(cp->Name(), *cp);
+	CapCp* cpw = new CapCp(cp->Name(), *cp, EFalse);
 	Add(cpw);
 	iInps[cp] = cpw;
 	cpw->Show();
@@ -22,7 +22,7 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
     // Add outputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Outputs().begin(); it != iComp.Outputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp(cp->Name(), *cp);
+	CapCp* cpw = new CapCp(cp->Name(), *cp, ETrue);
 	Add(cpw);
 	iOutps[cp] = cpw;
 	cpw->Show();
@@ -47,10 +47,15 @@ int CapComp::GetOutpTermY(CAE_ConnPointBase* aCp)
     return alc.y + alc.height/2;
 }
 
+int CapComp::GetBodyCenterX() const
+{
+    return iBodyAlc.x + iBodyAlc.width/2;
+}
+
 void CapComp::OnExpose(GdkEventExpose* aEvent)
 {
     GtkAllocation alc; Allocation(&alc);
-    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, iBodyAlc.x, iBodyAlc.y, iBodyAlc.width - 1, iBodyAlc.height - 1);
 }
 
 TBool CapComp::OnButtonPress(GdkEventButton* aEvent)
@@ -63,41 +68,49 @@ TBool CapComp::OnButtonRelease(GdkEventButton* aEvent)
 
 void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
 {
-    // Allocate header
-    GtkRequisition head_req; iHead->SizeRequest(&head_req);
-    int head_w = max(aAllc->width, head_req.width);
-    GtkAllocation head_alc = {0, 0, head_w, head_req.height};
-    iHead->SizeAllocate(&head_alc);
-     // Calculate inputs width
+     // Calculate inputs lables width
     TInt inp_w = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
 	CapCp* cpw = it->second;
-	GtkRequisition inp_req; cpw->SizeRequest(&inp_req);
-	inp_w = max(inp_w, inp_req.width);
+	inp_w = max(inp_w, cpw->GetLabelWidth());
     }
-     // Calculate outputs width
+     // Calculate outputs labels width
     TInt outp_w = 0;
+    int outp_maxw = 0; // Max output with
+    int outp_maxw_l = 0; // Label width of output with max width
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutps.begin(); it != iOutps.end(); it++) {
 	CapCp* cpw = it->second;
+	outp_w = max(outp_w, cpw->GetLabelWidth());
 	GtkRequisition outp_req; cpw->SizeRequest(&outp_req);
-	outp_w = max(outp_w, outp_req.width);
+	outp_maxw = max(outp_maxw, outp_req.width);
+	if (outp_req.width == outp_maxw)
+	    outp_maxw_l = cpw->GetLabelWidth();
     }
+    // Calculate allocation of comp body
+    iBodyAlc = (GtkAllocation) {outp_maxw - outp_maxw_l, 0, KViewCompInpOutpGapWidth + inp_w + outp_w, aAllc->height};
 
-   // Allocate inputs size 
+    // Allocate header
+    GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    GtkAllocation head_alc = {iBodyAlc.x, iBodyAlc.y, iBodyAlc.width, head_req.height};
+    iHead->SizeAllocate(&head_alc);
+
+    // Allocate inputs size 
     TInt inpb_x = aAllc->width - inp_w, inpb_y = head_alc.height + KViewCompCpGapHeight;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
 	CapCp* cpw = it->second;
+	int lab_w = cpw->GetLabelWidth();
 	GtkRequisition inp_req; cpw->SizeRequest(&inp_req);
-	GtkAllocation inp_alc = {inpb_x, inpb_y, inp_w, inp_req.height};
+	GtkAllocation inp_alc = {iBodyAlc.x + iBodyAlc.width - lab_w, inpb_y, inp_req.width, inp_req.height};
 	cpw->SizeAllocate(&inp_alc);
 	inpb_y += inp_req.height + KViewCompCpGapHeight;
     }
-   // Allocate outputs size 
+    // Allocate outputs size 
     TInt outpb_x = 0, outpb_y = head_alc.height + KViewCompCpGapHeight;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutps.begin(); it != iOutps.end(); it++) {
 	CapCp* cpw = it->second;
+	int lab_w = cpw->GetLabelWidth();
 	GtkRequisition outp_req; cpw->SizeRequest(&outp_req);
-	GtkAllocation outp_alc = {outpb_x, outpb_y, outp_w, outp_req.height};
+	GtkAllocation outp_alc = {iBodyAlc.x + lab_w - outp_req.width, outpb_y, outp_req.width, outp_req.height};
 	cpw->SizeAllocate(&outp_alc);
 	outpb_y += outp_req.height + KViewCompCpGapHeight;
     }
@@ -124,7 +137,7 @@ void CapComp::OnSizeRequest(GtkRequisition* aRequisition)
     }
 
     aRequisition->width = max(head_req.width, inp_w + outp_w + KViewCompInpOutpGapWidth); 
-    aRequisition->height = head_req.height + max(inp_h, outp_h);
+    aRequisition->height = head_req.height + max(inp_h, outp_h) + KViewCompCpGapHeight;
 }
 
 void CapComp::OnMotion(GdkEventMotion *aEvent)

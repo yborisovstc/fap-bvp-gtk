@@ -7,6 +7,8 @@
 CagProxy::CagProxy(GtkWidget* aWnd): iSysWidget(NULL)
 {
     iWindow = new CagWindow(aWnd, EFalse);
+    // Load resource file
+    gtk_rc_parse("cag_proxy.rc");
 }
 
 CagProxy::~CagProxy()

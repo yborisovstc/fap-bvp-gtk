@@ -58,12 +58,13 @@ class CagWidget: public CagBase, public MWidgetRes
 	void ResetParent(CagWidget* aParent);
 	void SizeAllocate(GtkAllocation* aAlloc);
 	void SizeRequest(GtkRequisition* aReq);
-	void Allocation(GtkAllocation *aAlloc);
+	void Allocation(GtkAllocation *aAlloc) const;
 	void SetState(GtkStateType aState);
 	void SetSensitive(gboolean aSet);
 	gboolean IsSensitive() const;
 	GtkStateType State();
 	void SetWidgetObs(CagWidget* aObs);
+	void SetBorder(GtkBorder* aBorder);
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:

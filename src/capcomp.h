@@ -17,6 +17,7 @@ class CapComp: public CagLayout
 	const CAE_EBase* CompEBase() const { CAE_EBase* res = iComp.GetFbObj(res); return res;};
 	int GetInpTermY(CAE_ConnPointBase* aCp);
 	int GetOutpTermY(CAE_ConnPointBase* aCp);
+	int GetBodyCenterX() const;
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);
@@ -34,6 +35,7 @@ class CapComp: public CagLayout
 	CapCompHead* iHead;
 	map<CAE_ConnPointBase*, CapCp*> iInps;
 	map<CAE_ConnPointBase*, CapCp*> iOutps;
+	GtkAllocation iBodyAlc;
 };
 
 #endif

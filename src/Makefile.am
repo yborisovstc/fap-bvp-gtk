@@ -30,6 +30,10 @@ libfapbvpgtk_la_SOURCES = \
 		       cagcontainer.h \
 		       caglayout.cpp \
 		       caglayout.h \
+		       cagmisc.cpp \
+		       cagmisc.h \
+		       caglabel.cpp \
+		       caglabel.h \
 		       cagbin.cpp \
 		       cagbin.h \
 		       cagbutton.cpp \

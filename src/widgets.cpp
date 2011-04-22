@@ -103,7 +103,7 @@ void CagWidget::SizeRequest(GtkRequisition* aReq)
     gtk_widget_size_request(iWidget, aReq);
 }
 
-void CagWidget::Allocation(GtkAllocation *aAlloc)
+void CagWidget::Allocation(GtkAllocation *aAlloc) const
 {
     gtk_widget_get_allocation(iWidget, aAlloc);
 }
@@ -126,6 +126,10 @@ GdkWindow* CagWidget::GdkWnd()
 GtkStyle* CagWidget::Style()
 {
     return gtk_widget_get_style(iWidget);
+}
+
+void CagWidget::SetBorder(GtkBorder* aBorder)
+{
 }
 
 GdkGC* CagWidget::Gc(TGcType aType)

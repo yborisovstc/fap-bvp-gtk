@@ -86,23 +86,6 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObs
 	    Add(comp);
 	    iComps[obj] = comp;
 	    comp->Show();
-	    // Add conn terms for component inputs
-	    for (map<string, CAE_ConnPointBase*>::iterator iit = obj->Inputs().begin(); iit != obj->Inputs().end(); iit++) {
-		CAE_ConnPointBase* cp = iit->second;
-		CapCterm* cterm = new CapCterm("Cterm." + string(obj->InstName()) + ".Inp" + cp->Name(), *(iit->second), EFalse);
-		iCterms[cp] = cterm;
-		Add(cterm);
-		cterm->Show();
-	    }
-	    // Add conn terms for component outputs
-	    for (map<string, CAE_ConnPointBase*>::iterator oit = obj->Outputs().begin(); oit != obj->Outputs().end(); oit++) {
-		CAE_ConnPointBase* cp = oit->second;
-		CapCterm* cterm = new CapCterm("Cterm." + string(obj->InstName()) + ".Outp" + cp->Name(), *(oit->second), ETrue);
-		iCterms[cp] = cterm;
-		Add(cterm);
-		cterm->Show();
-	    }
-
 	}
     }
 }
@@ -137,29 +120,10 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 	CAE_Object* obj = it->first;
 	CapComp* comp = it->second;
 	GtkRequisition req; comp->SizeRequest(&req);
-	GtkAllocation allc = {compb_x - req.width / 2, compb_y, req.width, req.height};
+	int comp_body_center_x = comp->GetBodyCenterX();
+	GtkAllocation allc = {compb_x - comp_body_center_x, compb_y, req.width, req.height};
 	comp->SizeAllocate(&allc);
 	compb_y += req.height + KViewCompGapHight;
-	// Allocate inputs conn terms for the comp
-	for (map<string, CAE_ConnPointBase*>::iterator iit = obj->Inputs().begin(); iit != obj->Inputs().end(); iit++) {
-	    CapCterm* ict = iCterms[iit->second];
-	    int itermy = comp->GetInpTermY(iit->second);
-	    int termconny = ict->GetTermConnY();
-	    GtkRequisition ict_req; ict->SizeRequest(&ict_req);
-	    GtkAllocation ict_alc = 
-		(GtkAllocation) {allc.x + allc.width + KViewConnLineLen, allc.y + itermy - termconny, ict_req.width, ict_req.height};
-	    ict->SizeAllocate(&ict_alc);
-	}
-	// Allocate outputs conn terms for the comp
-	for (map<string, CAE_ConnPointBase*>::iterator oit = obj->Outputs().begin(); oit != obj->Outputs().end(); oit++) {
-	    CapCterm* oct = iCterms[oit->second];
-	    int otermy = comp->GetOutpTermY(oit->second);
-	    int termconny = oct->GetTermConnY();
-	    GtkRequisition oct_req; oct->SizeRequest(&oct_req);
-	    GtkAllocation oct_alc = 
-		(GtkAllocation) {allc.x - oct_req.width - KViewConnLineLen, allc.y + otermy - termconny, oct_req.width, oct_req.height};
-	    oct->SizeAllocate(&oct_alc);
-	}
     }
 }
 
@@ -171,27 +135,7 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
     for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
 	CapComp* comp = it->second;
 	GtkRequisition req; comp->SizeRequest(&req);
-	// TODO [YB] To consider using of auxiliary map comp - cterms 
-	// Calculate Inputs conn terms size width for the comp
-	int ict_w = 0;
-	for (map<CAE_ConnPointBase*, CapCterm*>::iterator tit = iCterms.begin(); tit != iCterms.end(); tit++) {
-	    CapCterm* ct = tit->second;
-	    if (&(ct->Cp().Man()) == &(comp->Comp()) && !ct->IsLeft()) {
-		GtkRequisition ctreq; ct->SizeRequest(&ctreq);
-		ict_w = max(ict_w, ctreq.width);
-	    }
-	}
-	// Calculate Outputs conn terms size width for the comp
-	int oct_w = 0;
-	for (map<CAE_ConnPointBase*, CapCterm*>::iterator tit = iCterms.begin(); tit != iCterms.end(); tit++) {
-	    CapCterm* ct = tit->second;
-	    if (&(ct->Cp().Man()) == &(comp->Comp()) && ct->IsLeft()) {
-		GtkRequisition ctreq; ct->SizeRequest(&ctreq);
-		oct_w = max(oct_w, ctreq.width);
-	    }
-	}
-
-	comp_w = max(comp_w, req.width + max(oct_w,ict_w));
+	comp_w = max(comp_w, req.width);
 	comp_h += req.height + KViewCompGapHight ;
     }
     aRequisition->width = comp_w; aRequisition->height = head_req.height + comp_h;

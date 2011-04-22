@@ -48,7 +48,7 @@ class CapSys: public CagLayout
 	CapSysHead* iHead; // Not owned
 	CAE_Object::Ctrl& iSys;
 	map<CAE_Object*, CapComp*> iComps; // Components
-	map<CAE_ConnPointBase*, CapCterm*> iCterms; // Connections terminators
+//	map<CAE_ConnPointBase*, CapCterm*> iCterms; // Connections terminators
 	MagSysObserver* iObserver;
 };
 
