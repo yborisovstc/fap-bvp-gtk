@@ -2,6 +2,7 @@
 #include "capsys.h"
 #include "cagproxy.h"
 #include "capcomp.h"
+#include "capcp.h"
 #include "capcommon.h"
 #include "capcterm.h"
 
@@ -72,7 +73,7 @@ void CapSysHead::OnStateChanged(GtkStateType state)
 
 
 CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObserver): 
-    CagLayout(aName), iSys(aSys), iObserver(aObserver)
+    CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this)
 {
     // Add header
     iHead = new CapSysHead("Title", iSys);
@@ -85,8 +86,25 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObs
 	    CapComp* comp = new CapComp("comp." + string(obj->InstName()), *obj);
 	    Add(comp);
 	    iComps[obj] = comp;
+	    comp->SetObs(this);
 	    comp->Show();
 	}
+    }
+    // Add inputs
+    for (map<string, CAE_ConnPointBase*>::const_iterator it = iSys.Object().Inputs().begin(); it != iSys.Object().Inputs().end(); it++) {
+	CAE_ConnPointBase* cp = it->second;
+	CapCp* cpw = new CapCp("Inp." + cp->Name(), *cp, ETrue);
+	Add(cpw);
+	iInputs[cp] = cpw;
+	cpw->Show();
+    }
+    // Add outputs
+    for (map<string, CAE_ConnPointBase*>::const_iterator it = iSys.Object().Outputs().begin(); it != iSys.Object().Outputs().end(); it++) {
+	CAE_ConnPointBase* cp = it->second;
+	CapCp* cpw = new CapCp("Outp." + cp->Name(), *cp, EFalse);
+	Add(cpw);
+	iOutputs[cp] = cpw;
+	cpw->Show();
     }
 }
 
@@ -114,8 +132,28 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
     GtkAllocation head_alc = { 0, 0, alc.width, head_req.height};
     iHead->SizeAllocate(&head_alc);
+    // Allocate inputs
+    int inpb_x = aAllc->width - iInpReq.width, inpb_y = head_req.height + KViewCompGapHight;
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end(); it++) {
+	CapCp* cpw = it->second;
+	GtkRequisition req; cpw->SizeRequest(&req);
+	GtkAllocation allc = {inpb_x, inpb_y, req.width, req.height};
+	cpw->SizeAllocate(&allc);
+	inpb_y += req.height + KViewConnGapHeight;
+    }
+    // Allocate outputs
+    int outpb_x = 0, outpb_y = head_req.height + KViewCompGapHight;
+    int outp_w = 0, outp_h = 0;
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutputs.begin(); it != iOutputs.end(); it++) {
+	CapCp* cpw = it->second;
+	GtkRequisition req; cpw->SizeRequest(&req);
+	GtkAllocation allc = {outpb_x, outpb_y, req.width, req.height};
+	cpw->SizeAllocate(&allc);
+	outp_w = max(outp_w, req.width);
+	outpb_y += req.height + KViewConnGapHeight;
+    }
     // Allocate components
-    int compb_x = aAllc->width / 2, compb_y = head_req.height + KViewCompGapHight;
+    int compb_x = (outp_w + KViewConnGapHeight + aAllc->width)/2, compb_y = head_req.height + KViewCompGapHight;
     for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
 	CAE_Object* obj = it->first;
 	CapComp* comp = it->second;
@@ -138,7 +176,26 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 	comp_w = max(comp_w, req.width);
 	comp_h += req.height + KViewCompGapHight ;
     }
-    aRequisition->width = comp_w; aRequisition->height = head_req.height + comp_h;
+    // Calculate size of inputs
+    int inp_w = 0, inp_h = 0;
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end(); it++) {
+	CapCp* cpw = it->second;
+	GtkRequisition req; cpw->SizeRequest(&req);
+	inp_w = max(inp_w, req.width);
+	inp_h += req.height + KViewConnGapHeight;
+    }
+    iInpReq.width = inp_w; iInpReq.height = inp_h;
+    // Calculate size of outputs
+    int outp_w = 0, outp_h = 0;
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutputs.begin(); it != iOutputs.end(); it++) {
+	CapCp* cpw = it->second;
+	GtkRequisition req; cpw->SizeRequest(&req);
+	outp_w = max(outp_w, req.width);
+	outp_h += req.height + KViewConnGapHeight;
+    }
+
+    aRequisition->width = outp_w + KViewExtAreaWidth*2 + comp_w + inp_w; 
+    aRequisition->height = head_req.height + max(max(outp_h, comp_h), inp_h);
 }
 
 void CapSys::OnMotion(GdkEventMotion *aEvent)
@@ -179,6 +236,32 @@ CapComp* CapSys::Comp(CagWidget* aWidget)
 	if (it->second == aWidget) {
 	    res = it->second; break;
 	}
+    }
+    return res;
+}
+
+void CapSys::CpPairObs::OnToggled(CagToggleButton* aBtn)
+{
+}
+
+void CapSys::OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair)
+{
+    CapCtermPair* pair = GetCpPair(aPair);
+    if (pair != NULL) {
+	if (aPair->IsActive() && !pair->IsActive()) {
+	    pair->SetActive(ETrue);
+	}
+	else if (!aPair->IsActive() && pair->IsActive()) {
+	    pair->SetActive(EFalse);
+	}
+    }
+}
+
+CapCtermPair* CapSys::GetCpPair(CapCtermPair* aPair)
+{
+    CapCtermPair* res = NULL;
+    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
+	res = it->second->GetCpPair(aPair);
     }
     return res;
 }

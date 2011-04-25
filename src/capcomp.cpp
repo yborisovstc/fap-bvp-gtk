@@ -1,11 +1,9 @@
 #include "capcomp.h"
 #include "capcommon.h"
 #include "capcomphead.h"
-#include "capcp.h"
 
 
-
-CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iComp(aComp)
+CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iComp(aComp), iObs(NULL)
 {
     // Add header
     iHead = new CapCompHead("Title", iComp);
@@ -14,16 +12,18 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
     // Add Inputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Inputs().begin(); it != iComp.Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp(cp->Name(), *cp, EFalse);
+	CapCp* cpw = new CapCp(cp->Name(), *cp, EFalse, ETrue);
 	Add(cpw);
+	cpw->SetObs(this);
 	iInps[cp] = cpw;
 	cpw->Show();
     }
     // Add outputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Outputs().begin(); it != iComp.Outputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp(cp->Name(), *cp, ETrue);
+	CapCp* cpw = new CapCp(cp->Name(), *cp, ETrue, ETrue);
 	Add(cpw);
+	cpw->SetObs(this);
 	iOutps[cp] = cpw;
 	cpw->Show();
     }
@@ -31,6 +31,12 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
 
 CapComp::~CapComp()
 {
+}
+
+void CapComp::SetObs(MCapCompObserver* aObs)
+{
+    _FAP_ASSERT(iObs == NULL);
+    iObs = aObs;
 }
 
 int CapComp::GetInpTermY(CAE_ConnPointBase* aCp)
@@ -163,4 +169,23 @@ void CapComp::OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState)
     }
 }
 
+void CapComp::OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair)
+{
+    if (iObs != NULL) {
+	iObs->OnCompCpPairToggled(this, aPair);
+    }
+
+}
+
+CapCtermPair* CapComp::GetCpPair(CapCtermPair* aPair)
+{
+    CapCtermPair* res = NULL;
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end() && res == NULL; it++) {
+	res = it->second->GetCpPair(aPair);
+    }
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutps.begin(); it != iOutps.end() && res == NULL; it++) {
+	res = it->second->GetCpPair(aPair);
+    }
+    return res;
+}
 

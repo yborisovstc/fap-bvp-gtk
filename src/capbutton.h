@@ -1,5 +1,5 @@
-#ifndef __FAPBVP_GTK_COMPHEAD_H
-#define __FAPBVP_GTK_COMPHEAD_H
+#ifndef __FAPBVP_GTK_CAPBUTTON_H
+#define __FAPBVP_GTK_CAPBUTTON_H
 
 #include <fapbase.h>
 #include "caglayout.h"

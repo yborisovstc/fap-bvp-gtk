@@ -23,6 +23,37 @@ class CagButton: public CagBin
 	void SetImage(const string& aPath);
 	void SetObs(CagWidget* aObs);
     protected:
+	CagButton(GType aType, const string& aName);
 };
+
+
+class CagToggleButton;
+// Gtk toggle button observer iface
+class MCagToggleButtonObs
+{
+    public:
+	static inline const char* Type(); 
+	virtual void OnToggled(CagToggleButton* aBtn) = 0;
+};
+
+inline const char* MCagToggleButtonObs::Type() { return "CagToggleBtnObs";} 
+
+// Toggle button
+class CagToggleButton: public CagButton 
+{
+    public:
+	static inline const char* Type() { return "CagToggleBtn";}; 
+	CagToggleButton(const string& aName);
+	void SetActive(TBool aActive);
+	TBool IsActive() const;
+	void SetObs(CagWidget* aObs);
+    protected:
+	// From CAE_Base
+	virtual void *DoGetObj(const char *aName);
+    private:
+	static void handle_toggled_event(GtkToggleButton *togglebutton, gpointer user_data);
+};
+
+
 
 #endif 

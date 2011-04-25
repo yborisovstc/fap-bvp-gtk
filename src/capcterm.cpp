@@ -9,7 +9,7 @@
 // Pair in Connection terminator
 // *************************************************************
 
-CapCtermPair::CapCtermPair(const string& aName, CAE_ConnPointBase& aCp): CagButton(aName), iCp(aCp)
+CapCtermPair::CapCtermPair(const string& aName, CAE_ConnPointBase& aCp): CagToggleButton(aName), iCp(aCp)
 {
     SetLabel(string(iCp.Man().InstName()) + "." + iCp.Name());
 }
@@ -55,6 +55,12 @@ void CapCtermPair::OnStateChanged(GtkStateType state)
 {
 }
 
+CAE_ConnPointBase* CapCtermPair::Cp()
+{
+    CapCterm* parent = iParent->GetObj(parent);
+    _FAP_ASSERT(parent != NULL);
+    return parent->Cp();
+}
 
 
 // *************************************************************
@@ -62,7 +68,7 @@ void CapCtermPair::OnStateChanged(GtkStateType state)
 // *************************************************************
 
 CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft): 
-    CagLayout(aName), iCp(aCp), iLeft(aLeft), iInfo(NULL)
+    CagLayout(aName), iCp(aCp), iLeft(aLeft), iInfo(NULL), iTermObs(NULL)
 {
     // Create controller
     iContr = new CapDect("CtermCtrl." + iCp.Name());
@@ -88,12 +94,22 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft):
 	CapCtermPair* pairw = new CapCtermPair("CtermPair." + string(pair->Man().InstName()) + "." + pair->Name(), *pair);
 	iPairs[pair] = pairw;
 	Add(pairw);
+	pairw->SetObs(this);
 	pairw->Show();
     }
 }
 
 CapCterm::~CapCterm()
 {
+}
+
+void* CapCterm::DoGetObj(const char *aName)
+{
+    if (strcmp(aName, MCagToggleButtonObs::Type()) == 0)
+	return (MCagToggleButtonObs*) this;
+    else if (strcmp(aName, Type()) == 0) 
+	return this;
+    else return CagLayout::DoGetObj(aName);
 }
 
 int CapCterm::GetTermConnY() const
@@ -181,4 +197,30 @@ void CapCterm::OnStateChanged(GtkStateType state)
 
 void CapCterm::OnDetLevelChanged(int aLevel)
 {
+}
+
+void CapCterm::OnToggled(CagToggleButton* aBtn)
+{
+    if (iTermObs) {
+	CapCtermPair* pair = aBtn->GetObj(pair);
+	_FAP_ASSERT(pair != NULL);
+	iTermObs->OnCpPairToggled(pair);
+    }
+}
+
+void CapCterm::SetObs(MCapCtermObserver* aObs)
+{
+    _FAP_ASSERT(iTermObs == NULL);
+    iTermObs = aObs;
+}
+
+CapCtermPair* CapCterm::GetCpPair(CapCtermPair* aPair)
+{
+    CapCtermPair* res = NULL;
+    if (aPair->Pair() == &iCp) {
+	if (iPairs.count(aPair->Cp()) > 0) {
+	  res = iPairs[aPair->Cp()];
+	}
+    }
+    return res;
 }
