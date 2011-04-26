@@ -57,6 +57,7 @@ class CapCterm: public CagLayout, public MDectObserver, public MCagToggleButtonO
 	CAE_ConnPointBase* Cp() { return &iCp;};
 	int GetTermConnY() const;
 	void SetObs(MCapCtermObserver* aObs);
+	void SetItemHeightHint(int aHeight);
 	static inline const char* Type() { return "CapCterm";} ; 
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);

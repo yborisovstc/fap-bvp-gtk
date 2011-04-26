@@ -54,10 +54,12 @@ class CagWidget: public CagBase, public MWidgetRes
 	void Show();
 	void Hide();
 	TBool IsVisible();
+	void SetVisible(TBool aVisible);
 	void SetParent(CagWidget* aParent);
 	void ResetParent(CagWidget* aParent);
 	void SizeAllocate(GtkAllocation* aAlloc);
 	void SizeRequest(GtkRequisition* aReq);
+	void SetSizeRequest(gint aWidth, gint aHeight);
 	void Allocation(GtkAllocation *aAlloc) const;
 	void SetState(GtkStateType aState);
 	void SetSensitive(gboolean aSet);
@@ -65,6 +67,7 @@ class CagWidget: public CagBase, public MWidgetRes
 	GtkStateType State();
 	void SetWidgetObs(CagWidget* aObs);
 	void SetBorder(GtkBorder* aBorder);
+	void GetBorder(GtkBorder* aBorder);
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:

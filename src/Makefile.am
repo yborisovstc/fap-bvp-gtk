@@ -16,6 +16,8 @@ libfapbvpgtk_la_SOURCES = \
 		       capcterm.h \
 		       capcp.cpp \
 		       capcp.h \
+		       capstate.cpp \
+		       capstate.h \
 		       capcomp.cpp \
 		       capcomp.h \
 		       capsys.cpp \
@@ -36,6 +38,8 @@ libfapbvpgtk_la_SOURCES = \
 		       caglabel.h \
 		       cagbin.cpp \
 		       cagbin.h \
+		       cagtextview.cpp \
+		       cagtextview.h \
 		       cagbutton.cpp \
 		       cagbutton.h \
 		       cagwindow.cpp \

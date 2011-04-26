@@ -6,6 +6,7 @@
 #include "cagbutton.h"
 #include "capcp.h"
 #include "capcomp.h"
+#include "capstate.h"
 
 class CapSysHead: public CagLayout
 {
@@ -26,11 +27,9 @@ class CapSysHead: public CagLayout
 	CAE_Object::Ctrl& iSys;
 };
 
-class CapComp;
-class CapCp;
 class CapCterm;
 class MagSysObserver;
-class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes
+class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, public MCapStateObserver
 {
     public:
 	CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObserver);
@@ -48,6 +47,8 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState);
 	// From MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
+	// From MCapStateObserver
+	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
     private:
 	CapComp* Comp(CagWidget* aWidget);
 	// From MCapCpPairRes
@@ -65,6 +66,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes
     private:
 	CapSysHead* iHead; // Not owned
 	CAE_Object::Ctrl& iSys;
+	map<CAE_StateBase*, CapState*> iStates; 
 	map<CAE_Object*, CapComp*> iComps; // Components
 	map<CAE_ConnPointBase*, CapCp*> iOutputs;
 	map<CAE_ConnPointBase*, CapCp*> iInputs;

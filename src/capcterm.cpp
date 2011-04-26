@@ -71,7 +71,7 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft):
     CagLayout(aName), iCp(aCp), iLeft(aLeft), iInfo(NULL), iTermObs(NULL)
 {
     // Create controller
-    iContr = new CapDect("CtermCtrl." + iCp.Name());
+    iContr = new CapDect("CtermCtrl~" + iCp.Name());
     Add(iContr);
     iContr->SetObserver(this);
     iContr->SetLowerLim(1);
@@ -91,12 +91,12 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft):
     // Create pairs
     for (vector<CAE_ConnPointBase*>::const_iterator it = iCp.Conns().begin(); it != iCp.Conns().end(); it++) {
 	CAE_ConnPointBase* pair = *it;
-	CapCtermPair* pairw = new CapCtermPair("CtermPair." + string(pair->Man().InstName()) + "." + pair->Name(), *pair);
+	CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().InstName()) + "." + pair->Name(), *pair);
 	iPairs[pair] = pairw;
 	Add(pairw);
 	pairw->SetObs(this);
-	pairw->Show();
     }
+    OnDetLevelChanged(iContr->Level());
 }
 
 CapCterm::~CapCterm()
@@ -112,6 +112,17 @@ void* CapCterm::DoGetObj(const char *aName)
     else return CagLayout::DoGetObj(aName);
 }
 
+void CapCterm::SetItemHeightHint(int aHeight)
+{
+    GtkRequisition req; iInfo->SizeRequest(&req);
+    iInfo->SetSizeRequest(req.width, aHeight);
+    for (map<CAE_ConnPointBase*, CapCtermPair*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+	CapCtermPair* pairw = it->second;
+	GtkRequisition req; pairw->SizeRequest(&req);
+	pairw->SetSizeRequest(req.width, aHeight);
+    }
+}
+
 int CapCterm::GetTermConnY() const
 {
     GtkRequisition ctrl_req; iContr->SizeRequest(&ctrl_req);
@@ -120,6 +131,8 @@ int CapCterm::GetTermConnY() const
 
 void CapCterm::OnExpose(GdkEventExpose* aEvent)
 {
+    GtkAllocation alc; Allocation(&alc);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
 }
 
 TBool CapCterm::OnButtonPress(GdkEventButton* aEvent)
@@ -134,14 +147,16 @@ void CapCterm::OnSizeAllocate(GtkAllocation* aAllc)
 {
     // Allocate size for controller
     GtkRequisition ctrl_req; iContr->SizeRequest(&ctrl_req);
-    GtkAllocation ctrl_all = (GtkAllocation) { iLeft ? aAllc->width - ctrl_req.width : 0, 0, ctrl_req.width, ctrl_req.height};
+    GtkAllocation ctrl_all = (GtkAllocation) { iLeft ? aAllc->width - ctrl_req.width - KViewBtnBoxInnerBoard: KViewBtnBoxInnerBoard, 
+	KViewBtnBoxInnerBoard, ctrl_req.width, ctrl_req.height};
     iContr->SizeAllocate(&ctrl_all);
     // Allocate size for info
     GtkRequisition info_req; iInfo->SizeRequest(&info_req);
-    GtkAllocation info_alc = { iLeft ? 0 : ctrl_all.width + KViewConnGapWidth, 0, info_req.width, info_req.height};
+    GtkAllocation info_alc = { iLeft ? KViewBtnBoxInnerBoard : ctrl_all.width + KViewConnGapWidth, KViewBtnBoxInnerBoard, 
+	info_req.width, info_req.height};
     iInfo->SizeAllocate(&info_alc);
     // Allocate size for pairs
-    int pairb_x = iLeft ? 0 : info_alc.x; 
+    int pairb_x = iLeft ? KViewBtnBoxInnerBoard : info_alc.x; 
     int pairb_y = info_alc.y + info_alc.height + KViewConnGapHeight; 
     for (map<CAE_ConnPointBase*, CapCtermPair*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 	CapCtermPair* pairw = it->second;
@@ -176,7 +191,8 @@ void CapCterm::OnSizeRequest(GtkRequisition* aReq)
 	}
     }
     int pw = (iContr->Level() <= 1) ? info_req.width : max(info_req.width, pair_w);
-    *aReq = (GtkRequisition) {ctrl_req.width + KViewConnGapWidth + pw, max(ctrl_req.height, info_req.height + pair_h)};
+    *aReq = (GtkRequisition) 
+    {ctrl_req.width + KViewConnGapWidth + pw + KViewBtnBoxInnerBoard*2, max(ctrl_req.height, info_req.height + pair_h) + KViewBtnBoxInnerBoard*2};
 }
 
 void CapCterm::OnMotion(GdkEventMotion *aEvent)
@@ -197,6 +213,15 @@ void CapCterm::OnStateChanged(GtkStateType state)
 
 void CapCterm::OnDetLevelChanged(int aLevel)
 {
+    for (map<CAE_ConnPointBase*, CapCtermPair*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+	CapCtermPair* pairw = it->second;
+	if (iContr->Level() <= 1) {
+	    pairw->Hide();
+	}
+	else {
+	    pairw->Show();
+	}
+    }
 }
 
 void CapCterm::OnToggled(CagToggleButton* aBtn)

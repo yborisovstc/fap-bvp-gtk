@@ -83,6 +83,11 @@ TBool CagWidget::IsVisible()
     return  gtk_widget_get_visible(iWidget);
 }
 
+void CagWidget::SetVisible(TBool aVisible)
+{
+    gtk_widget_set_visible(iWidget, aVisible);
+}
+
 void CagWidget::SetSensitive(gboolean aSet)
 {
     gtk_widget_set_sensitive(iWidget, aSet);
@@ -101,6 +106,11 @@ void CagWidget::SizeAllocate(GtkAllocation* aAlloc)
 void CagWidget::SizeRequest(GtkRequisition* aReq)
 {
     gtk_widget_size_request(iWidget, aReq);
+}
+
+void CagWidget::SetSizeRequest(gint aWidth, gint aHeight)
+{
+    gtk_widget_set_size_request(iWidget, aWidth, aHeight);
 }
 
 void CagWidget::Allocation(GtkAllocation *aAlloc) const
@@ -130,6 +140,14 @@ GtkStyle* CagWidget::Style()
 
 void CagWidget::SetBorder(GtkBorder* aBorder)
 {
+}
+
+void CagWidget::GetBorder(GtkBorder* aBorder)
+{
+    GValue prop = {0};
+    g_value_init(&prop, GTK_TYPE_BORDER);
+    gtk_widget_style_get_property(iWidget, "draw-border", &prop);
+    gtk_widget_style_get(iWidget, "draw-border", aBorder, NULL);
 }
 
 GdkGC* CagWidget::Gc(TGcType aType)

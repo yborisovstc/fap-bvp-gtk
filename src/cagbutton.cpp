@@ -32,6 +32,7 @@ void CagButton::SetObs(CagWidget* aObs)
 
 void handle_clicked_event(GtkButton *button, gpointer user_data)
 {
+
     CagWidget* hler = (CagWidget*) user_data;
     MCagButtonObs* obs = hler->GetObj(obs);
     _FAP_ASSERT(obs != NULL);
@@ -70,12 +71,32 @@ void CagToggleButton::SetObs(CagWidget* aObs)
     g_signal_connect(G_OBJECT(iWidget), "toggled", G_CALLBACK(handle_toggled_event), aObs);
 }
 
-void CagToggleButton::handle_toggled_event(GtkToggleButton *togglebutton, gpointer user_data)
+void CagToggleButton::handle_toggled_event(GtkToggleButton *button, gpointer user_data)
 {
+    /* Debug
+    GtkWidget* child = gtk_bin_get_child(GTK_BIN(button));
+    GType type = G_OBJECT_TYPE(child);
+    const gchar* name = G_OBJECT_TYPE_NAME(child);
+    GtkLabel* lbl = GTK_LABEL(child);
+    guint bw = gtk_container_get_border_width(GTK_CONTAINER(button));
+    GtkBorder* ibrd;
+    gtk_widget_style_get(GTK_WIDGET(button), "default_outside_border", &ibrd, NULL);
+    GdkColor* clr;
+    gtk_widget_style_get(GTK_WIDGET(button), "cursor_color", &clr, NULL);
+    gboolean dipf;
+    gtk_widget_style_get(GTK_WIDGET(button), "displace_focus", &dipf, NULL);
+    PangoLayout* lout = gtk_label_get_layout(lbl);
+    int baseline = pango_layout_get_baseline(lout);
+    int sp = pango_layout_get_spacing(lout);
+    pango_layout_set_indent(lout, 20);
+    gtk_container_set_border_width(GTK_CONTAINER(button), bw);
+*/
+
+
     CagWidget* hler = (CagWidget*) user_data;
     MCagToggleButtonObs* obs = hler->GetObj(obs);
     _FAP_ASSERT(obs != NULL);
-    CagWidget* wid = hler->GetWidget(GTK_WIDGET(togglebutton));
+    CagWidget* wid = hler->GetWidget(GTK_WIDGET(button));
     _FAP_ASSERT(wid != NULL);
     CagToggleButton* btn = wid->GetObj(btn);
     _FAP_ASSERT(btn != NULL);

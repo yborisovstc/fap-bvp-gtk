@@ -2,6 +2,7 @@
 #include "capsys.h"
 #include "cagproxy.h"
 #include "capcomp.h"
+#include "capstate.h"
 #include "capcp.h"
 #include "capcommon.h"
 #include "capcterm.h"
@@ -79,11 +80,22 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObs
     iHead = new CapSysHead("Title", iSys);
     Add(iHead);
     iHead->Show();
+    // Add states
+    for (vector<CAE_EBase*>::iterator it = iSys.CompReg().begin(); it != iSys.CompReg().end(); it++) {
+	CAE_StateBase* state = (*it)->GetFbObj(state);
+	if (state != NULL) {
+	    CapState* stw = new CapState("State~" + string(state->InstName()), *state);
+	    Add(stw);
+	    iStates[state] = stw;
+	    stw->SetObs(this);
+	    stw->Show();
+	}
+    }
     // Add components
     for (vector<CAE_EBase*>::iterator it = iSys.CompReg().begin(); it != iSys.CompReg().end(); it++) {
 	CAE_Object* obj = (*it)->GetFbObj(obj);
 	if (obj != NULL) {
-	    CapComp* comp = new CapComp("comp." + string(obj->InstName()), *obj);
+	    CapComp* comp = new CapComp("Comp~" + string(obj->InstName()), *obj);
 	    Add(comp);
 	    iComps[obj] = comp;
 	    comp->SetObs(this);
@@ -93,7 +105,7 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObs
     // Add inputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iSys.Object().Inputs().begin(); it != iSys.Object().Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Inp." + cp->Name(), *cp, ETrue);
+	CapCp* cpw = new CapCp("Inp~" + cp->Name(), *cp, ETrue);
 	Add(cpw);
 	iInputs[cp] = cpw;
 	cpw->Show();
@@ -101,7 +113,7 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObs
     // Add outputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iSys.Object().Outputs().begin(); it != iSys.Object().Outputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Outp." + cp->Name(), *cp, EFalse);
+	CapCp* cpw = new CapCp("Outp~" + cp->Name(), *cp, EFalse);
 	Add(cpw);
 	iOutputs[cp] = cpw;
 	cpw->Show();
@@ -134,11 +146,13 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
     iHead->SizeAllocate(&head_alc);
     // Allocate inputs
     int inpb_x = aAllc->width - iInpReq.width, inpb_y = head_req.height + KViewCompGapHight;
+    int inp_w = 0, inp_h = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end(); it++) {
 	CapCp* cpw = it->second;
 	GtkRequisition req; cpw->SizeRequest(&req);
 	GtkAllocation allc = {inpb_x, inpb_y, req.width, req.height};
 	cpw->SizeAllocate(&allc);
+	inp_w = max(inp_w, req.width);
 	inpb_y += req.height + KViewConnGapHeight;
     }
     // Allocate outputs
@@ -152,8 +166,19 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 	outp_w = max(outp_w, req.width);
 	outpb_y += req.height + KViewConnGapHeight;
     }
+    // Allocate states
+    int statb_x = (outp_w + aAllc->width - inp_w)/2, statb_y = head_req.height + KViewCompGapHight;
+    for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
+	CAE_StateBase* state = it->first;
+	CapState* stw = it->second;
+	GtkRequisition req; stw->SizeRequest(&req);
+	int body_center_x = stw->GetBodyCenterX();
+	GtkAllocation allc = {statb_x - body_center_x, statb_y, req.width, req.height};
+	stw->SizeAllocate(&allc);
+	statb_y += req.height + KViewCompGapHight;
+    }
     // Allocate components
-    int compb_x = (outp_w + KViewConnGapHeight + aAllc->width)/2, compb_y = head_req.height + KViewCompGapHight;
+    int compb_x = (outp_w + aAllc->width - inp_w)/2, compb_y = statb_y;
     for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
 	CAE_Object* obj = it->first;
 	CapComp* comp = it->second;
@@ -168,6 +193,14 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 {
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    // Calculate size of states
+    int stat_w = 0, stat_h = 0;
+    for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
+	CapState* state = it->second;
+	GtkRequisition req; state->SizeRequest(&req);
+	stat_w = max(stat_w, req.width);
+	stat_h += req.height + KViewCompGapHight;
+    }
     // Calculate size of comps
     int comp_w = 0, comp_h = 0;
     for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
@@ -194,8 +227,8 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 	outp_h += req.height + KViewConnGapHeight;
     }
 
-    aRequisition->width = outp_w + KViewExtAreaWidth*2 + comp_w + inp_w; 
-    aRequisition->height = head_req.height + max(max(outp_h, comp_h), inp_h);
+    aRequisition->width = outp_w + KViewExtCompGapWidth*2 + max(stat_w, comp_w) + inp_w; 
+    aRequisition->height = head_req.height + max(max(outp_h, comp_h + stat_h), inp_h);
 }
 
 void CapSys::OnMotion(GdkEventMotion *aEvent)
@@ -264,5 +297,9 @@ CapCtermPair* CapSys::GetCpPair(CapCtermPair* aPair)
 	res = it->second->GetCpPair(aPair);
     }
     return res;
+}
+
+void CapSys::OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair)
+{
 }
 

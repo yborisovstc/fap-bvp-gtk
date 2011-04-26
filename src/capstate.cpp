@@ -1,78 +1,96 @@
-#include "capcomp.h"
+#include "capstate.h"
 #include "capcommon.h"
-#include "capcomphead.h"
+#include "caglabel.h"
+#include "cagtextview.h"
+
+CapStateHead::CapStateHead(const string& aName, CAE_StateBase& aState): CagLayout(aName), iState(aState)
+{
+    // Create Name
+    iName = new CagLabel("Name");
+    iName->SetText(iState.InstName());
+    Add(iName);
+    iName->Show();
+}
+
+void CapStateHead::OnExpose(GdkEventExpose* aEvent)
+{
+    GtkAllocation alc; Allocation(&alc);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
+}
+
+void CapStateHead::OnSizeAllocate(GtkAllocation* aAllocation)
+{
+}
+
+void CapStateHead::OnSizeRequest(GtkRequisition* aReq)
+{
+    // Name
+    GtkRequisition name_req; iName->SizeRequest(&name_req);
+    *aReq = name_req;
+}
 
 
-CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iComp(aComp), iObs(NULL)
+
+
+
+CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName), iState(aState), iObs(NULL)
 {
     // Add header
-    iHead = new CapCompHead("Title", iComp);
+    iHead = new CapStateHead("Title", iState);
     Add(iHead);
     iHead->Show();
     // Add Inputs
-    for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Inputs().begin(); it != iComp.Inputs().end(); it++) {
+    for (map<string, CAE_ConnPointBase*>::const_iterator it = iState.Inputs().begin(); it != iState.Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Inp." + cp->Name(), *cp, EFalse, ETrue);
+	CapCp* cpw = new CapCp(cp->Name(), *cp, EFalse, ETrue);
 	Add(cpw);
 	cpw->SetObs(this);
 	iInps[cp] = cpw;
 	cpw->Show();
     }
-    // Add outputs
-    for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Outputs().begin(); it != iComp.Outputs().end(); it++) {
-	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Outp." + cp->Name(), *cp, ETrue, ETrue);
-	Add(cpw);
-	cpw->SetObs(this);
-	iOutps[cp] = cpw;
-	cpw->Show();
-    }
+    // Add output
+    CAE_ConnPointBase* cp = iState.Output();
+    CapCp* cpw = new CapCp(cp->Name(), *cp, ETrue, ETrue, ETrue);
+    Add(cpw);
+    cpw->SetObs(this);
+    iOutps[cp] = cpw;
+    cpw->Show();
+    // Add trans
+    iTrans = new CagTextView("Trans");
+    GtkTextBuffer* buf = gtk_text_buffer_new(NULL);
+    gtk_text_buffer_set_text(buf, iState.GetTrans().iETrans.c_str(), iState.GetTrans().iETrans.size());
+    iTrans->SetBuffer(buf);
+    iTrans->SetEditable(EFalse);
+    Add(iTrans);
+    iTrans->Show();
 }
 
-CapComp::~CapComp()
+CapState::~CapState()
 {
 }
 
-void CapComp::SetObs(MCapCompObserver* aObs)
+void CapState::SetObs(MCapStateObserver* aObs)
 {
     _FAP_ASSERT(iObs == NULL);
     iObs = aObs;
 }
 
-int CapComp::GetInpTermY(CAE_ConnPointBase* aCp)
-{
-    _FAP_ASSERT(iInps.count(aCp) > 0);
-    GtkAllocation alc; iInps[aCp]->Allocation(&alc);
-    return alc.y + alc.height/2;
-}
-
-int CapComp::GetOutpTermY(CAE_ConnPointBase* aCp)
-{
-    _FAP_ASSERT(iOutps.count(aCp) > 0);
-    GtkAllocation alc; iOutps[aCp]->Allocation(&alc);
-    return alc.y + alc.height/2;
-}
-
-int CapComp::GetBodyCenterX() const
+int CapState::GetBodyCenterX() const
 {
     return iBodyAlc.x + iBodyAlc.width/2;
 }
 
-void CapComp::OnExpose(GdkEventExpose* aEvent)
+void CapState::OnExpose(GdkEventExpose* aEvent)
 {
+    // Draw body rect
     GtkAllocation alc; Allocation(&alc);
     gdk_draw_rectangle(BinWnd(), Gc(), FALSE, iBodyAlc.x, iBodyAlc.y, iBodyAlc.width - 1, iBodyAlc.height - 1);
+    // Draw trans rect
+    GtkAllocation tran_alc; iTrans->Allocation(&tran_alc);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, tran_alc.x -1 , tran_alc.y -1 , tran_alc.width + 1, tran_alc.height + 1);
 }
 
-TBool CapComp::OnButtonPress(GdkEventButton* aEvent)
-{
-}
-
-TBool CapComp::OnButtonRelease(GdkEventButton* aEvent)
-{
-}
-
-void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
+void CapState::OnSizeAllocate(GtkAllocation* aAllc)
 {
      // Calculate inputs lables width
     TInt inp_w = 0;
@@ -92,13 +110,21 @@ void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
 	if (outp_req.width == outp_maxw)
 	    outp_maxw_l = cpw->GetLabelWidth();
     }
+
+    GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
+
     // Calculate allocation of comp body
-    iBodyAlc = (GtkAllocation) {outp_maxw - outp_maxw_l, 0, KViewCompInpOutpGapWidth + inp_w + outp_w, aAllc->height};
+    iBodyAlc = (GtkAllocation) {outp_maxw - outp_maxw_l, 0, tran_req.width + KViewCompInpOutpGapWidth + inp_w + outp_w, aAllc->height};
 
     // Allocate header
-    GtkRequisition head_req; iHead->SizeRequest(&head_req);
     GtkAllocation head_alc = {iBodyAlc.x, iBodyAlc.y, iBodyAlc.width, head_req.height};
     iHead->SizeAllocate(&head_alc);
+
+    // Allocate trans
+    GtkAllocation tran_alc = 
+	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, head_alc.y + head_alc.height + KViewCompCpGapHeight, tran_req.width, tran_req.height};
+    iTrans->SizeAllocate(&tran_alc);
 
     // Allocate inputs size 
     TInt inpb_x = aAllc->width - inp_w, inpb_y = head_alc.height + KViewCompCpGapHeight;
@@ -122,9 +148,12 @@ void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
     }
 }
 
-void CapComp::OnSizeRequest(GtkRequisition* aRequisition)
+void CapState::OnSizeRequest(GtkRequisition* aRequisition)
 {
+    // Calculate header size
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    // Calculate trans size
+    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
     // Calculate inputs size
     TInt inp_w = 0, inp_h = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
@@ -142,42 +171,11 @@ void CapComp::OnSizeRequest(GtkRequisition* aRequisition)
 	outp_h += outp_req.height + KViewCompCpGapHeight;
     }
 
-    aRequisition->width = max(head_req.width, inp_w + outp_w + KViewCompInpOutpGapWidth); 
-    aRequisition->height = head_req.height + max(inp_h, outp_h) + KViewCompCpGapHeight;
+    aRequisition->width = max(head_req.width, tran_req.width + KViewStateTransBorder*2 + inp_w + outp_w + KViewCompInpOutpGapWidth); 
+    aRequisition->height = head_req.height + max(max(inp_h, outp_h), tran_req.height) + KViewCompCpGapHeight;
 }
 
-void CapComp::OnMotion(GdkEventMotion *aEvent)
-{
-}
-
-void CapComp::OnEnter(GdkEventCrossing *aEvent)
-{
-}
-
-void CapComp::OnLeave(GdkEventCrossing *aEvent)
-{
-}
-
-void CapComp::OnStateChanged(GtkStateType state)
-{
-}
-
-void CapComp::OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState)
-{
-    if (aChild == iHead) {
-	iParent->OnChildStateChanged(aChild, aPrevState);
-    }
-}
-
-void CapComp::OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair)
-{
-    if (iObs != NULL) {
-	iObs->OnCompCpPairToggled(this, aPair);
-    }
-
-}
-
-CapCtermPair* CapComp::GetCpPair(CapCtermPair* aPair)
+CapCtermPair* CapState::GetCpPair(CapCtermPair* aPair)
 {
     CapCtermPair* res = NULL;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end() && res == NULL; it++) {
@@ -188,4 +186,13 @@ CapCtermPair* CapComp::GetCpPair(CapCtermPair* aPair)
     }
     return res;
 }
+
+void CapState::OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair)
+{
+    if (iObs != NULL) {
+	iObs->OnStateCpPairToggled(this, aPair);
+    }
+
+}
+
 
