@@ -17,12 +17,13 @@ CagContainer::~CagContainer()
 {
 }
 
-void CagContainer::Add(CagWidget* aChild)
+void CagContainer::Add(CagWidget* aChild, TBool aAddToGtkCont)
 {
     _FAP_ASSERT(iChilds.count(aChild->Name()) == 0);
     iChilds[aChild->Name()] = aChild;
     iChildsWd[aChild->iWidget] = aChild;
-    gtk_container_add(GTK_CONTAINER(iWidget), aChild->iWidget);
+    if (aAddToGtkCont)
+	gtk_container_add(GTK_CONTAINER(iWidget), aChild->iWidget);
     aChild->SetParent(this);
 }
 
@@ -49,10 +50,14 @@ CagWidget* CagContainer::GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester)
 		res = it->second->GetWidget(aGtkWidget, this);
 	    }
 	}
-	if (res == NULL && iParent != NULL) {
+	if (res == NULL && iParent != NULL && iParent != aRequester) {
 	    res = iParent->GetWidget(aGtkWidget, this);	
 	}
     }
     return res;
 }
 
+void CagContainer::SetBorderWidth(int aWidth)
+{
+    gtk_container_set_border_width(GTK_CONTAINER(iWidget), aWidth);
+}

@@ -47,6 +47,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState);
 	// From MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
+	virtual void OnCompNameClicked(CapComp* aComp);
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
     private:

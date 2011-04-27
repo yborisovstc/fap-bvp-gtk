@@ -10,8 +10,9 @@ class CagContainer: public CagWidget
 	CagContainer(const string& aName);
 	CagContainer(GType aType, const string& aName);
 	virtual ~CagContainer();
-	void Add(CagWidget* aChild);
+	void Add(CagWidget* aChild, TBool aAddToGtkCont = ETrue);
 	void Remove(CagWidget* aChild);
+	void SetBorderWidth(int aWidth);
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:

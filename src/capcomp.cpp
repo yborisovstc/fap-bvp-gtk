@@ -1,14 +1,63 @@
 #include "capcomp.h"
 #include "capcommon.h"
-#include "capcomphead.h"
+
+CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName), iComp(aComp), iObs(NULL)
+{
+    SetBorderWidth(1);
+    // Create Name
+    iName = new CagELabel("Name");
+    iName->SetText(iComp.InstName());
+    iName->SetWidgetObs(this);
+    iName->Show();
+    PackStart(iName, false, false, 2);
+    // Create Parent
+    iParent = new CagLabel("Parent");
+    iParent->SetText(string(" <") + string((iComp.TypeName() == NULL) ? "no parent": iComp.TypeName()) + string(">"));
+    iParent->Show();
+    PackStart(iParent, false, false, 2);
+}
+
+void CapCompHead::SetObserver(MCompHeadObserver* aObs)
+{
+    _FAP_ASSERT(iObs == NULL);
+    iObs = aObs;
+}
+
+void CapCompHead::OnExpose(GdkEventExpose* aEvent)
+{
+    GtkAllocation alc; Allocation(&alc);
+//    gdk_draw_rectangle(GdkWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
+}
+
+TBool CapCompHead::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent)
+{
+    if (iObs != NULL) {
+	iObs->OnCompNameClicked();
+    }
+}
+
+void* CapCompHead::DoGetObj(const char *aName)
+{
+    if (strcmp(aName, MWidgetObs::Type()) == 0)
+	return (MWidgetObs*) this;
+    else if (strcmp(aName, Type()) == 0) 
+	return this;
+    else return CagHBox::DoGetObj(aName);
+}
 
 
 CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iComp(aComp), iObs(NULL)
 {
     // Add header
     iHead = new CapCompHead("Title", iComp);
+    iHead->SetObserver(this);
     Add(iHead);
     iHead->Show();
+    // Debug
+    GdkEventMask em;
+    g_object_get(iHead->iWidget, "events", &em, NULL);
+    gboolean hw = gtk_widget_get_has_window(iHead->iWidget);
+
     // Add Inputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Inputs().begin(); it != iComp.Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
@@ -61,7 +110,11 @@ int CapComp::GetBodyCenterX() const
 void CapComp::OnExpose(GdkEventExpose* aEvent)
 {
     GtkAllocation alc; Allocation(&alc);
+    // Border
     gdk_draw_rectangle(BinWnd(), Gc(), FALSE, iBodyAlc.x, iBodyAlc.y, iBodyAlc.width - 1, iBodyAlc.height - 1);
+    // Head separator
+    GtkAllocation head_alc; iHead->Allocation(&head_alc);
+    gdk_draw_line(BinWnd(), Gc(), iBodyAlc.x, head_alc.height, iBodyAlc.x + iBodyAlc.width - 1, head_alc.height);
 }
 
 TBool CapComp::OnButtonPress(GdkEventButton* aEvent)
@@ -189,3 +242,9 @@ CapCtermPair* CapComp::GetCpPair(CapCtermPair* aPair)
     return res;
 }
 
+void CapComp::OnCompNameClicked()
+{
+    if (iObs != NULL) {
+	iObs->OnCompNameClicked(this);
+    }
+}

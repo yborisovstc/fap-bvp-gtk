@@ -13,4 +13,10 @@ class CagBin: public CagContainer
 	CagBin(GtkWidget* aWidget, const string& aName, TBool aOwned = ETrue);
 };
 
+class CagEventBox: public CagBin 
+{
+    public:
+	CagEventBox(const string& aName);
+};
+
 #endif 

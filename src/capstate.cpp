@@ -10,6 +10,12 @@ CapStateHead::CapStateHead(const string& aName, CAE_StateBase& aState): CagLayou
     iName->SetText(iState.InstName());
     Add(iName);
     iName->Show();
+
+    // Create Type
+    iType = new CagLabel("Type");
+    iType->SetText(string(" :: ") + iState.TypeName());
+    Add(iType);
+    iType->Show();
 }
 
 void CapStateHead::OnExpose(GdkEventExpose* aEvent)
@@ -18,15 +24,25 @@ void CapStateHead::OnExpose(GdkEventExpose* aEvent)
     gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
 }
 
-void CapStateHead::OnSizeAllocate(GtkAllocation* aAllocation)
+void CapStateHead::OnSizeAllocate(GtkAllocation* aAlc)
 {
+    // Name
+    GtkRequisition name_req; iName->SizeRequest(&name_req);
+    GtkAllocation name_alc = (GtkAllocation) {0, 0, name_req.width, name_req.height};
+    iName->SizeAllocate(&name_alc);
+    // Type
+    GtkRequisition type_req; iType->SizeRequest(&type_req);
+    GtkAllocation type_alc = (GtkAllocation) {name_alc.x + name_alc.width, 0, type_req.width, type_req.height};
+    iType->SizeAllocate(&type_alc);
 }
 
 void CapStateHead::OnSizeRequest(GtkRequisition* aReq)
 {
     // Name
     GtkRequisition name_req; iName->SizeRequest(&name_req);
-    *aReq = name_req;
+    // Type
+    GtkRequisition type_req; iType->SizeRequest(&type_req);
+    *aReq = (GtkRequisition) { name_req.width + type_req.width, max(name_req.height, type_req.height)};
 }
 
 

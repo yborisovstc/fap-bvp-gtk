@@ -2,7 +2,7 @@
 #include <map>
 
 CagWidget::CagWidget(GType aType, const string& aName): 
-    iName(aName), iWidget(gtk_widget_new(aType, NULL)), iParent(NULL)
+    iName(aName), iWidget(gtk_widget_new(aType, NULL)), iParent(NULL), iOwned(ETrue)
 {
     if (iOwned)
 	Construct();

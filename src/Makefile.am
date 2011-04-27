@@ -6,8 +6,8 @@ lib_LTLIBRARIES = libfapbvpgtk.la
 
 libfapbvpgtk_la_SOURCES = \
 		       capcommon.h \
-		       capcomphead.cpp \
-		       capcomphead.h \
+		       capopwnd.cpp \
+		       capopwnd.h \
 		       capdect.cpp \
 		       capdect.h \
 		       capbutton.cpp \
@@ -30,6 +30,8 @@ libfapbvpgtk_la_SOURCES = \
 		       widgets.h \
 		       cagcontainer.cpp \
 		       cagcontainer.h \
+		       cagbox.cpp \
+		       cagbox.h \
 		       caglayout.cpp \
 		       caglayout.h \
 		       cagmisc.cpp \
@@ -42,6 +44,10 @@ libfapbvpgtk_la_SOURCES = \
 		       cagtextview.h \
 		       cagbutton.cpp \
 		       cagbutton.h \
+		       cagmenu.cpp \
+		       cagmenu.h \
+		       cagtoolbar.cpp \
+		       cagtoolbar.h \
 		       cagwindow.cpp \
 		       cagwindow.h 
 

@@ -14,7 +14,7 @@ class MagSysObserver
 };
 
 class CapSys;
-class CagWindow;
+class CapOpWnd;
 class CagProxy: public MAE_Opv, public MagSysObserver
 {
     public:
@@ -28,7 +28,7 @@ class CagProxy: public MAE_Opv, public MagSysObserver
 	virtual void OnHeadSelected();
     private:
 	CAE_Object::Ctrl* iSys;
-	CagWindow* iWindow;
+	CapOpWnd* iWindow;
 	CapSys* iSysWidget;
 };
 

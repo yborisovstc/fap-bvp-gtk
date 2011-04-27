@@ -290,6 +290,13 @@ void CapSys::OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair)
     }
 }
 
+void CapSys::OnCompNameClicked(CapComp* aComp)
+{
+    if (iObserver != NULL) {
+	iObserver->OnCompSelected(&(aComp->iComp));
+    }
+}
+
 CapCtermPair* CapSys::GetCpPair(CapCtermPair* aPair)
 {
     CapCtermPair* res = NULL;

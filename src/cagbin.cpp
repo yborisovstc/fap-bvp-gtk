@@ -16,3 +16,8 @@ CagBin::CagBin(GtkWidget* aWidget, const string& aName, TBool aOwned): CagContai
 CagBin::~CagBin()
 {
 }
+
+
+CagEventBox::CagEventBox(const string& aName): CagBin(GTK_TYPE_EVENT_BOX, aName)
+{
+}

@@ -1,12 +1,13 @@
 #include "cagproxy.h"
 #include "cagwindow.h"
 #include "capsys.h"
+#include "capopwnd.h"
 
 
 
 CagProxy::CagProxy(GtkWidget* aWnd): iSysWidget(NULL)
 {
-    iWindow = new CagWindow(aWnd, EFalse);
+    iWindow = new CapOpWnd(aWnd, EFalse);
     // Load resource file
     gtk_rc_parse("cag_proxy.rc");
 }
@@ -25,7 +26,8 @@ void CagProxy::SetObj(CAE_Object::Ctrl* aObj)
     iSys = aObj;
     _FAP_ASSERT(iSysWidget == NULL);
     iSysWidget = new CapSys("System", *iSys, this);
-    iWindow->Add(iSysWidget);
+//    iWindow->Add(iSysWidget);
+    iWindow->AddView(iSysWidget);
     iSysWidget->Show();
 }
 

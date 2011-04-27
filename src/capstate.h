@@ -17,6 +17,7 @@ class CapStateHead: public CagLayout
     private:
 	CAE_StateBase& iState;
 	CagLabel* iName;
+	CagLabel* iType;
 };
 
 class CapState; 
