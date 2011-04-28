@@ -42,3 +42,21 @@ void CagToolButton::SetStockId(const string& aStockId)
 }
 
 
+void CagToolButton::SetObserver(CagWidget* aObs)
+{
+    MagToolButtonObserver* obs = aObs->GetObj(obs);
+    _FAP_ASSERT(obs != NULL);
+    g_signal_connect(G_OBJECT(iWidget), "clicked", G_CALLBACK (handle_button_clicked), aObs);
+}
+
+void CagToolButton::handle_button_clicked(GtkToolButton *toolbutton, gpointer user_data)
+{
+    CagWidget* hler = (CagWidget*) user_data;
+    MagToolButtonObserver* obs = hler->GetObj(obs);
+    _FAP_ASSERT(obs != NULL);
+    CagWidget* wid = hler->GetWidget(GTK_WIDGET(toolbutton));
+    _FAP_ASSERT(wid != NULL);
+    CagToolButton* btn = wid->GetObj(btn);
+    return obs->OnClicked(btn);
+}
+

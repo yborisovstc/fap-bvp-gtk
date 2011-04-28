@@ -5,9 +5,10 @@
 
 
 
-CagProxy::CagProxy(GtkWidget* aWnd): iSysWidget(NULL)
+CagProxy::CagProxy(GtkWidget* aWnd): iSys(NULL), iRoot(NULL)
 {
     iWindow = new CapOpWnd(aWnd, EFalse);
+    iWindow->SetObserver(this);
     // Load resource file
     gtk_rc_parse("cag_proxy.rc");
 }
@@ -21,47 +22,39 @@ void CagProxy::Destroy()
     delete this;
 }
 
+void CagProxy::SetRoot(CAE_Object::Ctrl* aObj)
+{
+    _FAP_ASSERT(iRoot == NULL);
+    iRoot = aObj;
+}
+
 void CagProxy::SetObj(CAE_Object::Ctrl* aObj)
 {
+    _FAP_ASSERT(iSys == NULL);
     iSys = aObj;
-    _FAP_ASSERT(iSysWidget == NULL);
-    iSysWidget = new CapSys("System", *iSys, this);
-//    iWindow->Add(iSysWidget);
-    iWindow->AddView(iSysWidget);
-    iSysWidget->Show();
+    iWindow->SetSys(iSys);
 }
 
-void CagProxy::OnCompSelected(CAE_Object* aComp)
+void CagProxy::UnsetObj(CAE_Object::Ctrl* aObj)
+{
+    _FAP_ASSERT(iSys == aObj);
+    iWindow->UnsetSys(iSys);
+    iSys = NULL;
+}
+
+void CagProxy::OnTurnToComp(CAE_Object* aComp)
 {
     // Move cursor to component
-    iWindow->Remove(iSysWidget);
-    delete iSysWidget;
-    iSysWidget = NULL;
-    iSys->Object().MoveBaseViewProxy(this, aComp);
+    iSys->Object().RemoveBaseViewProxy(this);
+    aComp->SetBaseViewProxy(this);
 }
 
-void CagProxy::OnHeadSelected()
-{
-    // Move cursor to upper level
-    iWindow->Remove(iSysWidget);
-    delete iSysWidget;
-    iSysWidget = NULL;
-    iSys->Object().MoveBaseViewProxyToMan(this);
-}
-
-
-
-
-
-CagProvider::CagProvider(GtkWidget* aWnd): iWnd(aWnd)
+void CagProxy::OnTurnToSyst(const string& aName)
 {
 }
 
-CagProvider::~CagProvider()
+
+void CagProxy::OnCmd(TCmd aCmd)
 {
 }
 
-MAE_Opv* CagProvider::CreateViewProxy()
-{
-    return new CagProxy(iWnd);
-}

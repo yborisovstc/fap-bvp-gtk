@@ -12,6 +12,7 @@ class MCompHeadObserver
     public:
 	static inline const char* Type() { return "MCompHeadObserver";} ; 
 	virtual void OnCompNameClicked() = 0;
+	virtual void OnCompParentClicked() = 0;
 };
 
 
@@ -31,7 +32,7 @@ class CapCompHead: public CagHBox, public MWidgetObs
     private:
 	CAE_Object& iComp;
 	CagELabel* iName;
-	CagLabel* iParent;
+	CagELabel* iParent;
 	MCompHeadObserver* iObs;
 };
 
@@ -43,6 +44,7 @@ class MCapCompObserver
 	static inline const char* Type() { return "CapCompObserever";} ; 
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair) = 0;
 	virtual void OnCompNameClicked(CapComp* aComp) = 0;
+	virtual void OnCompParentClicked(CapComp* aComp) = 0;
 };
 
 
@@ -64,6 +66,7 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
 	// From MCompHeadObserver
 	virtual void OnCompNameClicked();
+	virtual void OnCompParentClicked();
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);

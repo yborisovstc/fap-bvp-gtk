@@ -20,6 +20,14 @@ class CagToolItem: public CagBin
 	CagToolItem(GType aType, const string& aName);
 };
 
+class CagToolButton;
+class MagToolButtonObserver
+{
+    public:
+	static inline const char* Type() { return "MagToolButtonObserver";} ; 
+	virtual void OnClicked(CagToolButton* aBtn) = 0;
+};
+
 
 class CagToolButton: public CagToolItem
 {
@@ -27,8 +35,11 @@ class CagToolButton: public CagToolItem
 	CagToolButton(const string& aName);
 	CagToolButton(const string& aName, const string& aStockId);
 	void SetStockId(const string& aStockId);
+	void SetObserver(CagWidget* aObs);
     protected:
 	CagToolButton(GType aType, const string& aName);
+    private:
+	static void handle_button_clicked(GtkToolButton *toolbutton, gpointer user_data);
 };
 
 

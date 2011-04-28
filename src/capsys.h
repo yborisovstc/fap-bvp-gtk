@@ -27,12 +27,19 @@ class CapSysHead: public CagLayout
 	CAE_Object::Ctrl& iSys;
 };
 
+class MCapSysObserver
+{
+    public:
+	virtual void OnCompSelected(CAE_Object* aComp) = 0;
+	virtual void OnSystSelected(const string& aName) = 0;
+};
+
 class CapCterm;
 class MagSysObserver;
 class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, public MCapStateObserver
 {
     public:
-	CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObserver);
+	CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver);
 	virtual ~CapSys();
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
@@ -44,10 +51,10 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnEnter(GdkEventCrossing *aEvent);
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
-	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState);
 	// From MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
 	virtual void OnCompNameClicked(CapComp* aComp);
+	virtual void OnCompParentClicked(CapComp* aComp);
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
     private:
@@ -71,7 +78,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	map<CAE_Object*, CapComp*> iComps; // Components
 	map<CAE_ConnPointBase*, CapCp*> iOutputs;
 	map<CAE_ConnPointBase*, CapCp*> iInputs;
-	MagSysObserver* iObserver;
+	MCapSysObserver* iObserver;
 	CpPairObs iCpPairObs;
 	// Size requested parameters
 	GtkRequisition iInpReq;

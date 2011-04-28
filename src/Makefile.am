@@ -26,6 +26,8 @@ libfapbvpgtk_la_SOURCES = \
 		       cagstyle.h \
 		       cagproxy.cpp \
 		       cagproxy.h \
+		       cagprov.cpp \
+		       cagprov.h \
 		       widgets.cpp \
 		       widgets.h \
 		       cagcontainer.cpp \
@@ -52,7 +54,7 @@ libfapbvpgtk_la_SOURCES = \
 		       cagwindow.h 
 
 include_HEADERS = \
-		  cagproxy.h
+		  cagprov.h
 
 
 libfapbvpgtk_la_LDFLAGS = -rdynamic -no-undefined

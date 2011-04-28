@@ -11,9 +11,10 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
     iName->Show();
     PackStart(iName, false, false, 2);
     // Create Parent
-    iParent = new CagLabel("Parent");
+    iParent = new CagELabel("Parent");
     iParent->SetText(string(" <") + string((iComp.TypeName() == NULL) ? "no parent": iComp.TypeName()) + string(">"));
     iParent->Show();
+    iParent->SetWidgetObs(this);
     PackStart(iParent, false, false, 2);
 }
 
@@ -32,7 +33,10 @@ void CapCompHead::OnExpose(GdkEventExpose* aEvent)
 TBool CapCompHead::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent)
 {
     if (iObs != NULL) {
-	iObs->OnCompNameClicked();
+	if (aWidget == iName)
+	    iObs->OnCompNameClicked();
+	else 
+	    iObs->OnCompParentClicked();
     }
 }
 
@@ -248,3 +252,11 @@ void CapComp::OnCompNameClicked()
 	iObs->OnCompNameClicked(this);
     }
 }
+
+void CapComp::OnCompParentClicked()
+{
+    if (iObs != NULL) {
+	iObs->OnCompParentClicked(this);
+    }
+}
+

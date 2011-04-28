@@ -73,7 +73,7 @@ void CapSysHead::OnStateChanged(GtkStateType state)
 
 
 
-CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MagSysObserver* aObserver): 
+CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver): 
     CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this)
 {
     // Add header
@@ -247,20 +247,6 @@ void CapSys::OnStateChanged(GtkStateType state)
 {
 }
 
-void CapSys::OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState)
-{
-    if (aChild->Name().compare("Title") == 0) {
-	if (aChild == iHead) {
-	    iObserver->OnHeadSelected();
-	}
-	else {
-	    CapComp* comp = Comp(aChild->iParent);
-	    if (comp != NULL) {
-		iObserver->OnCompSelected(&(comp->iComp));
-	    }
-	}
-    }
-}
 
 CapComp* CapSys::Comp(CagWidget* aWidget)
 {
@@ -291,6 +277,13 @@ void CapSys::OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair)
 }
 
 void CapSys::OnCompNameClicked(CapComp* aComp)
+{
+    if (iObserver != NULL) {
+	iObserver->OnCompSelected(&(aComp->iComp));
+    }
+}
+
+void CapSys::OnCompParentClicked(CapComp* aComp)
 {
     if (iObserver != NULL) {
 	iObserver->OnCompSelected(&(aComp->iComp));
