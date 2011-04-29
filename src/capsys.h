@@ -36,29 +36,27 @@ class MCapSysObserver
 
 class CapCterm;
 class MagSysObserver;
-class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, public MCapStateObserver
+class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, public MCapStateObserver,
+    public MCapCpObserver
 {
     public:
 	CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver);
 	virtual ~CapSys();
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
-	virtual TBool OnButtonPress(GdkEventButton* aEvent);
-	virtual TBool OnButtonRelease(GdkEventButton* aEvent);
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
 	virtual void OnSizeRequest(GtkRequisition* aRequisition);
-	virtual void OnMotion(GdkEventMotion *aEvent);
-	virtual void OnEnter(GdkEventCrossing *aEvent);
-	virtual void OnLeave(GdkEventCrossing *aEvent);
-	virtual void OnStateChanged(GtkStateType state);
 	// From MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
 	virtual void OnCompNameClicked(CapComp* aComp);
 	virtual void OnCompParentClicked(CapComp* aComp);
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
+	// From MCapCpObserver
+	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
     private:
 	CapComp* Comp(CagWidget* aWidget);
+	void ActivateConn(CapCtermPair* aPair);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
     private:

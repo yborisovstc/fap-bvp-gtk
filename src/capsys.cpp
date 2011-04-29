@@ -102,19 +102,21 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aOb
 	    comp->Show();
 	}
     }
-    // Add inputs
+    // Add inputs extenders
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iSys.Object().Inputs().begin(); it != iSys.Object().Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Inp~" + cp->Name(), *cp, ETrue);
+	CapCp* cpw = new CapCp("Inp~" + cp->Name(), *cp, ETrue, ETrue);
 	Add(cpw);
+	cpw->SetObs(this);
 	iInputs[cp] = cpw;
 	cpw->Show();
     }
-    // Add outputs
+    // Add outputs extenderd
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iSys.Object().Outputs().begin(); it != iSys.Object().Outputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Outp~" + cp->Name(), *cp, EFalse);
+	CapCp* cpw = new CapCp("Outp~" + cp->Name(), *cp, ETrue, EFalse);
 	Add(cpw);
+	cpw->SetObs(this);
 	iOutputs[cp] = cpw;
 	cpw->Show();
     }
@@ -126,14 +128,6 @@ CapSys::~CapSys()
 
 
 void CapSys::OnExpose(GdkEventExpose* aEvent)
-{
-}
-
-TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
-{
-}
-
-TBool CapSys::OnButtonRelease(GdkEventButton* aEvent)
 {
 }
 
@@ -231,22 +225,6 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
     aRequisition->height = head_req.height + max(max(outp_h, comp_h + stat_h), inp_h);
 }
 
-void CapSys::OnMotion(GdkEventMotion *aEvent)
-{
-}
-
-void CapSys::OnEnter(GdkEventCrossing *aEvent)
-{
-}
-
-void CapSys::OnLeave(GdkEventCrossing *aEvent)
-{
-}
-
-void CapSys::OnStateChanged(GtkStateType state)
-{
-}
-
 
 CapComp* CapSys::Comp(CagWidget* aWidget)
 {
@@ -259,11 +237,7 @@ CapComp* CapSys::Comp(CagWidget* aWidget)
     return res;
 }
 
-void CapSys::CpPairObs::OnToggled(CagToggleButton* aBtn)
-{
-}
-
-void CapSys::OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair)
+void CapSys::ActivateConn(CapCtermPair* aPair)
 {
     CapCtermPair* pair = GetCpPair(aPair);
     if (pair != NULL) {
@@ -276,6 +250,15 @@ void CapSys::OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair)
     }
 }
 
+void CapSys::CpPairObs::OnToggled(CagToggleButton* aBtn)
+{
+}
+
+void CapSys::OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair)
+{
+    ActivateConn(aPair);
+}
+
 void CapSys::OnCompNameClicked(CapComp* aComp)
 {
     if (iObserver != NULL) {
@@ -286,7 +269,7 @@ void CapSys::OnCompNameClicked(CapComp* aComp)
 void CapSys::OnCompParentClicked(CapComp* aComp)
 {
     if (iObserver != NULL) {
-	iObserver->OnCompSelected(&(aComp->iComp));
+	iObserver->OnSystSelected(aComp->iComp.TypeName());
     }
 }
 
@@ -296,10 +279,25 @@ CapCtermPair* CapSys::GetCpPair(CapCtermPair* aPair)
     for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
 	res = it->second->GetCpPair(aPair);
     }
+    for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end() && res == NULL; it++) {
+	res = it->second->GetCpPair(aPair);
+    }
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutputs.begin(); it != iOutputs.end() && res == NULL; it++) {
+	res = it->second->GetCpPair(aPair);
+    }
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end() && res == NULL; it++) {
+	res = it->second->GetCpPair(aPair);
+    }
     return res;
 }
 
 void CapSys::OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair)
 {
+    ActivateConn(aPair);
+}
+
+void CapSys::OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair)
+{
+    ActivateConn(aPair);
 }
 

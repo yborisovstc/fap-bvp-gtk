@@ -65,7 +65,7 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
     // Add Inputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Inputs().begin(); it != iComp.Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Inp." + cp->Name(), *cp, EFalse, ETrue);
+	CapCp* cpw = new CapCp("Inp~" + cp->Name(), *cp, EFalse, EFalse, ETrue);
 	Add(cpw);
 	cpw->SetObs(this);
 	iInps[cp] = cpw;
@@ -74,7 +74,7 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
     // Add outputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iComp.Outputs().begin(); it != iComp.Outputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp("Outp." + cp->Name(), *cp, ETrue, ETrue);
+	CapCp* cpw = new CapCp("Outp~" + cp->Name(), *cp, EFalse, ETrue, ETrue);
 	Add(cpw);
 	cpw->SetObs(this);
 	iOutps[cp] = cpw;

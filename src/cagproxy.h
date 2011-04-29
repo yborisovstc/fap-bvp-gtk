@@ -14,20 +14,23 @@ class CagProxy: public MAE_Opv, public MOpWndObserver
     public:
 	CagProxy(GtkWidget* aWnd);
 	virtual ~CagProxy();
+	void TurnToComp(CAE_Object* aComp);
 	// From MAE_Opv
 	virtual void Destroy();
 	virtual void SetRoot(CAE_Object::Ctrl* aObj);
 	virtual void SetObj(CAE_Object::Ctrl* aObj);
 	virtual void UnsetObj(CAE_Object::Ctrl* aObj);
-	// From MObjectProvider
+	// From MOpWndObserver
 	virtual void OnTurnToComp(CAE_Object* aComp);
 	virtual void OnTurnToSyst(const string& aName);
-	// From MOpWndObserver
 	virtual void OnCmd(TCmd aCmd);
+	virtual TBool OnCmdUpdateRequest(TCmd aCmd);
     private:
 	CAE_Object::Ctrl* iRoot;
 	CAE_Object::Ctrl* iSys;
 	CapOpWnd* iWindow;
+	vector<CAE_Object*> iHistory;
+	vector<CAE_Object*>::iterator iHistItr;
 };
 
 #endif 

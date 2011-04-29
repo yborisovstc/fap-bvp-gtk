@@ -58,7 +58,7 @@ CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName)
     // Add Inputs
     for (map<string, CAE_ConnPointBase*>::const_iterator it = iState.Inputs().begin(); it != iState.Inputs().end(); it++) {
 	CAE_ConnPointBase* cp = it->second;
-	CapCp* cpw = new CapCp(cp->Name(), *cp, EFalse, ETrue);
+	CapCp* cpw = new CapCp("Inp~" + cp->Name(), *cp, EFalse, EFalse, ETrue);
 	Add(cpw);
 	cpw->SetObs(this);
 	iInps[cp] = cpw;
@@ -66,7 +66,7 @@ CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName)
     }
     // Add output
     CAE_ConnPointBase* cp = iState.Output();
-    CapCp* cpw = new CapCp(cp->Name(), *cp, ETrue, ETrue, ETrue);
+    CapCp* cpw = new CapCp("Outp~" + cp->Name(), *cp, EFalse, ETrue, ETrue, ETrue);
     Add(cpw);
     cpw->SetObs(this);
     iOutps[cp] = cpw;
@@ -208,7 +208,6 @@ void CapState::OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair)
     if (iObs != NULL) {
 	iObs->OnStateCpPairToggled(this, aPair);
     }
-
 }
 
 

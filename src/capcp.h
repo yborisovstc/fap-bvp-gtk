@@ -19,7 +19,7 @@ class CapCterm;
 class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes
 {
     public:
-	CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft, TBool aLineSep = EFalse, TBool aNoLabel = EFalse);
+	CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft, TBool aLineSep = EFalse, TBool aNoLabel = EFalse);
 	virtual ~CapCp();
 	int GetLabelWidth() const;
 	void SetObs(MCapCpObserver* aObs);
@@ -45,6 +45,7 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes
 	TBool iLineSep; // Needs to draw line separator
 	MCapCpObserver* iCpObs;
 	TBool iNoLabel; // No label displayed (case of state output)
+	TBool iExt; // The role - extender
 };
 
 #endif 

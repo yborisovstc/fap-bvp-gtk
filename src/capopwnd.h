@@ -10,7 +10,7 @@ class CapOpWndToolbar: public CagToolBar
 {
     public:
 	CapOpWndToolbar(const string& aName);
-    private:
+    public:
 	CagToolButton* iBtnBack;
 	CagToolButton* iBtnUp;
 };
@@ -20,12 +20,14 @@ class MOpWndObserver
     public:
 	enum TCmd
 	{
-	    ECmd_Up
+	    ECmd_Up,
+	    ECmd_Back
 	};
     public:
 	virtual void OnTurnToComp(CAE_Object* aComp) = 0;
 	virtual void OnTurnToSyst(const string& aName) = 0;
 	virtual void OnCmd(TCmd aCmd) = 0;
+	virtual TBool OnCmdUpdateRequest(TCmd aCmd) = 0;
 };
 
 class CapOpWnd: public CagWindow, public MCapSysObserver, public MagToolButtonObserver
@@ -40,6 +42,7 @@ class CapOpWnd: public CagWindow, public MCapSysObserver, public MagToolButtonOb
 	void SetSys(CAE_Object::Ctrl* aObj);
 	void UnsetSys(CAE_Object::Ctrl* aObj);
 	void SetObserver(MOpWndObserver* aObs);
+	void UpdateCmds();
 	// From CAE_Base
 	virtual void *DoGetObj(const char *aName);
     protected:

@@ -3,8 +3,8 @@
 #include "capcterm.h"
 #include "capcommon.h"
 
-CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft, TBool aLineSep, TBool aNoLabel): 
-    CagLayout(aName), iCp(aCp), iLeft(aLeft), iLabel(NULL), iLineSep(aLineSep), iCpObs(NULL), iNoLabel(aNoLabel)
+CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft, TBool aLineSep, TBool aNoLabel): 
+    CagLayout(aName), iCp(aCp), iLeft(aLeft), iLabel(NULL), iLineSep(aLineSep), iCpObs(NULL), iNoLabel(aNoLabel), iExt(aExt)
 {
     // Create label
     iLabel = new CagLabel("Label");
@@ -16,7 +16,7 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aLeft, TBool aLi
 	iLabel->SetSizeRequest(0, lab_req.height);
     }
     // Create terminator
-    iTerm = new CapCterm("Term", iCp, iLeft);
+    iTerm = new CapCterm("Term", iCp, iExt, iLeft);
     Add(iTerm);
     iTerm->SetObs(this);
     GtkRequisition lab_req; iLabel->SizeRequest(&lab_req);

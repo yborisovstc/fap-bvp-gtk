@@ -32,13 +32,15 @@ CapOpWnd::~CapOpWnd()
 
 void CapOpWnd::Construct()
 {
+    // Vertical layot - toolbar - view
     iVbox = new CagVBox("Vbox");
     Add(iVbox);
     iVbox->Show();
     // Toolbar
     iToolbar = new CapOpWndToolbar("Toolbar");
-//    Add(iToolbar);
     iVbox->PackStart(iToolbar, false, false, 1);
+    iToolbar->iBtnUp->SetObserver(this);
+    iToolbar->iBtnBack->SetObserver(this);
     iToolbar->Show();
 }
 
@@ -73,12 +75,21 @@ void CapOpWnd::SetObserver(MOpWndObserver* aObs)
 {
     _FAP_ASSERT(iObs == NULL);
     iObs = aObs;
+    // Update toolbuttons
+    UpdateCmds();
+}
+
+void CapOpWnd::UpdateCmds()
+{
+    iToolbar->iBtnBack->SetSensitive(iObs->OnCmdUpdateRequest(MOpWndObserver::ECmd_Back));
+    iToolbar->iBtnUp->SetSensitive(iObs->OnCmdUpdateRequest(MOpWndObserver::ECmd_Up));
 }
 
 void CapOpWnd::OnCompSelected(CAE_Object* aComp)
 {
     if (iObs != NULL) {
 	iObs->OnTurnToComp(aComp);
+	UpdateCmds();
     }
 }
 
@@ -86,11 +97,25 @@ void CapOpWnd::OnSystSelected(const string& aName)
 {
     if (iObs != NULL) {
 	iObs->OnTurnToSyst(aName);
+	UpdateCmds();
     }
 }
 
+// Toolbar buttons handling
 void CapOpWnd::OnClicked(CagToolButton* aBtn)
 {
+    if (aBtn == iToolbar->iBtnUp) {
+	if (iObs!= NULL) {
+	    iObs->OnCmd(MOpWndObserver::ECmd_Up);
+	    UpdateCmds();
+	}
+    }
+    else if (aBtn == iToolbar->iBtnBack) {
+	if (iObs!= NULL) {
+	    iObs->OnCmd(MOpWndObserver::ECmd_Back);
+	    UpdateCmds();
+	}
+    }
 }
 
 void* CapOpWnd::DoGetObj(const char *aName)
