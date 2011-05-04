@@ -2,6 +2,7 @@
 #define __FAPBVP_GTK_COMMN_H
 
 #include <fapbase.h>
+#include <gtk/gtk.h>
 
 // Parameters of view
 const TInt KViewNameLineHeight = 20;
@@ -25,6 +26,15 @@ const TInt KViewDectGapWidth = 0;
 const TInt KViewExtCompGapWidth = 40;
 const TInt KViewStateTransBorder = 1;
 const TInt KViewBtnHeightFromHintVar = 4;
-const TInt KViewBtnBoxInnerBoard = 2;
+const TInt KViewBtnBoxInnerBoard = 0;
+
+// Targets entries for drag-drop
+const TInt KTei_NewObject = 1;
+
+static GtkTargetEntry KTe_NewObject[] = { 
+    { (gchar*) "STRING", 0, KTei_NewObject } 
+};
+const TInt KTe_NewObject_Len = sizeof(KTe_NewObject)/sizeof(GtkTargetEntry);
+
 
 #endif

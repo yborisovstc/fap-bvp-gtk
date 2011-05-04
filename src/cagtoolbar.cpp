@@ -1,3 +1,4 @@
+#include "cagimage.h"
 #include "cagtoolbar.h"
 
 CagToolBar::CagToolBar(const string& aName): CagContainer(GTK_TYPE_TOOLBAR, aName)
@@ -22,6 +23,15 @@ CagToolItem::CagToolItem(GType aType, const string& aName): CagBin(aType, aName)
 {
 }
 
+void CagToolItem::SetImage(const string& aPath)
+{
+    CagEImage* img =  new CagEImage("Img");
+    img->SetFromFile(aPath.c_str());
+    Add(img);
+    img->Show();
+}
+
+
 
 CagToolButton::CagToolButton(const string& aName): CagToolItem(GTK_TYPE_TOOL_BUTTON, aName)
 {
@@ -40,7 +50,6 @@ void CagToolButton::SetStockId(const string& aStockId)
 {
     gtk_tool_button_set_stock_id(GTK_TOOL_BUTTON(iWidget), aStockId.c_str());
 }
-
 
 void CagToolButton::SetObserver(CagWidget* aObs)
 {

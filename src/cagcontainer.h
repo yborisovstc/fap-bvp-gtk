@@ -13,6 +13,7 @@ class CagContainer: public CagWidget
 	void Add(CagWidget* aChild, TBool aAddToGtkCont = ETrue);
 	void Remove(CagWidget* aChild);
 	void SetBorderWidth(int aWidth);
+	void SetFocusChild(CagWidget* aChild);
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:

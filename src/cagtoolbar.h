@@ -16,6 +16,7 @@ class CagToolItem: public CagBin
 {
     public:
 	CagToolItem(const string& aName);
+	void SetImage(const string& aFileName);
     protected:
 	CagToolItem(GType aType, const string& aName);
 };

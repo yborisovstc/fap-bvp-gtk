@@ -68,6 +68,7 @@ class CagWidget: public CagBase, public MWidgetRes
 	void SetWidgetObs(CagWidget* aObs);
 	void SetBorder(GtkBorder* aBorder);
 	void GetBorder(GtkBorder* aBorder);
+	void GrabFocus();
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:
@@ -83,6 +84,9 @@ class CagWidget: public CagBase, public MWidgetRes
 	virtual void OnEnter(GdkEventCrossing *aEvent) {};
 	virtual void OnLeave(GdkEventCrossing *aEvent) {};
 	virtual void OnStateChanged(GtkStateType state) {};
+	virtual TBool OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint time) { return EFalse;};
+	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time) {}; 
+	virtual void OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time) {};
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState) {};
     protected:
 	GdkWindow* GdkWnd();
@@ -104,6 +108,13 @@ class CagWidget: public CagBase, public MWidgetRes
 
 	static gboolean handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
 	static gboolean handle_widget_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
+	static gboolean handle_drag_drop(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data);  
+	static void     handle_drag_begin(GtkWidget *widget, GdkDragContext *drag_context, gpointer user_data);    
+	static void     handle_drag_data_received(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data,
+	      guint info, guint time, gpointer user_data);
+	static gboolean handle_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data);
+	static void     handle_drag_data_get(GtkWidget *widget, GdkDragContext *drag_context, GtkSelectionData *data, guint info, 
+		guint time, gpointer user_data); 
     public:
 	GtkWidget* iWidget;
 	CagWidget* iParent;

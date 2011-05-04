@@ -40,6 +40,10 @@ libfapbvpgtk_la_SOURCES = \
 		       cagmisc.h \
 		       caglabel.cpp \
 		       caglabel.h \
+		       cagentry.cpp \
+		       cagentry.h \
+		       cagimage.cpp \
+		       cagimage.h \
 		       cagbin.cpp \
 		       cagbin.h \
 		       cagtextview.cpp \

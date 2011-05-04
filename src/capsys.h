@@ -46,6 +46,8 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
 	virtual void OnSizeRequest(GtkRequisition* aRequisition);
+	virtual TBool OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint time);
+	virtual void OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time);
 	// From MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
 	virtual void OnCompNameClicked(CapComp* aComp);
@@ -54,9 +56,13 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
+    protected:
+	void Construct();
     private:
 	CapComp* Comp(CagWidget* aWidget);
 	void ActivateConn(CapCtermPair* aPair);
+	void AddComponent();
+	void Refresh();
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
     private:

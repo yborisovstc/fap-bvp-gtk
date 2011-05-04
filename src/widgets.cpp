@@ -34,6 +34,11 @@ void CagWidget::Construct()
     g_signal_connect(G_OBJECT(iWidget), "enter_notify_event", G_CALLBACK (handle_enter_notify_event), this);
     g_signal_connect(G_OBJECT(iWidget), "leave_notify_event", G_CALLBACK (handle_leave_notify_event), this);
     g_signal_connect(G_OBJECT(iWidget), "state_changed", G_CALLBACK (handle_state_changed_event), this);
+    g_signal_connect(G_OBJECT(iWidget), "drag_drop", G_CALLBACK (handle_drag_drop), this);
+    g_signal_connect(G_OBJECT(iWidget), "drag_begin", G_CALLBACK (handle_drag_begin), this);
+    g_signal_connect(G_OBJECT(iWidget), "drag_data_received", G_CALLBACK (handle_drag_data_received), this);
+    g_signal_connect(G_OBJECT(iWidget), "drag_motion", G_CALLBACK (handle_drag_motion), this);
+    g_signal_connect(G_OBJECT(iWidget), "drag_data_get", G_CALLBACK (handle_drag_data_get), this);
 }
 
 CagWidget::~CagWidget()
@@ -150,6 +155,12 @@ void CagWidget::GetBorder(GtkBorder* aBorder)
     gtk_widget_style_get(iWidget, "draw-border", aBorder, NULL);
 }
 
+void CagWidget::GrabFocus()
+{
+    gtk_widget_grab_focus(iWidget);
+}
+
+
 GdkGC* CagWidget::Gc(TGcType aType)
 {
     GdkGC* res = NULL;
@@ -250,3 +261,33 @@ gboolean CagWidget::handle_widget_button_press_event(GtkWidget *widget, GdkEvent
     _FAP_ASSERT(wid != NULL);
     return obs->OnWidgetButtonPress(wid, event);
 }
+
+gboolean CagWidget::handle_drag_drop(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data)
+{
+    CagWidget* self = (CagWidget*) user_data;
+    return self->OnDragDrop(drag_context, x, y, time);  
+}
+
+void CagWidget::handle_drag_begin(GtkWidget *widget, GdkDragContext *drag_context, gpointer user_data)
+{
+}
+
+void CagWidget::handle_drag_data_received(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data,
+	      guint info, guint time, gpointer user_data)
+{
+    CagWidget* self = (CagWidget*) user_data;
+    self->OnDragDataReceived(drag_context, x, y, data, info, time);
+}
+
+gboolean CagWidget::handle_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data)
+{
+    return false;
+}
+
+void  CagWidget::handle_drag_data_get(GtkWidget *widget, GdkDragContext *drag_context, GtkSelectionData *data, guint info, 
+		guint time, gpointer user_data)
+{
+    CagWidget* self = (CagWidget*) user_data;
+    self->OnDragDataGet(drag_context, data, info, time);
+}
+

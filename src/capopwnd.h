@@ -6,6 +6,15 @@
 #include "cagbox.h"
 #include "capsys.h"
 
+class CapOtbDragItem: public CagToolItem
+{
+    public:
+	CapOtbDragItem(const string& aName);
+    protected:
+	virtual TBool OnButtonPress(GdkEventButton* aEvent);
+	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time); 
+};
+
 class CapOpWndToolbar: public CagToolBar
 {
     public:
@@ -13,6 +22,7 @@ class CapOpWndToolbar: public CagToolBar
     public:
 	CagToolButton* iBtnBack;
 	CagToolButton* iBtnUp;
+	CapOtbDragItem* iBtnNewSyst;
 };
 
 class MOpWndObserver

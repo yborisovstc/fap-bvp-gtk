@@ -5,8 +5,13 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
 {
     SetBorderWidth(1);
     // Create Name
-    iName = new CagELabel("Name");
+    iName = new CagEntry("Name");
+    iName->SetHasFrame(EFalse);
+    GtkBorder name_brd = (GtkBorder) {0, 0, 0, 0};
+    iName->SetInnerBorder(&name_brd);
+    iName->SetWidthChars(strlen(iComp.InstName()));
     iName->SetText(iComp.InstName());
+    //iName->SetEditable(ETrue);
     iName->SetWidgetObs(this);
     iName->Show();
     PackStart(iName, false, false, 2);
@@ -34,9 +39,23 @@ TBool CapCompHead::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEven
 {
     if (iObs != NULL) {
 	if (aWidget == iName)
-	    iObs->OnCompNameClicked();
-	else 
-	    iObs->OnCompParentClicked();
+	    if (aEvent->button == 1) {
+		if (aEvent->type == GDK_BUTTON_PRESS) {
+		    if (iName->State() == GTK_STATE_ACTIVE) {
+			iName->SetEditable(ETrue);
+			iName->GrabFocus();
+			iName->SetPosition(0);
+		    }
+		    else {
+			iName->SetState(GTK_STATE_ACTIVE);
+		    }
+		}
+		else if (aEvent->type == GDK_2BUTTON_PRESS) {
+		    iObs->OnCompNameClicked();
+		}
+	    }
+	    else 
+		iObs->OnCompParentClicked();
     }
 }
 
@@ -131,6 +150,7 @@ TBool CapComp::OnButtonRelease(GdkEventButton* aEvent)
 
 void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
 {
+    GtkRequisition head_req; iHead->SizeRequest(&head_req);
      // Calculate inputs lables width
     TInt inp_w = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
@@ -150,10 +170,9 @@ void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
 	    outp_maxw_l = cpw->GetLabelWidth();
     }
     // Calculate allocation of comp body
-    iBodyAlc = (GtkAllocation) {outp_maxw - outp_maxw_l, 0, KViewCompInpOutpGapWidth + inp_w + outp_w, aAllc->height};
+    iBodyAlc = (GtkAllocation) {outp_maxw - outp_maxw_l, 0, max(head_req.width, KViewCompInpOutpGapWidth + inp_w + outp_w), aAllc->height};
 
     // Allocate header
-    GtkRequisition head_req; iHead->SizeRequest(&head_req);
     GtkAllocation head_alc = {iBodyAlc.x, iBodyAlc.y, iBodyAlc.width, head_req.height};
     iHead->SizeAllocate(&head_alc);
 

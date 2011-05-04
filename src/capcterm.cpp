@@ -107,8 +107,8 @@ void CapCterm::SetItemHeightHint(int aHeight)
 
 void CapCterm::OnExpose(GdkEventExpose* aEvent)
 {
-    GtkAllocation alc; Allocation(&alc);
-    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
+//    GtkAllocation alc; Allocation(&alc);
+//    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
 }
 
 TBool CapCterm::OnButtonPress(GdkEventButton* aEvent)

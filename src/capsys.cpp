@@ -1,4 +1,5 @@
 
+#include <stdlib.h>
 #include "capsys.h"
 #include "cagproxy.h"
 #include "capcomp.h"
@@ -75,6 +76,11 @@ void CapSysHead::OnStateChanged(GtkStateType state)
 
 CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver): 
     CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this)
+{
+    Construct();
+}
+
+void CapSys::Construct()
 {
     // Add header
     iHead = new CapSysHead("Title", iSys);
@@ -299,5 +305,58 @@ void CapSys::OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair)
 void CapSys::OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair)
 {
     ActivateConn(aPair);
+}
+
+TBool CapSys::OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint time)
+{
+}
+
+void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time)
+{
+    if (info == KTei_NewObject) {
+	//gdk_drag_status(drag_context, GDK_ACTION_COPY, time);
+	AddComponent();
+	gtk_drag_finish(drag_context, true, false, time);
+    }
+}
+
+void CapSys::AddComponent() 
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
+    CAE_ChromoNode comp = mutadd.AddChild(ENt_Object);
+    comp.SetAttr(ENa_Type, "none");
+    char *name = (char*) malloc(100);
+    sprintf(name, "noname_%d", rand());
+    comp.SetAttr(ENa_Id, name);
+    free(name);
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::Refresh()
+{
+    // Remove all elements
+    Remove(iHead);
+    iHead = NULL;
+    for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
+	Remove(it->second);
+    }
+    iStates.erase(iStates.begin(), iStates.end());
+    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	Remove(it->second);
+    }
+    iComps.erase(iComps.begin(), iComps.end());
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end(); it++) {
+	Remove(it->second);
+    }
+    iInputs.erase(iInputs.begin(), iInputs.end());
+    for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutputs.begin(); it != iOutputs.end(); it++) {
+	Remove(it->second);
+    }
+    iOutputs.erase(iOutputs.begin(), iOutputs.end());
+    // Construct again
+    Construct();
 }
 

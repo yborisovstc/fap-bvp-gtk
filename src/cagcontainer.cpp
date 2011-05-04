@@ -61,3 +61,9 @@ void CagContainer::SetBorderWidth(int aWidth)
 {
     gtk_container_set_border_width(GTK_CONTAINER(iWidget), aWidth);
 }
+
+void CagContainer::SetFocusChild(CagWidget* aChild)
+{
+    gtk_container_set_focus_child(GTK_CONTAINER(iWidget), aChild->iWidget);
+}
+

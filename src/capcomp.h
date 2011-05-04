@@ -6,6 +6,7 @@
 #include "caglayout.h"
 #include "capcp.h"
 #include "cagbox.h"
+#include "cagentry.h"
 
 class MCompHeadObserver
 {
@@ -31,7 +32,7 @@ class CapCompHead: public CagHBox, public MWidgetObs
 	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent);
     private:
 	CAE_Object& iComp;
-	CagELabel* iName;
+	CagEntry* iName;
 	CagELabel* iParent;
 	MCompHeadObserver* iObs;
 };

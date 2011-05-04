@@ -1,5 +1,30 @@
 
 #include "capopwnd.h"
+#include "capcommon.h"
+
+/*
+static GtkTargetEntry targetentries2[] =
+{
+    { "STRING", 0, 3 }
+};
+*/
+
+CapOtbDragItem::CapOtbDragItem(const string& aName): CagToolItem(aName)
+{
+}
+
+TBool CapOtbDragItem::OnButtonPress(GdkEventButton* aEvent)
+{
+    GtkTargetList* tarlist = gtk_target_list_new(KTe_NewObject, KTe_NewObject_Len);
+    GdkDragContext* ctx = gtk_drag_begin(iWidget, tarlist, GDK_ACTION_COPY, 1, (GdkEvent*) aEvent);
+}
+
+void CapOtbDragItem::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time)
+{
+    gtk_selection_data_set_text(data, "_new_object", -1);
+}
+
+
 
 CapOpWndToolbar::CapOpWndToolbar(const string& aName): CagToolBar(aName)
 {
@@ -11,6 +36,12 @@ CapOpWndToolbar::CapOpWndToolbar(const string& aName): CagToolBar(aName)
     iBtnUp = new CagToolButton("BntUp", GTK_STOCK_GO_UP);
     Insert(iBtnUp, 0);
     iBtnUp->Show();
+    // Button "New system"
+    iBtnNewSyst = new CapOtbDragItem("BntNewSyst");
+    iBtnNewSyst->SetImage("tbar_btn_syst.png");
+    Insert(iBtnNewSyst, -1);
+    iBtnNewSyst->Show();
+//    gtk_drag_source_set(iBtnNewSyst->iWidget, GDK_MODIFIER_MASK, targetentries2, 3, (GdkDragAction) (GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK));
 }
 
 
@@ -48,6 +79,7 @@ void CapOpWnd::Construct()
 void CapOpWnd::AddView(CagWidget* aView)
 {
     iVbox->PackStart(aView, false, false, 1);
+    gtk_drag_dest_set(aView->iWidget, GTK_DEST_DEFAULT_ALL, KTe_NewObject, KTe_NewObject_Len, GDK_ACTION_COPY);
 }
 
 void CapOpWnd::RemoveView(CagWidget* aView)
