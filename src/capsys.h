@@ -52,6 +52,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
 	virtual void OnCompNameClicked(CapComp* aComp);
 	virtual void OnCompParentClicked(CapComp* aComp);
+	virtual void OnCompNameChanged(CapComp* aComp, const string& aName);
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
 	// From MCapCpObserver
@@ -62,6 +63,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	CapComp* Comp(CagWidget* aWidget);
 	void ActivateConn(CapCtermPair* aPair);
 	void AddComponent();
+	void ChangeCompName(CapComp* aComp, const string& aName);
 	void Refresh();
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);

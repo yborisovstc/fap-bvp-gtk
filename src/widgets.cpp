@@ -39,6 +39,7 @@ void CagWidget::Construct()
     g_signal_connect(G_OBJECT(iWidget), "drag_data_received", G_CALLBACK (handle_drag_data_received), this);
     g_signal_connect(G_OBJECT(iWidget), "drag_motion", G_CALLBACK (handle_drag_motion), this);
     g_signal_connect(G_OBJECT(iWidget), "drag_data_get", G_CALLBACK (handle_drag_data_get), this);
+    g_signal_connect(G_OBJECT(iWidget), "key-press-event", G_CALLBACK (handle_key_press_event), this);
 }
 
 CagWidget::~CagWidget()
@@ -289,5 +290,11 @@ void  CagWidget::handle_drag_data_get(GtkWidget *widget, GdkDragContext *drag_co
 {
     CagWidget* self = (CagWidget*) user_data;
     self->OnDragDataGet(drag_context, data, info, time);
+}
+
+gboolean CagWidget::handle_key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+    CagWidget* self = (CagWidget*) user_data;
+    return self->OnKeyPressEvent(event);
 }
 

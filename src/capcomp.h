@@ -7,6 +7,7 @@
 #include "capcp.h"
 #include "cagbox.h"
 #include "cagentry.h"
+#include "capmiscwid.h"
 
 class MCompHeadObserver
 {
@@ -14,11 +15,12 @@ class MCompHeadObserver
 	static inline const char* Type() { return "MCompHeadObserver";} ; 
 	virtual void OnCompNameClicked() = 0;
 	virtual void OnCompParentClicked() = 0;
+	virtual void OnCompNameChanged(const string& aName) = 0;
 };
 
 
 
-class CapCompHead: public CagHBox, public MWidgetObs
+class CapCompHead: public CagHBox, public MWidgetObs, public MapEopEntryObserver
 {
     public:
 	CapCompHead(const string& aName, CAE_Object& aComp);
@@ -30,9 +32,11 @@ class CapCompHead: public CagHBox, public MWidgetObs
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	// From MWidgetObs
 	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent);
+	// From MapEopEntryObserver
+	virtual void OnUpdateCompleted();
     private:
 	CAE_Object& iComp;
-	CagEntry* iName;
+	CapEopEntry* iName;
 	CagELabel* iParent;
 	MCompHeadObserver* iObs;
 };
@@ -46,6 +50,7 @@ class MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair) = 0;
 	virtual void OnCompNameClicked(CapComp* aComp) = 0;
 	virtual void OnCompParentClicked(CapComp* aComp) = 0;
+	virtual void OnCompNameChanged(CapComp* aComp, const string& aName) = 0;
 };
 
 
@@ -61,6 +66,7 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	int GetOutpTermY(CAE_ConnPointBase* aCp);
 	int GetBodyCenterX() const;
 	void SetObs(MCapCompObserver* aObs);
+	void ChangeName(const string& aName);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
 	// From MCapCpPairRes
@@ -68,6 +74,7 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	// From MCompHeadObserver
 	virtual void OnCompNameClicked();
 	virtual void OnCompParentClicked();
+	virtual void OnCompNameChanged(const string& aName);
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);

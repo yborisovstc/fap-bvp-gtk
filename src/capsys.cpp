@@ -360,3 +360,21 @@ void CapSys::Refresh()
     Construct();
 }
 
+void CapSys::OnCompNameChanged(CapComp* aComp, const string& aName)
+{
+    ChangeCompName(aComp, aName);
+}
+
+void CapSys::ChangeCompName(CapComp* aComp, const string& aName)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
+    chnode.SetAttr(ENa_Type, "iobject");
+    chnode.SetAttr(ENa_Id, aComp->iComp.InstName());
+    chnode.SetAttr(ENa_MutChgAttr, "id");
+    chnode.SetAttr(ENa_MutChgVal, aName);
+    iSys.Object().Mutate();
+    Refresh();
+}
+

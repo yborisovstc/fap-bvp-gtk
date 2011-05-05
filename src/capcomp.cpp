@@ -5,7 +5,7 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
 {
     SetBorderWidth(1);
     // Create Name
-    iName = new CagEntry("Name");
+    iName = new CapEopEntry("Name");
     iName->SetHasFrame(EFalse);
     GtkBorder name_brd = (GtkBorder) {0, 0, 0, 0};
     iName->SetInnerBorder(&name_brd);
@@ -13,6 +13,7 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
     iName->SetText(iComp.InstName());
     //iName->SetEditable(ETrue);
     iName->SetWidgetObs(this);
+    iName->SetObserver(this);
     iName->Show();
     PackStart(iName, false, false, 2);
     // Create Parent
@@ -38,24 +39,20 @@ void CapCompHead::OnExpose(GdkEventExpose* aEvent)
 TBool CapCompHead::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent)
 {
     if (iObs != NULL) {
-	if (aWidget == iName)
-	    if (aEvent->button == 1) {
-		if (aEvent->type == GDK_BUTTON_PRESS) {
-		    if (iName->State() == GTK_STATE_ACTIVE) {
-			iName->SetEditable(ETrue);
-			iName->GrabFocus();
-			iName->SetPosition(0);
-		    }
-		    else {
-			iName->SetState(GTK_STATE_ACTIVE);
-		    }
-		}
-		else if (aEvent->type == GDK_2BUTTON_PRESS) {
-		    iObs->OnCompNameClicked();
-		}
+	if (aWidget == iName) {
+	    if (aEvent->type == GDK_2BUTTON_PRESS) {
+		iObs->OnCompNameClicked();
 	    }
-	    else 
-		iObs->OnCompParentClicked();
+	}
+    }
+    else 
+	iObs->OnCompParentClicked();
+}
+
+void CapCompHead::OnUpdateCompleted()
+{
+    if (iObs != NULL) {
+	iObs->OnCompNameChanged(iName->GetText());
     }
 }
 
@@ -277,5 +274,21 @@ void CapComp::OnCompParentClicked()
     if (iObs != NULL) {
 	iObs->OnCompParentClicked(this);
     }
+}
+
+void CapComp::OnCompNameChanged(const string& aName)
+{
+    if (iObs != NULL) {
+	iObs->OnCompNameChanged(this, aName);
+    }
+}
+
+void CapComp::ChangeName(const string& aName)
+{
+    CAE_Object::ChromoPx* cpx = iComp.ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
+    chnode.SetAttr(ENa_Id, aName);
+    iComp.Mutate();
 }
 

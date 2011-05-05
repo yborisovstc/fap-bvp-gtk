@@ -88,6 +88,7 @@ class CagWidget: public CagBase, public MWidgetRes
 	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time) {}; 
 	virtual void OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time) {};
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState) {};
+	virtual gboolean OnKeyPressEvent(GdkEventKey *event) {return EFalse;}; 
     protected:
 	GdkWindow* GdkWnd();
 	GtkStyle* Style();
@@ -105,9 +106,7 @@ class CagWidget: public CagBase, public MWidgetRes
 	static gboolean handle_enter_notify_event( GtkWidget *widget, GdkEventCrossing *event, gpointer data);
 	static gboolean handle_leave_notify_event( GtkWidget *widget, GdkEventCrossing *event, gpointer data);
 	static void     handle_state_changed_event( GtkWidget *widget, GtkStateType state, gpointer data);
-
-	static gboolean handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
-	static gboolean handle_widget_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
+	static gboolean handle_key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer user_data); 
 	static gboolean handle_drag_drop(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data);  
 	static void     handle_drag_begin(GtkWidget *widget, GdkDragContext *drag_context, gpointer user_data);    
 	static void     handle_drag_data_received(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data,
@@ -115,6 +114,9 @@ class CagWidget: public CagBase, public MWidgetRes
 	static gboolean handle_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data);
 	static void     handle_drag_data_get(GtkWidget *widget, GdkDragContext *drag_context, GtkSelectionData *data, guint info, 
 		guint time, gpointer user_data); 
+
+	static gboolean handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
+	static gboolean handle_widget_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
     public:
 	GtkWidget* iWidget;
 	CagWidget* iParent;

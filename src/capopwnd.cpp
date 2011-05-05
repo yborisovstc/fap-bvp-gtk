@@ -41,7 +41,11 @@ CapOpWndToolbar::CapOpWndToolbar(const string& aName): CagToolBar(aName)
     iBtnNewSyst->SetImage("tbar_btn_syst.png");
     Insert(iBtnNewSyst, -1);
     iBtnNewSyst->Show();
-//    gtk_drag_source_set(iBtnNewSyst->iWidget, GDK_MODIFIER_MASK, targetentries2, 3, (GdkDragAction) (GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK));
+    // Button "New system"
+    iBtnNewState = new CapOtbDragItem("BntNewState");
+    iBtnNewState->SetImage("tbar_btn_state.png");
+    Insert(iBtnNewState, -1);
+    iBtnNewState->Show();
 }
 
 

@@ -8,6 +8,8 @@ libfapbvpgtk_la_SOURCES = \
 		       capcommon.h \
 		       capopwnd.cpp \
 		       capopwnd.h \
+		       capmiscwid.cpp \
+		       capmiscwid.h \
 		       capdect.cpp \
 		       capdect.h \
 		       capbutton.cpp \
