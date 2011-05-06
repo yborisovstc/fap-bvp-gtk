@@ -5,19 +5,36 @@
 #include <fapbase.h>
 #include "caglayout.h"
 #include "capcp.h"
+#include "cagbox.h"
+#include "cagmenu.h"
+#include "capmiscwid.h"
 
-class CapStateHead: public CagLayout
+class CapStatePopupMenu: public CagMenu
+{
+    public:
+	CapStatePopupMenu(const string& aName);
+};
+
+class MStateHeadObserver
+{
+    public:
+	static inline const char* Type() { return "MStateHeadObserver";} ; 
+	virtual void OnStateNameChanged(const string& aName) = 0;
+};
+
+class CapStateHead: public CagHBox, public MapEopEntryObserver
 {
     public:
 	CapStateHead(const string& aName, CAE_StateBase& aState);
+	void SetObserver(MStateHeadObserver* aObs);
     private:
-	virtual void OnExpose(GdkEventExpose* aEvent);
-	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
-	virtual void OnSizeRequest(GtkRequisition* aRequisition);
+	// From MapEopEntryObserver
+	virtual void OnUpdateCompleted();
     private:
 	CAE_StateBase& iState;
-	CagLabel* iName;
-	CagLabel* iType;
+	CapEopEntry* iName;
+	CagELabel* iType;
+	MStateHeadObserver* iObs;
 };
 
 class CapState; 
@@ -25,12 +42,15 @@ class MCapStateObserver
 {
     public:
 	static inline const char* Type() { return "MCapStateObserver";} ; 
-	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair) = 0;
+	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair) = 0;
+	virtual void OnStateNameChanged(CapState* aState, const string& aName) = 0;
+	virtual void OnStateDeleteRequested(CapState* aState) = 0;
 };
 
 class CapCp;
 class CagTextView;
-class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes
+class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, public MStateHeadObserver, 
+    public MagMenuShellObs
 {
     public:
 	CapState(const string& aName, CAE_StateBase& aState);
@@ -42,10 +62,16 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
+	// From MStateHeadObserver
+	virtual void OnStateNameChanged(const string& aName);
+	// From MagMenuShellObs 
+	virtual void OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem);
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
 	virtual void OnSizeRequest(GtkRequisition* aRequisition);
+	virtual TBool OnButtonPress(GdkEventButton* aEvent);
+    private:
     public:
 	CAE_StateBase& iState;
     private:
@@ -55,6 +81,6 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes
 	CagTextView* iTrans; // Transition
 	GtkAllocation iBodyAlc;
 	MCapStateObserver* iObs;
+	CapStatePopupMenu* iPopupMenu;
 };
-
 #endif

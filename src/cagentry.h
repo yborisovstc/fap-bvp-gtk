@@ -15,6 +15,7 @@ class CagEntry: public CagWidget
 	void SetWidthChars(TInt aNchars);
 	void SetEditable(TBool aEditable);
 	void SetPosition(TInt aPos);
+	void SelectRegion(TInt aStartPos, TInt aEndPos);
 };
 
 #endif 

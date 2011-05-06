@@ -9,19 +9,22 @@ static GtkTargetEntry targetentries2[] =
 };
 */
 
-CapOtbDragItem::CapOtbDragItem(const string& aName): CagToolItem(aName)
+CapOtbDragItem::CapOtbDragItem(const string& aName, GtkTargetEntry* aTes, TInt aTesLen, const string& aSel): 
+    CagToolItem(aName), iTes(aTes), iTesLen(aTesLen), iSel(aSel)
 {
 }
 
 TBool CapOtbDragItem::OnButtonPress(GdkEventButton* aEvent)
 {
-    GtkTargetList* tarlist = gtk_target_list_new(KTe_NewObject, KTe_NewObject_Len);
+    GtkTargetList* tarlist = gtk_target_list_new(iTes, iTesLen);
     GdkDragContext* ctx = gtk_drag_begin(iWidget, tarlist, GDK_ACTION_COPY, 1, (GdkEvent*) aEvent);
 }
 
 void CapOtbDragItem::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time)
 {
-    gtk_selection_data_set_text(data, "_new_object", -1);
+    if (info == iTes->info) {
+	gtk_selection_data_set_text(data, iSel.c_str(), -1);
+    }
 }
 
 
@@ -37,12 +40,12 @@ CapOpWndToolbar::CapOpWndToolbar(const string& aName): CagToolBar(aName)
     Insert(iBtnUp, 0);
     iBtnUp->Show();
     // Button "New system"
-    iBtnNewSyst = new CapOtbDragItem("BntNewSyst");
+    iBtnNewSyst = new CapOtbDragItem("BntNewSyst", KTe_NewObject, KTe_NewObject_Len, "_new_object");
     iBtnNewSyst->SetImage("tbar_btn_syst.png");
     Insert(iBtnNewSyst, -1);
     iBtnNewSyst->Show();
     // Button "New system"
-    iBtnNewState = new CapOtbDragItem("BntNewState");
+    iBtnNewState = new CapOtbDragItem("BntNewState", KTe_NewState, KTe_NewState_Len, "_new_state");
     iBtnNewState->SetImage("tbar_btn_state.png");
     Insert(iBtnNewState, -1);
     iBtnNewState->Show();
@@ -84,6 +87,9 @@ void CapOpWnd::AddView(CagWidget* aView)
 {
     iVbox->PackStart(aView, false, false, 1);
     gtk_drag_dest_set(aView->iWidget, GTK_DEST_DEFAULT_ALL, KTe_NewObject, KTe_NewObject_Len, GDK_ACTION_COPY);
+    GtkTargetList* tarlist = gtk_target_list_new(KTe_NewObject, KTe_NewObject_Len);
+    gtk_target_list_add_table(tarlist, KTe_NewState, KTe_NewState_Len);
+    gtk_drag_dest_set_target_list(aView->iWidget, tarlist);
 }
 
 void CapOpWnd::RemoveView(CagWidget* aView)
@@ -162,3 +168,4 @@ void* CapOpWnd::DoGetObj(const char *aName)
 	return this;
     else return CagWindow::DoGetObj(aName);
 }
+

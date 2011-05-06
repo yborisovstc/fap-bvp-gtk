@@ -9,10 +9,14 @@
 class CapOtbDragItem: public CagToolItem
 {
     public:
-	CapOtbDragItem(const string& aName);
+	CapOtbDragItem(const string& aName, GtkTargetEntry* aTes, TInt aTesLen, const string& aSel);
     protected:
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);
 	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time); 
+    private:
+	GtkTargetEntry* iTes;
+	TInt iTesLen;
+	string iSel;
 };
 
 class CapOpWndToolbar: public CagToolBar

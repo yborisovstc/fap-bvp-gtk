@@ -313,9 +313,17 @@ TBool CapSys::OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint tim
 
 void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time)
 {
-    if (info == KTei_NewObject) {
+    if (strcmp((char*) gtk_selection_data_get_text(data), "_new_object") == 0) 
+	// TODO [YB] info received is incorrect for some reason. Consider
+   // if (info == KTei_NewObject)
+    {
 	//gdk_drag_status(drag_context, GDK_ACTION_COPY, time);
 	AddComponent();
+	gtk_drag_finish(drag_context, true, false, time);
+    }
+    else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_state") == 0) 
+    {
+	AddState();
 	gtk_drag_finish(drag_context, true, false, time);
     }
 }
@@ -327,6 +335,21 @@ void CapSys::AddComponent()
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode comp = mutadd.AddChild(ENt_Object);
     comp.SetAttr(ENa_Type, "none");
+    char *name = (char*) malloc(100);
+    sprintf(name, "noname_%d", rand());
+    comp.SetAttr(ENa_Id, name);
+    free(name);
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::AddState()
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
+    CAE_ChromoNode comp = mutadd.AddChild(ENt_State);
+    comp.SetAttr(ENa_Type, "StInt");
     char *name = (char*) malloc(100);
     sprintf(name, "noname_%d", rand());
     comp.SetAttr(ENa_Id, name);
@@ -374,6 +397,49 @@ void CapSys::ChangeCompName(CapComp* aComp, const string& aName)
     chnode.SetAttr(ENa_Id, aComp->iComp.InstName());
     chnode.SetAttr(ENa_MutChgAttr, "id");
     chnode.SetAttr(ENa_MutChgVal, aName);
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::OnStateNameChanged(CapState* aState, const string& aName)
+{
+    ChangeStateName(aState, aName);
+}
+
+void CapSys::ChangeStateName(CapState* aState, const string& aName)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
+    chnode.SetAttr(ENa_Type, "state");
+    chnode.SetAttr(ENa_Id, aState->iState.InstName());
+    chnode.SetAttr(ENa_MutChgAttr, "id");
+    chnode.SetAttr(ENa_MutChgVal, aName);
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::OnStateDeleteRequested(CapState* aState)
+{
+    DeleteState(aState);
+}
+
+TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
+{
+    if (aEvent->button == 3) {
+	return ETrue;
+    }
+    return EFalse;
+}
+
+void CapSys::DeleteState(CapState* aState)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
+    CAE_ChromoNode rm_elem = mutrm.AddChild(ENt_Node);
+    rm_elem.SetAttr(ENa_Type, ENt_State);
+    rm_elem.SetAttr(ENa_Id, aState->iState.InstName());
     iSys.Object().Mutate();
     Refresh();
 }

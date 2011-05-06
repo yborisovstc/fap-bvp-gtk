@@ -11,7 +11,6 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
     iName->SetInnerBorder(&name_brd);
     iName->SetWidthChars(strlen(iComp.InstName()));
     iName->SetText(iComp.InstName());
-    //iName->SetEditable(ETrue);
     iName->SetWidgetObs(this);
     iName->SetObserver(this);
     iName->Show();

@@ -45,3 +45,8 @@ void CagEntry::SetPosition(TInt aPos)
     gtk_editable_set_position(GTK_EDITABLE(iWidget), aPos);
 }
 
+void CagEntry::SelectRegion(TInt aStartPos, TInt aEndPos)
+{
+    gtk_editable_select_region(GTK_EDITABLE(iWidget), aStartPos, aEndPos);
+}
+	

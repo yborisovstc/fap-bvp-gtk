@@ -22,6 +22,7 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes
 	CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft, TBool aLineSep = EFalse, TBool aNoLabel = EFalse);
 	virtual ~CapCp();
 	int GetLabelWidth() const;
+	int GetTermWidth();
 	void SetObs(MCapCpObserver* aObs);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);

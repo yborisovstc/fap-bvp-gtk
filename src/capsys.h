@@ -48,13 +48,16 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnSizeRequest(GtkRequisition* aRequisition);
 	virtual TBool OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint time);
 	virtual void OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time);
+	virtual TBool OnButtonPress(GdkEventButton* aEvent);
 	// From MCapCompObserver
 	virtual void OnCompCpPairToggled(CapComp* aComp, CapCtermPair* aPair);
 	virtual void OnCompNameClicked(CapComp* aComp);
 	virtual void OnCompParentClicked(CapComp* aComp);
 	virtual void OnCompNameChanged(CapComp* aComp, const string& aName);
 	// From MCapStateObserver
-	virtual void OnStateCpPairToggled(CapState* aComp, CapCtermPair* aPair);
+	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair);
+	virtual void OnStateNameChanged(CapState* aState, const string& aName);
+	virtual void OnStateDeleteRequested(CapState* aState);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
     protected:
@@ -63,7 +66,10 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	CapComp* Comp(CagWidget* aWidget);
 	void ActivateConn(CapCtermPair* aPair);
 	void AddComponent();
+	void AddState();
+	void DeleteState(CapState* aState);
 	void ChangeCompName(CapComp* aComp, const string& aName);
+	void ChangeStateName(CapState* aState, const string& aName);
 	void Refresh();
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);

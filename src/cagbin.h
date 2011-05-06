@@ -19,4 +19,11 @@ class CagEventBox: public CagBin
 	CagEventBox(const string& aName);
 };
 
+class CagItem: public CagBin
+{
+    public:
+	CagItem(const string& aName);
+};
+
+
 #endif 

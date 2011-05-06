@@ -37,6 +37,13 @@ int CapCp::GetLabelWidth() const
     return lab_req.width; 
 }
 
+int CapCp::GetTermWidth()
+{
+    GtkRequisition req = (GtkRequisition) {0, 0}; 
+    SizeRequest(&req);
+    return req.width - GetLabelWidth();
+}
+
 void CapCp::OnExpose(GdkEventExpose* aEvent)
 {
     GtkAllocation alc; Allocation(&alc);

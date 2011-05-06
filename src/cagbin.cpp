@@ -21,3 +21,9 @@ CagBin::~CagBin()
 CagEventBox::CagEventBox(const string& aName): CagBin(GTK_TYPE_EVENT_BOX, aName)
 {
 }
+
+
+CagItem::CagItem(const string& aName): CagBin(GTK_TYPE_ITEM, aName)
+{
+}
+

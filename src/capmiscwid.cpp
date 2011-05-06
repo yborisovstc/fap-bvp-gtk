@@ -15,6 +15,7 @@ TBool CapEopEntry::OnButtonPress(GdkEventButton* aEvent)
 		SetState(GTK_STATE_NORMAL);
 		SetEditable(ETrue);
 		GrabFocus();
+		SelectRegion(0, GetTextLen());
 	    }
 	    else {
 		SetState(GTK_STATE_ACTIVE);
