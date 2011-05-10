@@ -87,8 +87,8 @@ void CapSys::Construct()
     Add(iHead);
     iHead->Show();
     // Add states
-    for (vector<CAE_EBase*>::iterator it = iSys.CompReg().begin(); it != iSys.CompReg().end(); it++) {
-	CAE_StateBase* state = (*it)->GetFbObj(state);
+    for (map<string, CAE_StateBase*>::iterator it = iSys.States().begin(); it != iSys.States().end(); it++) {
+	CAE_StateBase* state = it->second;
 	if (state != NULL) {
 	    CapState* stw = new CapState("State~" + string(state->InstName()), *state);
 	    Add(stw);
@@ -98,8 +98,8 @@ void CapSys::Construct()
 	}
     }
     // Add components
-    for (vector<CAE_EBase*>::iterator it = iSys.CompReg().begin(); it != iSys.CompReg().end(); it++) {
-	CAE_Object* obj = (*it)->GetFbObj(obj);
+    for (map<string, CAE_Object*>::iterator it = iSys.Comps().begin(); it != iSys.Comps().end(); it++) {
+	CAE_Object* obj = it->second;
 	if (obj != NULL) {
 	    CapComp* comp = new CapComp("Comp~" + string(obj->InstName()), *obj);
 	    Add(comp);
