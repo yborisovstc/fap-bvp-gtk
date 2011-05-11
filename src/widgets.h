@@ -32,7 +32,8 @@ class MWidgetObs
     public:
 	static inline const char* Type(); 
     public:
-	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent) = 0;
+	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent) { return EFalse;};
+	virtual TBool OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent) { return EFalse;};
 };
 
 inline const char* MWidgetObs::Type() { return "CagWidgetObs";} 
@@ -117,6 +118,7 @@ class CagWidget: public CagBase, public MWidgetRes
 
 	static gboolean handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
 	static gboolean handle_widget_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
+	static gboolean handle_widget_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer data);
     public:
 	GtkWidget* iWidget;
 	CagWidget* iParent;

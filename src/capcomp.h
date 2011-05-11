@@ -69,6 +69,7 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	void ChangeName(const string& aName);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
+	virtual void OnLabelRenamed(CapCp* aCp, const string& aName);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
 	// From MCompHeadObserver

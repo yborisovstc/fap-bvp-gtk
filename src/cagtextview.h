@@ -9,6 +9,7 @@ class CagTextView: public CagContainer
 	CagTextView(const string& aName);
 	void SetBuffer(GtkTextBuffer* aBuffer);
 	void SetEditable(TBool aEditable);
+	string GetBuffer();
 };
 
 

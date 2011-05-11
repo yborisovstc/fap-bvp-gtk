@@ -3,11 +3,20 @@
 #include "caglabel.h"
 #include "cagtextview.h"
 
-CapStatePopupMenu::CapStatePopupMenu(const string& aName): CagMenu(aName)
+
+const char* KStatePmenu_Del = "Del";
+const char* KStatePmenu_AddInp = "AddInp";
+
+
+
+CapStatePopupMenu::CapStatePopupMenu(const string& aName, const vector<TPmenuSpecElem>& aSpec): CagMenu(aName)
 {
-    CagMenuItem* itm_del = new CagMenuItem("Del", "Delete");
-    itm_del->Show();
-    Append(itm_del);
+    for (vector<TPmenuSpecElem>::const_iterator it = aSpec.begin(); it != aSpec.end(); it++) {
+	const TPmenuSpecElem& spec = *it;
+	CagMenuItem* itm_del = new CagMenuItem(spec.iName, spec.iLabel);
+	itm_del->Show();
+	Append(itm_del);
+    }
 }
 
 
@@ -44,12 +53,17 @@ void CapStateHead::OnUpdateCompleted()
     }
 }
 
+vector<TPmenuSpecElem> CapState::iPmenuSpec;
 
 
 CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName), iState(aState), iObs(NULL)
 {
+    if (iPmenuSpec.empty()) {
+	iPmenuSpec.push_back(TPmenuSpecElem(KStatePmenu_Del, "Delete"));
+	iPmenuSpec.push_back(TPmenuSpecElem(KStatePmenu_AddInp, "Add Input"));
+    }
     // Popup Menu
-    iPopupMenu = new CapStatePopupMenu("Menu");
+    iPopupMenu = new CapStatePopupMenu("Menu", iPmenuSpec);
     iPopupMenu->SetTitle("cont menu");
     iPopupMenu->Show();
     iPopupMenu->SetMenuShellObs(this);
@@ -77,15 +91,33 @@ CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName)
     // Add trans
     iTrans = new CagTextView("Trans");
     GtkTextBuffer* buf = gtk_text_buffer_new(NULL);
-    gtk_text_buffer_set_text(buf, iState.GetTrans().iETrans.c_str(), iState.GetTrans().iETrans.size());
+    // TODO [YB] Hack
+    const TTransInfo& tinfo = iState.GetTrans(); 
+    if (tinfo.iETrans.empty()) {
+	string buftxt("   ");
+	gtk_text_buffer_set_text(buf, buftxt.c_str(), buftxt.size());
+    }
+    else {
+	gtk_text_buffer_set_text(buf, tinfo.iETrans.c_str(), tinfo.iETrans.size());
+    }
     iTrans->SetBuffer(buf);
-    iTrans->SetEditable(EFalse);
+    iTrans->SetEditable(ETrue);
     Add(iTrans);
     iTrans->Show();
+    iTrans->SetWidgetObs(this);
 }
 
 CapState::~CapState()
 {
+}
+
+void* CapState::DoGetObj(const char *aName)
+{
+    if (strcmp(aName, MWidgetObs::Type()) == 0)
+	return (MWidgetObs*) this;
+    else if (strcmp(aName, Type()) == 0) 
+	return this;
+    else return CagLayout::DoGetObj(aName);
 }
 
 void CapState::SetObs(MCapStateObserver* aObs)
@@ -238,10 +270,31 @@ void CapState::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
 {
     if (iObs != NULL) {
 	if (aMenuShell == iPopupMenu) {
-	    if (aItem->Name().compare("Del") == 0) {
+	    if (aItem->Name().compare(KStatePmenu_Del) == 0) {
 		iObs->OnStateDeleteRequested(this);
+	    }
+	    else if (aItem->Name().compare(KStatePmenu_AddInp) == 0) {
+		iObs->OnStateAddingInput(this);
 	    }
 	}
     }
+}
+
+void CapState::OnLabelRenamed(CapCp* aCp, const string& aName)
+{
+    if (iObs != NULL) {
+	iObs->OnStateInpRenamed(this, aCp, aName);
+    }
+}
+
+TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
+{
+    TBool res = EFalse;
+    if (aWidget == iTrans) {
+	if (iObs != NULL) {
+	    iObs->OnStateTransUpdated(this, iTrans->GetBuffer());
+	}
+    }
+    return res;
 }
 

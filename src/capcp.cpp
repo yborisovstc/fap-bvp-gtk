@@ -7,8 +7,13 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
     CagLayout(aName), iCp(aCp), iLeft(aLeft), iLabel(NULL), iLineSep(aLineSep), iCpObs(NULL), iNoLabel(aNoLabel), iExt(aExt)
 {
     // Create label
-    iLabel = new CagLabel("Label");
+    iLabel = new CapEopEntry("Label");
     iLabel->SetText(iCp.Name());
+    iLabel->SetHasFrame(EFalse);
+    GtkBorder name_brd = (GtkBorder) {0, 0, 0, 0};
+    iLabel->SetInnerBorder(&name_brd);
+    iLabel->SetWidthChars(iCp.Name().size());
+    iLabel->SetObserver(this);
     Add(iLabel);
     iLabel->Show();
     if (iNoLabel) {
@@ -147,3 +152,11 @@ CapCtermPair* CapCp::GetCpPair(CapCtermPair* aPair)
     }
     return res;
 }
+
+void CapCp::OnUpdateCompleted()
+{
+    if (iCpObs != NULL) {
+	iCpObs->OnLabelRenamed(this, iLabel->GetText());
+    }
+}
+

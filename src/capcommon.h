@@ -27,6 +27,7 @@ const TInt KViewExtCompGapWidth = 40;
 const TInt KViewStateTransBorder = 1;
 const TInt KViewBtnHeightFromHintVar = 4;
 const TInt KViewBtnBoxInnerBoard = 0;
+const TInt KViewTransMinWidth = 30;
 
 // Targets entries for drag-drop
 const TInt KTei_NewObject = 1;

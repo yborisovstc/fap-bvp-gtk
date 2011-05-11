@@ -251,17 +251,9 @@ void CagWidget::SetWidgetObs(CagWidget* aObs)
     MWidgetObs* obs = aObs->GetObj(obs);
     _FAP_ASSERT(obs != NULL);
     g_signal_connect(G_OBJECT(iWidget), "button_press_event", G_CALLBACK (handle_widget_button_press_event), aObs);
+    g_signal_connect(G_OBJECT(iWidget), "focus_out_event", G_CALLBACK (handle_widget_focus_out_event), aObs);
 }
 
-gboolean CagWidget::handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-    CagWidget* hler = (CagWidget*) data;
-    MWidgetObs* obs = hler->GetObj(obs);
-    _FAP_ASSERT(obs != NULL);
-    CagWidget* wid = hler->GetWidget(GTK_WIDGET(widget));
-    _FAP_ASSERT(wid != NULL);
-    return obs->OnWidgetButtonPress(wid, event);
-}
 
 gboolean CagWidget::handle_drag_drop(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, gpointer user_data)
 {
@@ -298,3 +290,26 @@ gboolean CagWidget::handle_key_press_event(GtkWidget *widget, GdkEventKey *event
     return self->OnKeyPressEvent(event);
 }
 
+
+
+
+
+gboolean CagWidget::handle_widget_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    CagWidget* hler = (CagWidget*) data;
+    MWidgetObs* obs = hler->GetObj(obs);
+    _FAP_ASSERT(obs != NULL);
+    CagWidget* wid = hler->GetWidget(GTK_WIDGET(widget));
+    _FAP_ASSERT(wid != NULL);
+    return obs->OnWidgetButtonPress(wid, event);
+}
+
+gboolean CagWidget::handle_widget_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
+{
+    CagWidget* hler = (CagWidget*) data;
+    MWidgetObs* obs = hler->GetObj(obs);
+    _FAP_ASSERT(obs != NULL);
+    CagWidget* wid = hler->GetWidget(GTK_WIDGET(widget));
+    _FAP_ASSERT(wid != NULL);
+    return obs->OnWidgetFocusOut(wid, event);
+}

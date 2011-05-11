@@ -5,6 +5,7 @@
 #include "caglayout.h"
 #include "caglabel.h"
 #include "capcterm.h"
+#include "capmiscwid.h"
 
 class CagToggleButton;
 class CapCp;
@@ -13,10 +14,11 @@ class MCapCpObserver
     public:
 	static inline const char* Type() { return "CapCpObserever";} ; 
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair) = 0;
+	virtual void OnLabelRenamed(CapCp* aCp, const string& aName) = 0;
 };
 
 class CapCterm;
-class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes
+class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, public MapEopEntryObserver
 {
     public:
 	CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft, TBool aLineSep = EFalse, TBool aNoLabel = EFalse);
@@ -38,9 +40,12 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes
 	virtual void OnStateChanged(GtkStateType state);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCtermPair* aPair);
-    private:
+	// From MapEopEntryObserver
+	virtual void OnUpdateCompleted();
+    public:
 	CAE_ConnPointBase& iCp;
-	CagLabel* iLabel;
+    private:
+	CapEopEntry* iLabel;
 	CapCterm* iTerm; // Connections terminator
 	TBool iLeft;
 	TBool iLineSep; // Needs to draw line separator

@@ -9,10 +9,17 @@
 #include "cagmenu.h"
 #include "capmiscwid.h"
 
+struct TPmenuSpecElem {
+    TPmenuSpecElem(const string& aName, const string& aLabel): iName(aName), iLabel(aLabel) {};
+    string iName;
+    string iLabel;
+};
+
+
 class CapStatePopupMenu: public CagMenu
 {
     public:
-	CapStatePopupMenu(const string& aName);
+	CapStatePopupMenu(const string& aName, const vector<TPmenuSpecElem>& aSpec);
 };
 
 class MStateHeadObserver
@@ -45,27 +52,36 @@ class MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair) = 0;
 	virtual void OnStateNameChanged(CapState* aState, const string& aName) = 0;
 	virtual void OnStateDeleteRequested(CapState* aState) = 0;
+	virtual void OnStateAddingInput(CapState* aState) = 0;
+	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName) = 0;
+	virtual void OnStateTransUpdated(CapState* aState, const string& aTrans) = 0;
 };
 
 class CapCp;
 class CagTextView;
 class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, public MStateHeadObserver, 
-    public MagMenuShellObs
+    public MagMenuShellObs, public MWidgetObs
 {
     public:
+	static inline const char* Type() { return "CapState";} ; 
 	CapState(const string& aName, CAE_StateBase& aState);
 	virtual ~CapState();
 	const CAE_StateBase& State() const { return iState;};
 	void SetObs(MCapStateObserver* aObs);
 	int GetBodyCenterX() const;
+	// From CAE_Base
+	virtual void *DoGetObj(const char *aName);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
+	virtual void OnLabelRenamed(CapCp* aCp, const string& aName);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
 	// From MStateHeadObserver
 	virtual void OnStateNameChanged(const string& aName);
 	// From MagMenuShellObs 
 	virtual void OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem);
+	// From MWidgetObs
+	virtual TBool OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent);
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
@@ -82,5 +98,6 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
 	GtkAllocation iBodyAlc;
 	MCapStateObserver* iObs;
 	CapStatePopupMenu* iPopupMenu;
+	static vector<TPmenuSpecElem> iPmenuSpec;
 };
 #endif

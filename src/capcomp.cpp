@@ -291,3 +291,7 @@ void CapComp::ChangeName(const string& aName)
     iComp.Mutate();
 }
 
+void CapComp::OnLabelRenamed(CapCp* aCp, const string& aName)
+{
+}
+

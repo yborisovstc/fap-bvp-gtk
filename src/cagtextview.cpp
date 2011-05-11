@@ -16,3 +16,12 @@ void CagTextView::SetEditable(TBool aEditable)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(iWidget), aEditable);
 }
 
+string CagTextView::GetBuffer()
+{
+    GtkTextBuffer* buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(iWidget));
+    GtkTextIter start; gtk_text_buffer_get_start_iter(buf, &start);
+    GtkTextIter end; gtk_text_buffer_get_end_iter(buf, &end);
+    gchar* text = gtk_text_buffer_get_text(buf, &start, &end, FALSE);
+    return string((char*) text);
+}
+
