@@ -32,6 +32,7 @@ const TInt KViewTransMinWidth = 30;
 // Targets entries for drag-drop
 const TInt KTei_NewObject = 1;
 const TInt KTei_NewState = 2;
+const TInt KTei_Conn = 3; // Connection point
 
 static GtkTargetEntry KTe_NewObject[] = { 
     { (gchar*) "STRING", 0, KTei_NewObject } 
@@ -42,6 +43,12 @@ static GtkTargetEntry KTe_NewState[] = {
     { (gchar*) "STRING", 0, KTei_NewState } 
 };
 const TInt KTe_NewState_Len = sizeof(KTe_NewState)/sizeof(GtkTargetEntry);
+
+static GtkTargetEntry KTe_Conn[] = { 
+    { (gchar*) "STRING", 0, KTei_Conn } 
+};
+const TInt KTe_Conn_Len = sizeof(KTe_Conn)/sizeof(GtkTargetEntry);
+
 
 
 

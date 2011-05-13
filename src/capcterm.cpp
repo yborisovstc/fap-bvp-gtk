@@ -229,3 +229,16 @@ CapCtermPair* CapCterm::GetCpPair(CapCtermPair* aPair)
     }
     return res;
 }
+
+void CapCterm::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time)
+{
+    char* textd = (char*) gtk_selection_data_get_text(data);
+    if (info == KTei_Conn)
+    {
+	gtk_drag_finish(drag_context, true, false, time);
+    }
+    else {
+	gdk_drag_status(drag_context, (GdkDragAction) 0, time);
+    }
+}
+

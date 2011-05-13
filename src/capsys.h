@@ -90,8 +90,9 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	    CapSys& iSupw;
     };
 	friend class CpPairObs;
-    private:
+    public:
 	CapSysHead* iHead; // Not owned
+    private:
 	CAE_Object::Ctrl& iSys;
 	map<CAE_StateBase*, CapState*> iStates; 
 	map<CAE_Object*, CapComp*> iComps; // Components

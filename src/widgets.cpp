@@ -2,14 +2,14 @@
 #include <map>
 
 CagWidget::CagWidget(GType aType, const string& aName): 
-    iName(aName), iWidget(gtk_widget_new(aType, NULL)), iParent(NULL), iOwned(ETrue)
+    iName(aName), iWidget(gtk_widget_new(aType, NULL)), iParent(NULL), iOwned(ETrue), iLbtnHoldsPressed(FALSE)
 {
     if (iOwned)
 	Construct();
 }
 
 CagWidget::CagWidget(GtkWidget* aWidget, const string& aName, TBool aOwned): 
-    iWidget(aWidget), iOwned(aOwned), iName(aName), iParent(NULL)
+    iWidget(aWidget), iOwned(aOwned), iName(aName), iParent(NULL), iLbtnHoldsPressed(FALSE)
 {
     if (iOwned)
 	Construct();
@@ -181,6 +181,30 @@ PangoContext* CagWidget::PangoCtext()
     return gtk_widget_get_pango_context(iWidget);
 }
 
+void CagWidget::DragSourceAdd(GdkModifierType start_button_mask, const GtkTargetEntry *targets, gint n_targets, GdkDragAction actions)
+{
+    GtkTargetList* list = gtk_drag_source_get_target_list(iWidget);
+    if (list == NULL) {
+	gtk_drag_source_set(iWidget, start_button_mask, targets, n_targets, actions);
+    }
+    else {
+	gtk_target_list_add_table(list, targets, n_targets);
+	gtk_drag_source_set_target_list(iWidget, list);
+    }
+}
+
+void CagWidget::DragDestAdd(GtkDestDefaults flags, const GtkTargetEntry *targets, gint n_targets, GdkDragAction actions)
+{
+    GtkTargetList* list = gtk_drag_dest_get_target_list(iWidget);
+    if (list == NULL) {
+	gtk_drag_dest_set(iWidget, flags, targets, n_targets, actions);
+    }
+    else {
+	gtk_target_list_add_table(list, targets, n_targets);
+	gtk_drag_dest_set_target_list(iWidget, list);
+    }
+}
+
 
 
 gboolean CagWidget::handle_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -193,12 +217,18 @@ gboolean CagWidget::handle_expose_event(GtkWidget *widget, GdkEventExpose *event
 gboolean CagWidget::handle_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     CagWidget* self = (CagWidget*) data;
+    if (event->button == 1) {
+	self->iLbtnHoldsPressed = TRUE;
+    }
     return self->OnButtonPress(event);
 }
 
 gboolean CagWidget::handle_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     CagWidget* self = (CagWidget*) data;
+    if (event->button == 1 && self->iLbtnHoldsPressed) {
+	self->iLbtnHoldsPressed = FALSE;
+    }
     return self->OnButtonRelease(event);
 }
 
@@ -217,6 +247,10 @@ void CagWidget::handle_size_request_event( GtkWidget *widget, GtkRequisition *re
 void CagWidget::handle_motion_notify_event( GtkWidget *widget, GdkEventMotion *event, gpointer data)
 {
     CagWidget* self = (CagWidget*) data;
+    if (self->iLbtnHoldsPressed) {
+	GtkTargetList* tarlist = gtk_drag_source_get_target_list(self->iWidget);
+	GdkDragContext* ctx = gtk_drag_begin(self->iWidget, tarlist, GDK_ACTION_COPY, 1, (GdkEvent*) event);
+    }
     self->OnMotion(event);
 }
 
@@ -313,3 +347,14 @@ gboolean CagWidget::handle_widget_focus_out_event(GtkWidget *widget, GdkEventFoc
     _FAP_ASSERT(wid != NULL);
     return obs->OnWidgetFocusOut(wid, event);
 }
+
+void CagWidget::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time)
+{
+    if (iSelText.empty()) {
+	gtk_selection_data_set_text(data, iName.c_str(), -1);
+    }
+    else {
+	gtk_selection_data_set_text(data, iSelText.c_str(), -1);
+    }
+}
+

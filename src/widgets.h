@@ -70,6 +70,9 @@ class CagWidget: public CagBase, public MWidgetRes
 	void SetBorder(GtkBorder* aBorder);
 	void GetBorder(GtkBorder* aBorder);
 	void GrabFocus();
+	void DragSourceAdd(GdkModifierType start_button_mask, const GtkTargetEntry *targets, gint n_targets, GdkDragAction actions);
+	void DragDestAdd(GtkDestDefaults flags, const GtkTargetEntry *targets, gint n_targets, GdkDragAction actions);
+	void SetSelText(const string& aText) { iSelText = aText;};
 	// From MWidgetRes
 	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     protected:
@@ -86,7 +89,7 @@ class CagWidget: public CagBase, public MWidgetRes
 	virtual void OnLeave(GdkEventCrossing *aEvent) {};
 	virtual void OnStateChanged(GtkStateType state) {};
 	virtual TBool OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint time) { return EFalse;};
-	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time) {}; 
+	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time); 
 	virtual void OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time) {};
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState) {};
 	virtual gboolean OnKeyPressEvent(GdkEventKey *event) {return EFalse;}; 
@@ -122,9 +125,11 @@ class CagWidget: public CagBase, public MWidgetRes
     public:
 	GtkWidget* iWidget;
 	CagWidget* iParent;
+	TBool iLbtnHoldsPressed;
     protected:
 	TBool iOwned;
 	string iName;
+	string iSelText;
 };
 
 inline const char* CagWidget::Type() { return "CagWidget";} 

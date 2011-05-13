@@ -87,9 +87,11 @@ void CapOpWnd::AddView(CagWidget* aView)
 {
     iVbox->PackStart(aView, false, false, 1);
     gtk_drag_dest_set(aView->iWidget, GTK_DEST_DEFAULT_ALL, KTe_NewObject, KTe_NewObject_Len, GDK_ACTION_COPY);
-    GtkTargetList* tarlist = gtk_target_list_new(KTe_NewObject, KTe_NewObject_Len);
-    gtk_target_list_add_table(tarlist, KTe_NewState, KTe_NewState_Len);
-    gtk_drag_dest_set_target_list(aView->iWidget, tarlist);
+//    GtkTargetList* tarlist = gtk_target_list_new(KTe_NewObject, KTe_NewObject_Len);
+//    gtk_target_list_add_table(tarlist, KTe_NewState, KTe_NewState_Len);
+//    gtk_drag_dest_set_target_list(aView->iWidget, tarlist);
+    CapSys* sys = (CapSys*) aView;
+//    sys->iHead->DragDestAdd(GTK_DEST_DEFAULT_ALL, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
 }
 
 void CapOpWnd::RemoveView(CagWidget* aView)

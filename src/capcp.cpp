@@ -20,6 +20,9 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
 	GtkRequisition lab_req; iLabel->SizeRequest(&lab_req);
 	iLabel->SetSizeRequest(0, lab_req.height);
     }
+    // Set as source for DnD
+    iLabel->DragSourceAdd(GDK_MODIFIER_MASK, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
+    iLabel->SetSelText(string(iCp.Man().InstName()) + "~" + iName);
     // Create terminator
     iTerm = new CapCterm("Term", iCp, iExt, iLeft);
     Add(iTerm);
@@ -27,6 +30,8 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
     GtkRequisition lab_req; iLabel->SizeRequest(&lab_req);
     iTerm->SetItemHeightHint(lab_req.height + KViewBtnHeightFromHintVar);
     iTerm->Show();
+    // Set as source for DnD
+    iTerm->DragDestAdd(GTK_DEST_DEFAULT_ALL, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
 }
 
 CapCp::~CapCp()

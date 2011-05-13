@@ -86,6 +86,7 @@ void CapSys::Construct()
     iHead = new CapSysHead("Title", iSys);
     Add(iHead);
     iHead->Show();
+
     // Add states
     for (map<string, CAE_StateBase*>::iterator it = iSys.States().begin(); it != iSys.States().end(); it++) {
 	CAE_StateBase* state = it->second;
@@ -347,6 +348,7 @@ void CapSys::AddState()
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
+    smut.SetAttr(ENa_MutNode, "self");
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode comp = mutadd.AddChild(ENt_State);
     comp.SetAttr(ENa_Type, "StInt");
