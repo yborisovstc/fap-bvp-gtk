@@ -7,6 +7,72 @@
 #include "capcp.h"
 #include "capcommon.h"
 #include "capcterm.h"
+#include "cagtextview.h"
+
+CapTranHead::CapTranHead(const string& aName): CagHBox(aName)
+{
+    SetBorderWidth(1);
+    // Create Type
+    iLabel = new CagLabel("Label");
+    iLabel->SetPadding(0, 0);
+    iLabel->SetText("Trans");
+    iLabel->Show();
+    PackStart(iLabel, false, false, 2);
+}
+
+CapTran::CapTran(const string& aName, const string& aTranData): CagLayout(aName), iTranData(aTranData)
+{
+    // Create header
+    iHead = new CapTranHead("Head");
+    iHead->Show();
+    Add(iHead);
+    // Create trans
+    iTrans = new CagTextView("Trans");
+    GtkTextBuffer* buf = gtk_text_buffer_new(NULL);
+    gtk_text_buffer_set_text(buf, aTranData.c_str(), aTranData.size());
+    iTrans->SetBuffer(buf);
+    iTrans->SetEditable(ETrue);
+    iTrans->SetBorderWidth(10);
+    iTrans->Show();
+    Add(iTrans);
+}
+
+void CapTran::OnExpose(GdkEventExpose* aEvent)
+{
+    // Draw body rect
+    GtkAllocation alc; Allocation(&alc);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
+    // Head separator
+    GtkAllocation head_alc; iHead->Allocation(&head_alc);
+    gdk_draw_line(BinWnd(), Gc(), 0, head_alc.height, alc.width - 1, head_alc.height);
+}
+
+void CapTran::OnSizeAllocate(GtkAllocation* aAllc)
+{
+    GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
+
+    // Allocate header
+    GtkAllocation head_alc = {0, 0, aAllc->width, head_req.height};
+    iHead->SizeAllocate(&head_alc);
+
+    // Allocate trans
+    GtkAllocation tran_alc = 
+	(GtkAllocation) {KViewBorder, head_alc.y + head_alc.height + KViewBorder, tran_req.width, tran_req.height};
+    iTrans->SizeAllocate(&tran_alc);
+}
+
+void CapTran::OnSizeRequest(GtkRequisition* aRequisition)
+{
+    // Calculate header size
+    GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    // Calculate trans size
+    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
+    aRequisition->width = max(head_req.width, tran_req.width) + KViewBorder*2; 
+    aRequisition->height = head_req.height + tran_req.height + KViewBorder*2;
+}
+
+
 
 CapSysHead::CapSysHead(const string& aName, CAE_Object::Ctrl& aSys): CagLayout(aName), iSys(aSys)
 {
@@ -127,12 +193,24 @@ void CapSys::Construct()
 	iOutputs[cp] = cpw;
 	cpw->Show();
     }
+    // Add trans
+    iTrans = new CapTran("Transs", iSys.Trans());
+    Add(iTrans);
+    iTrans->Show();
 }
 
 CapSys::~CapSys()
 {
 }
 
+void* CapSys::DoGetObj(const char *aName)
+{
+    if (strcmp(aName, Type()) == 0) 
+	return this;
+    else if (strcmp(aName, MWidgetObs::Type()) == 0)
+	return (MWidgetObs*) this;
+    else return CagLayout::DoGetObj(aName);
+}
 
 void CapSys::OnExpose(GdkEventExpose* aEvent)
 {
@@ -167,8 +245,14 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 	outp_w = max(outp_w, req.width);
 	outpb_y += req.height + KViewConnGapHeight;
     }
+    // Allocate trans
+    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
+    int tranb_x = (outp_w + aAllc->width - inp_w)/2, tranb_y = head_req.height + KViewCompGapHight;
+    GtkAllocation tran_alc = { tranb_x - tran_req.width/2, tranb_y, tran_req.width, tran_req.height};
+    iTrans->SizeAllocate(&tran_alc);
     // Allocate states
-    int statb_x = (outp_w + aAllc->width - inp_w)/2, statb_y = head_req.height + KViewCompGapHight;
+//    int statb_x = (outp_w + aAllc->width - inp_w)/2, statb_y = head_req.height + KViewCompGapHight;
+    int statb_x = (outp_w + aAllc->width - inp_w)/2, statb_y = tran_alc.y + tran_alc.height + KViewCompGapHight;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
 	CAE_StateBase* state = it->first;
 	CapState* stw = it->second;
@@ -194,6 +278,8 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 {
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    // Calculate trans size
+    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
     // Calculate size of states
     int stat_w = 0, stat_h = 0;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
@@ -228,8 +314,8 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 	outp_h += req.height + KViewConnGapHeight;
     }
 
-    aRequisition->width = outp_w + KViewExtCompGapWidth*2 + max(stat_w, comp_w) + inp_w; 
-    aRequisition->height = head_req.height + max(max(outp_h, comp_h + stat_h), inp_h);
+    aRequisition->width = outp_w + KViewExtCompGapWidth*2 + max(max(stat_w, comp_w), tran_req.width) + inp_w; 
+    aRequisition->height = head_req.height + max(max(outp_h, comp_h + stat_h + tran_req.height + KViewExtCompGapWidth), inp_h);
 }
 
 
@@ -337,7 +423,7 @@ void CapSys::AddComponent()
     CAE_ChromoNode comp = mutadd.AddChild(ENt_Object);
     comp.SetAttr(ENa_Type, "none");
     char *name = (char*) malloc(100);
-    sprintf(name, "noname_%d", rand());
+    sprintf(name, "noname%d", rand());
     comp.SetAttr(ENa_Id, name);
     free(name);
     iSys.Object().Mutate();
@@ -353,7 +439,7 @@ void CapSys::AddState()
     CAE_ChromoNode comp = mutadd.AddChild(ENt_State);
     comp.SetAttr(ENa_Type, "StInt");
     char *name = (char*) malloc(100);
-    sprintf(name, "noname_%d", rand());
+    sprintf(name, "noname%d", rand());
     comp.SetAttr(ENa_Id, name);
     free(name);
     iSys.Object().Mutate();
@@ -364,6 +450,7 @@ void CapSys::Refresh()
 {
     // Remove all elements
     Remove(iHead);
+    Remove(iTrans);
     iHead = NULL;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
 	Remove(it->second);
@@ -459,7 +546,7 @@ void CapSys::AddStateInp(CapState* aState)
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode addstinp = mutadd.AddChild(ENt_Stinp);
     char *name = (char*) malloc(100);
-    sprintf(name, "noname_%d", rand());
+    sprintf(name, "noname%d", rand());
     addstinp.SetAttr(ENa_Id, name);
     free(name);
     iSys.Object().Mutate();
@@ -480,7 +567,7 @@ void CapSys::RenameStateInp(CapState* aState, CapCp* aCp, const string& aName)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, aState->iState.InstName());
+    smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, ENt_Stinp);
     chnode.SetAttr(ENa_Id, aCp->iCp.Name());
@@ -495,22 +582,6 @@ void CapSys::OnStateTransUpdated(CapState* aState, const string& aTrans)
     ChangeStateTrans(aState, aTrans);
 }
 
-/*
-void CapSys::ChangeStateTrans(CapState* aState, const string& aTrans)
-{
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    // Delete old trans first
-    smut.SetAttr(ENa_MutNode, aState->iState.InstName());
-    CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
-    CAE_ChromoNode rm_elem = mutrm.AddChild(ENt_Node);
-    rm_elem.SetAttr(ENa_Type, ENt_Trans);
-    rm_elem.SetAttr(ENa_Id, "trans");
-    iSys.Object().Mutate();
-    Refresh();
-}
-*/
-
 void CapSys::ChangeStateTrans(CapState* aState, const string& aTrans)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
@@ -524,4 +595,73 @@ void CapSys::ChangeStateTrans(CapState* aState, const string& aTrans)
     iSys.Object().Mutate();
     Refresh();
 }
+
+void CapSys::OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName)
+{
+    AddStateCpPair(aState, aCp, aPairName);
+}
+
+void CapSys::AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    smut.SetAttr(ENa_MutNode, "self");
+    CAE_ChromoNode ndadd = smut.AddChild(ENt_MutAdd);
+    CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Conn);
+    TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
+    if (cpinp) {
+	nd_add_subj.SetAttr(ENa_Id, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+	nd_add_subj.SetAttr(ENa_ConnPair, aPairName);
+    }
+    else {
+	nd_add_subj.SetAttr(ENa_Id, aPairName);
+	nd_add_subj.SetAttr(ENa_ConnPair, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+    }
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::OnCpAddPairRequested(CapCp* aCp, const string& aPairName)
+{
+}
+
+void CapSys::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
+{
+}
+
+void CapSys::DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    smut.SetAttr(ENa_MutNode, "self");
+    CAE_ChromoNode rm = smut.AddChild(ENt_MutRm);
+    CAE_ChromoNode rm_subj = rm.AddChild(ENt_Node);
+    rm_subj.SetAttr(ENa_Type, ENt_Conn);
+    rm_subj.SetAttr(ENa_MutChgAttr, "pair");
+    TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
+    if (cpinp) {
+	rm_subj.SetAttr(ENa_Id, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+	rm_subj.SetAttr(ENa_MutChgVal, aPairName);
+    }
+    else {
+	rm_subj.SetAttr(ENa_Id, aPairName);
+	rm_subj.SetAttr(ENa_MutChgVal, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+    }
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const string& aPairName)
+{
+    DelStateCpPair(aState, aCp, aPairName);
+}
+
+TBool CapSys::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
+{
+    TBool res = EFalse;
+    if (aWidget == iTrans) {
+    }
+    return res;
+}
+
 

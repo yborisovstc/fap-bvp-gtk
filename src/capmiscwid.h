@@ -2,6 +2,8 @@
 #define __FAPBVP_GTK_MISCWID_H
 
 #include "cagentry.h"
+#include "cagmenu.h"
+#include "capcommon.h"
 
 class MapEopEntryObserver
 {
@@ -19,6 +21,19 @@ class CapEopEntry: public CagEntry
 	virtual gboolean OnKeyPressEvent(GdkEventKey *event); 
     private:
 	MapEopEntryObserver* iObserver;
+};
+
+class CapPopupMenu: public CagMenu
+{
+    public:
+	static inline const char* Type() { return "CapPopupMenu";} ; 
+	CapPopupMenu(const string& aName, const vector<TPmenuSpecElem>& aSpec);
+	CagWidget* Context() { return iContext;};
+	void SetContext(CagWidget* aContext) { iContext = aContext;};
+	// From CAE_Base
+	virtual void *DoGetObj(const char *aName);
+    private:
+	CagWidget* iContext;
 };
 
 #endif 

@@ -28,6 +28,7 @@ class CapOpWndToolbar: public CagToolBar
 	CagToolButton* iBtnUp;
 	CapOtbDragItem* iBtnNewSyst;
 	CapOtbDragItem* iBtnNewState;
+	CapOtbDragItem* iBtnNewTrans;
 };
 
 class MOpWndObserver

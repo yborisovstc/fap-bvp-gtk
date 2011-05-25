@@ -15,6 +15,8 @@ class MCapCpObserver
 	static inline const char* Type() { return "CapCpObserever";} ; 
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair) = 0;
 	virtual void OnLabelRenamed(CapCp* aCp, const string& aName) = 0;
+	virtual void OnCpAddPairRequested(CapCp* aCp, const string& aPairName) = 0;
+	virtual void OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair) = 0;
 };
 
 class CapCterm;
@@ -38,8 +40,10 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, p
 	virtual void OnEnter(GdkEventCrossing *aEvent);
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
-	// From MCapCpObserver
-	virtual void OnCpPairToggled(CapCtermPair* aPair);
+	// From MCapCtermObserver
+	virtual void OnCpTermPairToggled(CapCtermPair* aPair);
+	virtual void OnCpTermAddPairRequested(CapCterm* aCpTerm, const string& aPairName);
+	virtual void OnCpTermDelPairRequested(CapCterm* aCpTerm, CapCtermPair* aPair);
 	// From MapEopEntryObserver
 	virtual void OnUpdateCompleted();
     public:

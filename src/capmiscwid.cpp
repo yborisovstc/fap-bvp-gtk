@@ -42,3 +42,22 @@ gboolean CapEopEntry::OnKeyPressEvent(GdkEventKey *event)
     return EFalse;
 }
 
+CapPopupMenu::CapPopupMenu(const string& aName, const vector<TPmenuSpecElem>& aSpec): 
+    CagMenu(aName), iContext(NULL)
+{
+    for (vector<TPmenuSpecElem>::const_iterator it = aSpec.begin(); it != aSpec.end(); it++) {
+	const TPmenuSpecElem& spec = *it;
+	CagMenuItem* itm_del = new CagMenuItem(spec.iName, spec.iLabel);
+	itm_del->Show();
+	Append(itm_del);
+    }
+}
+
+void* CapPopupMenu::DoGetObj(const char *aName)
+{
+    if (strcmp(aName, Type()) == 0) 
+	return this;
+    else return CagMenu::DoGetObj(aName);
+}
+
+

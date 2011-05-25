@@ -8,6 +8,29 @@
 #include "capcomp.h"
 #include "capstate.h"
 
+class CapTranHead: public CagHBox
+{
+    public:
+	CapTranHead(const string& aName);
+    private:
+	CagLabel* iLabel;
+};
+
+class CapTran: public CagLayout
+{
+    public:
+	CapTran(const string& aName, const string& aTranData);
+    private:
+	virtual void OnExpose(GdkEventExpose* aEvent);
+	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
+	virtual void OnSizeRequest(GtkRequisition* aRequisition);
+    private:
+	CapTranHead* iHead;
+	CagTextView* iTrans; // Transition
+	const string& iTranData;
+};
+
+
 class CapSysHead: public CagLayout
 {
     public:
@@ -37,11 +60,14 @@ class MCapSysObserver
 class CapCterm;
 class MagSysObserver;
 class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, public MCapStateObserver,
-    public MCapCpObserver
+    public MCapCpObserver, public MWidgetObs
 {
     public:
+	static inline const char* Type() { return "CapSys";} ; 
 	CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver);
 	virtual ~CapSys();
+	// From CAE_Base
+	virtual void *DoGetObj(const char *aName);
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
@@ -61,9 +87,15 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnStateAddingInput(CapState* aState);
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName);
 	virtual void OnStateTransUpdated(CapState* aState, const string& aTrans);
+	virtual void OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName);
+	virtual void OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const string& aPairName);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
 	virtual void OnLabelRenamed(CapCp* aCp, const string& aName);
+	virtual void OnCpAddPairRequested(CapCp* aCp, const string& aPairName);
+	virtual void OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair);
+	// From MWidgetObs
+	virtual TBool OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent);
     protected:
 	void Construct();
     private:
@@ -77,6 +109,8 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void ChangeStateName(CapState* aState, const string& aName);
 	void ChangeStateTrans(CapState* aState, const string& aTrans);
 	void RenameStateInp(CapState* aState, CapCp* aCp, const string& aName);
+	void AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName);
+	void DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName);
 	void Refresh();
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
@@ -98,6 +132,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	map<CAE_Object*, CapComp*> iComps; // Components
 	map<CAE_ConnPointBase*, CapCp*> iOutputs;
 	map<CAE_ConnPointBase*, CapCp*> iInputs;
+	CapTran* iTrans; // Transition
 	MCapSysObserver* iObserver;
 	CpPairObs iCpPairObs;
 	// Size requested parameters

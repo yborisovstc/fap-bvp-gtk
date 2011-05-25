@@ -9,13 +9,6 @@
 #include "cagmenu.h"
 #include "capmiscwid.h"
 
-struct TPmenuSpecElem {
-    TPmenuSpecElem(const string& aName, const string& aLabel): iName(aName), iLabel(aLabel) {};
-    string iName;
-    string iLabel;
-};
-
-
 class CapStatePopupMenu: public CagMenu
 {
     public:
@@ -55,6 +48,8 @@ class MCapStateObserver
 	virtual void OnStateAddingInput(CapState* aState) = 0;
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName) = 0;
 	virtual void OnStateTransUpdated(CapState* aState, const string& aTrans) = 0;
+	virtual void OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName) = 0;
+	virtual void OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const string& aPairName) = 0;
 };
 
 class CapCp;
@@ -62,6 +57,7 @@ class CagTextView;
 class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, public MStateHeadObserver, 
     public MagMenuShellObs, public MWidgetObs
 {
+    friend class CapSys;
     public:
 	static inline const char* Type() { return "CapState";} ; 
 	CapState(const string& aName, CAE_StateBase& aState);
@@ -74,6 +70,8 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
 	virtual void OnLabelRenamed(CapCp* aCp, const string& aName);
+	virtual void OnCpAddPairRequested(CapCp* aCp, const string& aPairName);
+	virtual void OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
 	// From MStateHeadObserver

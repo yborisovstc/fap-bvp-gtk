@@ -28,11 +28,13 @@ const TInt KViewStateTransBorder = 1;
 const TInt KViewBtnHeightFromHintVar = 4;
 const TInt KViewBtnBoxInnerBoard = 0;
 const TInt KViewTransMinWidth = 30;
+const TInt KViewBorder = 2;
 
 // Targets entries for drag-drop
 const TInt KTei_NewObject = 1;
 const TInt KTei_NewState = 2;
 const TInt KTei_Conn = 3; // Connection point
+const TInt KTei_NewTrans = 4;
 
 static GtkTargetEntry KTe_NewObject[] = { 
     { (gchar*) "STRING", 0, KTei_NewObject } 
@@ -44,10 +46,23 @@ static GtkTargetEntry KTe_NewState[] = {
 };
 const TInt KTe_NewState_Len = sizeof(KTe_NewState)/sizeof(GtkTargetEntry);
 
+static GtkTargetEntry KTe_NewTrans[] = { 
+    { (gchar*) "STRING", 0, KTei_NewTrans } 
+};
+const TInt KTe_NewTrans_Len = sizeof(KTe_NewTrans)/sizeof(GtkTargetEntry);
+
+
 static GtkTargetEntry KTe_Conn[] = { 
     { (gchar*) "STRING", 0, KTei_Conn } 
 };
 const TInt KTe_Conn_Len = sizeof(KTe_Conn)/sizeof(GtkTargetEntry);
+
+
+struct TPmenuSpecElem {
+    TPmenuSpecElem(const string& aName, const string& aLabel): iName(aName), iLabel(aLabel) {};
+    string iName;
+    string iLabel;
+};
 
 
 

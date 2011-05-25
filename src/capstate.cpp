@@ -287,6 +287,14 @@ void CapState::OnLabelRenamed(CapCp* aCp, const string& aName)
     }
 }
 
+void CapState::OnCpAddPairRequested(CapCp* aCp, const string& aPairName)
+{
+    if (iObs != NULL) {
+	iObs->OnStateCpAddPairRequested(this, aCp, aPairName);
+    }
+}
+
+
 TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
 {
     TBool res = EFalse;
@@ -296,5 +304,12 @@ TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
 	}
     }
     return res;
+}
+
+void CapState::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
+{
+    if (iObs != NULL) {
+	iObs->OnStateCpDelPairRequested(this, aCp, string(aPair->Pair()->Man().InstName()) + "." + aPair->Pair()->Name());
+    }
 }
 

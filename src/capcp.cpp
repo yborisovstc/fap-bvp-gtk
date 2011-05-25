@@ -22,7 +22,7 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
     }
     // Set as source for DnD
     iLabel->DragSourceAdd(GDK_MODIFIER_MASK, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
-    iLabel->SetSelText(string(iCp.Man().InstName()) + "~" + iName);
+    iLabel->SetSelText(string(iCp.Man().InstName()) + "." + iCp.Name());
     // Create terminator
     iTerm = new CapCterm("Term", iCp, iExt, iLeft);
     Add(iTerm);
@@ -142,10 +142,17 @@ void CapCp::SetObs(MCapCpObserver* aObs)
     iCpObs = aObs;
 }
 
-void CapCp::OnCpPairToggled(CapCtermPair* aPair)
+void CapCp::OnCpTermPairToggled(CapCtermPair* aPair)
 {
     if (iCpObs != NULL) {
 	iCpObs->OnCpPairToggled(this, aPair);
+    }
+}
+
+void CapCp::OnCpTermAddPairRequested(CapCterm* aCpTerm, const string& aPairName)
+{
+    if (iCpObs != NULL) {
+	iCpObs->OnCpAddPairRequested(this, aPairName);
     }
 }
 
@@ -162,6 +169,13 @@ void CapCp::OnUpdateCompleted()
 {
     if (iCpObs != NULL) {
 	iCpObs->OnLabelRenamed(this, iLabel->GetText());
+    }
+}
+
+void CapCp::OnCpTermDelPairRequested(CapCterm* aCpTerm, CapCtermPair* aPair)
+{
+    if (iCpObs != NULL) {
+	iCpObs->OnCpDelPairRequested(this, aPair);
     }
 }
 

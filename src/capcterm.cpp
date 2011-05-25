@@ -25,14 +25,32 @@ CAE_ConnPointBase* CapCtermPair::Cp()
     return parent->Cp();
 }
 
+void* CapCtermPair::DoGetObj(const char *aName)
+{
+    if (strcmp(aName, Type()) == 0) 
+	return this;
+    else return CagToggleButton::DoGetObj(aName);
+}
 
 // *************************************************************
 // Connection terminator
 // *************************************************************
 
+const char* KCpTermPmenu_Disconnect = "Disconnect";
+
+vector<TPmenuSpecElem> CapCterm::iPmenuSpec;
+
 CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft): 
     CagLayout(aName), iCp(aCp), iLeft(aLeft), iInfo(NULL), iTermObs(NULL), iExt(aExt), iDetLevel(1), iContr(NULL)
 {
+    if (iPmenuSpec.empty()) {
+	iPmenuSpec.push_back(TPmenuSpecElem(KCpTermPmenu_Disconnect, "Disconnect"));
+    }
+    // Popup Menu
+    iPopupMenu = new CapPopupMenu("Menu", iPmenuSpec);
+    iPopupMenu->SetTitle("cont menu");
+    iPopupMenu->Show();
+    iPopupMenu->SetMenuShellObs(this);
     // Create pairs
     if (iExt) {
 	for (vector<CAE_ConnPointBase*>::const_iterator it = iCp.Exts().begin(); it != iCp.Exts().end(); it++) {
@@ -41,6 +59,7 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
 	    iPairs[pair] = pairw;
 	    Add(pairw);
 	    pairw->SetObs(this);
+	    pairw->SetWidgetObs(this);
 	}
     }
     else {
@@ -50,6 +69,7 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
 	    iPairs[pair] = pairw;
 	    Add(pairw);
 	    pairw->SetObs(this);
+	    pairw->SetWidgetObs(this);
 	}
     }
     if (iPairs.size() == 1) {
@@ -89,6 +109,8 @@ void* CapCterm::DoGetObj(const char *aName)
 	return (MCagToggleButtonObs*) this;
     else if (strcmp(aName, Type()) == 0) 
 	return this;
+    else if (strcmp(aName, MWidgetObs::Type()) == 0)
+	return (MWidgetObs*) this;
     else return CagLayout::DoGetObj(aName);
 }
 
@@ -109,10 +131,6 @@ void CapCterm::OnExpose(GdkEventExpose* aEvent)
 {
 //    GtkAllocation alc; Allocation(&alc);
 //    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, 0, 0, alc.width - 1, alc.height - 1);
-}
-
-TBool CapCterm::OnButtonPress(GdkEventButton* aEvent)
-{
 }
 
 TBool CapCterm::OnButtonRelease(GdkEventButton* aEvent)
@@ -209,7 +227,7 @@ void CapCterm::OnToggled(CagToggleButton* aBtn)
     if (iTermObs) {
 	CapCtermPair* pair = aBtn->GetObj(pair);
 	_FAP_ASSERT(pair != NULL);
-	iTermObs->OnCpPairToggled(pair);
+	iTermObs->OnCpTermPairToggled(pair);
     }
 }
 
@@ -236,9 +254,35 @@ void CapCterm::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, 
     if (info == KTei_Conn)
     {
 	gtk_drag_finish(drag_context, true, false, time);
+	if (iTermObs != NULL) {
+	    iTermObs->OnCpTermAddPairRequested(this, textd);
+	}
     }
     else {
 	gdk_drag_status(drag_context, (GdkDragAction) 0, time);
     }
 }
 
+void CapCterm::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
+{
+    CapPopupMenu* menu = aMenuShell->GetObj(menu);
+    _FAP_ASSERT(menu != NULL);
+    CagWidget* context = menu->Context();
+    _FAP_ASSERT(context != NULL);
+    CapCtermPair* pair = context->GetObj(pair);
+    _FAP_ASSERT(pair != NULL);
+    if (iTermObs != NULL) {
+	iTermObs->OnCpTermDelPairRequested(this, pair);
+    }
+}
+
+TBool CapCterm::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent)
+{
+    if (aEvent->button == 3) {
+	// Popup context menu
+	iPopupMenu->SetContext(aWidget);
+	iPopupMenu->Popup(aEvent->button, aEvent->time);
+	return ETrue;
+    }
+    return EFalse;
+}

@@ -8,6 +8,8 @@ class CagMisc: public CagWidget
     public:
 	CagMisc(GType aType, const string& aName);
 	virtual ~CagMisc();
+    public:
+	void SetPadding(TInt aX, TInt aY);
 };
 
 #endif 

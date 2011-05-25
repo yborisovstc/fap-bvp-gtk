@@ -295,3 +295,11 @@ void CapComp::OnLabelRenamed(CapCp* aCp, const string& aName)
 {
 }
 
+void CapComp::OnCpAddPairRequested(CapCp* aCp, const string& aPairName)
+{
+}
+
+void CapComp::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
+{
+}
+

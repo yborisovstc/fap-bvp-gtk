@@ -2,12 +2,9 @@
 #include "capopwnd.h"
 #include "capcommon.h"
 
-/*
-static GtkTargetEntry targetentries2[] =
-{
-    { "STRING", 0, 3 }
-};
-*/
+const char* KIconsDir = "/usr/share/fap-bvp-gtk/icons/";
+const char* KIcon_NewSyst = "/usr/share/fap-bvp-gtk/icons/tbar_btn_syst.png";
+const char* KIcon_NewTrans = "/usr/share/fap-bvp-gtk/icons/tbar_btn_trans.png";
 
 CapOtbDragItem::CapOtbDragItem(const string& aName, GtkTargetEntry* aTes, TInt aTesLen, const string& aSel): 
     CagToolItem(aName), iTes(aTes), iTesLen(aTesLen), iSel(aSel)
@@ -41,14 +38,19 @@ CapOpWndToolbar::CapOpWndToolbar(const string& aName): CagToolBar(aName)
     iBtnUp->Show();
     // Button "New system"
     iBtnNewSyst = new CapOtbDragItem("BntNewSyst", KTe_NewObject, KTe_NewObject_Len, "_new_object");
-    iBtnNewSyst->SetImage("tbar_btn_syst.png");
+    iBtnNewSyst->SetImage(KIcon_NewSyst);
     Insert(iBtnNewSyst, -1);
     iBtnNewSyst->Show();
-    // Button "New system"
+    // Button "New state"
     iBtnNewState = new CapOtbDragItem("BntNewState", KTe_NewState, KTe_NewState_Len, "_new_state");
     iBtnNewState->SetImage("tbar_btn_state.png");
     Insert(iBtnNewState, -1);
     iBtnNewState->Show();
+    // Button "New trans"
+    iBtnNewTrans = new CapOtbDragItem("BntNewTrans", KTe_NewTrans, KTe_NewTrans_Len, "_new_trans");
+    iBtnNewTrans->SetImage(KIcon_NewTrans);
+    Insert(iBtnNewTrans, -1);
+    iBtnNewTrans->Show();
 }
 
 
