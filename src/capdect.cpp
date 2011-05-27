@@ -3,13 +3,16 @@
 #include "cagbutton.h"
 #include "capcommon.h"
 
+const char* KIcon_DectBtnLess = "/usr/share/fap-bvp-gtk/icons/dect_btn_less.png";
+const char* KIcon_DectBtnMore = "/usr/share/fap-bvp-gtk/icons/dect_btn_more.png";
+
 CapDect::CapDect(const string& aName): 
     CagLayout(aName), iObserver(NULL), iLevel(0), iLowerLim(0), iUpperLim(0)
 {
     // Create Less
     iLess = new CagButton("Less");
     Add(iLess);
-    iLess->SetImage("dect_btn_less.png");
+    iLess->SetImage(KIcon_DectBtnLess);
     iLess->SetObs(this);
     iLess->Show();
 
@@ -19,7 +22,7 @@ CapDect::CapDect(const string& aName):
     // Create More
     iMore = new CagButton("More");
     Add(iMore);
-    iMore->SetImage("dect_btn_more.png");
+    iMore->SetImage(KIcon_DectBtnMore);
     iMore->SetObs(this);
     iMore->Show();
 }

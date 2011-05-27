@@ -12,6 +12,7 @@ class CagContainer: public CagWidget
 	virtual ~CagContainer();
 	void Add(CagWidget* aChild, TBool aAddToGtkCont = ETrue);
 	void Remove(CagWidget* aChild);
+	CagWidget* Child(const string& aName);
 	void SetBorderWidth(int aWidth);
 	void SetFocusChild(CagWidget* aChild);
 	// From MWidgetRes

@@ -2,7 +2,7 @@
 #include "cagprov.h"
 
 
-CagProvider::CagProvider(GtkWidget* aWnd): iWnd(aWnd)
+CagProvider::CagProvider(CagWindow* aWnd): iWnd(aWnd)
 {
 }
 

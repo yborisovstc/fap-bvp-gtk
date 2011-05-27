@@ -4,6 +4,7 @@
 
 const char* KIconsDir = "/usr/share/fap-bvp-gtk/icons/";
 const char* KIcon_NewSyst = "/usr/share/fap-bvp-gtk/icons/tbar_btn_syst.png";
+const char* KIcon_NewState = "/usr/share/fap-bvp-gtk/icons/tbar_btn_state.png";
 const char* KIcon_NewTrans = "/usr/share/fap-bvp-gtk/icons/tbar_btn_trans.png";
 
 CapOtbDragItem::CapOtbDragItem(const string& aName, GtkTargetEntry* aTes, TInt aTesLen, const string& aSel): 
@@ -26,42 +27,8 @@ void CapOtbDragItem::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionDat
 
 
 
-CapOpWndToolbar::CapOpWndToolbar(const string& aName): CagToolBar(aName)
-{
-    // Button "Back"
-    iBtnBack = new CagToolButton("BntBack", GTK_STOCK_GO_BACK);
-    Insert(iBtnBack, 0);
-    iBtnBack->Show();
-    // Button "Up"
-    iBtnUp = new CagToolButton("BntUp", GTK_STOCK_GO_UP);
-    Insert(iBtnUp, 0);
-    iBtnUp->Show();
-    // Button "New system"
-    iBtnNewSyst = new CapOtbDragItem("BntNewSyst", KTe_NewObject, KTe_NewObject_Len, "_new_object");
-    iBtnNewSyst->SetImage(KIcon_NewSyst);
-    Insert(iBtnNewSyst, -1);
-    iBtnNewSyst->Show();
-    // Button "New state"
-    iBtnNewState = new CapOtbDragItem("BntNewState", KTe_NewState, KTe_NewState_Len, "_new_state");
-    iBtnNewState->SetImage("tbar_btn_state.png");
-    Insert(iBtnNewState, -1);
-    iBtnNewState->Show();
-    // Button "New trans"
-    iBtnNewTrans = new CapOtbDragItem("BntNewTrans", KTe_NewTrans, KTe_NewTrans_Len, "_new_trans");
-    iBtnNewTrans->SetImage(KIcon_NewTrans);
-    Insert(iBtnNewTrans, -1);
-    iBtnNewTrans->Show();
-}
-
-
-
-
-CapOpWnd::CapOpWnd(const string& aName): CagWindow(aName), iSysWidget(NULL), iObs(NULL)
-{
-    Construct();
-}
-
-CapOpWnd::CapOpWnd(GtkWidget* aWidget, TBool aOwned): CagWindow(aWidget, aOwned), iSysWidget(NULL), iObs(NULL)
+CapOpWnd::CapOpWnd(const string& aName, CagToolBar* aToolbar): 
+    CagLayout(aName), iSysWidget(NULL), iObs(NULL), iToolbar(aToolbar)
 {
     Construct();
 }
@@ -76,12 +43,28 @@ void CapOpWnd::Construct()
     iVbox = new CagVBox("Vbox");
     Add(iVbox);
     iVbox->Show();
-    // Toolbar
-    iToolbar = new CapOpWndToolbar("Toolbar");
-    iVbox->PackStart(iToolbar, false, false, 1);
-    iToolbar->iBtnUp->SetObserver(this);
-    iToolbar->iBtnBack->SetObserver(this);
-    iToolbar->Show();
+    // Adding buttons to toolbar
+    // Button "Back"
+    CagToolButton* sBtnBack = new CagToolButton("BtnBack", GTK_STOCK_GO_BACK);
+    sBtnBack->SetObserver(this);
+    iToolbar->Insert(sBtnBack, 0);
+    sBtnBack->Show();
+    // Button Up
+    CagToolButton* sBtnUp = new CagToolButton("BtnUp", GTK_STOCK_GO_UP);
+    sBtnUp->SetObserver(this);
+    iToolbar->Insert(sBtnUp, 0);
+    sBtnUp->Show();
+    // Button "New state"
+    CapOtbDragItem* sBtnNewState = new CapOtbDragItem("BntNewState", KTe_NewState, KTe_NewState_Len, "_new_state");
+    sBtnNewState->SetImage(KIcon_NewState);
+    iToolbar->Insert(sBtnNewState, -1);
+    sBtnNewState->Show();
+    // Button "New system"
+    CapOtbDragItem* sBtnNewSyst = new CapOtbDragItem("BntNewSyst", KTe_NewObject, KTe_NewObject_Len, "_new_object");
+    sBtnNewSyst->SetImage(KIcon_NewSyst);
+    iToolbar->Insert(sBtnNewSyst, -1);
+    sBtnNewSyst->Show();
+
 }
 
 
@@ -127,8 +110,10 @@ void CapOpWnd::SetObserver(MOpWndObserver* aObs)
 
 void CapOpWnd::UpdateCmds()
 {
-    iToolbar->iBtnBack->SetSensitive(iObs->OnCmdUpdateRequest(MOpWndObserver::ECmd_Back));
-    iToolbar->iBtnUp->SetSensitive(iObs->OnCmdUpdateRequest(MOpWndObserver::ECmd_Up));
+    if (iToolbar) {
+    iToolbar->Child("BtnBack")->SetSensitive(iObs->OnCmdUpdateRequest(MOpWndObserver::ECmd_Back));
+    iToolbar->Child("BtnUp")->SetSensitive(iObs->OnCmdUpdateRequest(MOpWndObserver::ECmd_Up));
+    }
 }
 
 void CapOpWnd::OnCompSelected(CAE_Object* aComp)
@@ -150,13 +135,13 @@ void CapOpWnd::OnSystSelected(const string& aName)
 // Toolbar buttons handling
 void CapOpWnd::OnClicked(CagToolButton* aBtn)
 {
-    if (aBtn == iToolbar->iBtnUp) {
+    if (aBtn == iToolbar->Child("BtnUp")) {
 	if (iObs!= NULL) {
 	    iObs->OnCmd(MOpWndObserver::ECmd_Up);
 	    UpdateCmds();
 	}
     }
-    else if (aBtn == iToolbar->iBtnBack) {
+    else if (aBtn == iToolbar->Child("BtnBack")) {
 	if (iObs!= NULL) {
 	    iObs->OnCmd(MOpWndObserver::ECmd_Back);
 	    UpdateCmds();
@@ -170,6 +155,16 @@ void* CapOpWnd::DoGetObj(const char *aName)
 	return (MagToolButtonObserver*) this;
     else if (strcmp(aName, Type()) == 0) 
 	return this;
-    else return CagWindow::DoGetObj(aName);
+    else return CagLayout::DoGetObj(aName);
+}
+
+void CapOpWnd::OnSizeAllocate(GtkAllocation* aAllocation)
+{
+}
+
+void CapOpWnd::OnSizeRequest(GtkRequisition* aRequisition)
+{
+    GtkRequisition child_req; iVbox->SizeRequest(&child_req);
+    *aRequisition = child_req;
 }
 

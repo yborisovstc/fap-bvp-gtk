@@ -5,11 +5,12 @@
 #include <fapfact.h>
 #include <gtk/gtk.h>
 
+class CagWindow;
 // Provider
 class CagProvider: public CAE_ProviderBase
 {
     public:
-	CagProvider(GtkWidget* aWnd);
+	CagProvider(CagWindow* aWnd);
 	virtual ~CagProvider();
 	// From MAE_Provider
 	virtual CAE_StateBase* CreateStateL(const char *aTypeUid, const char* aInstName, CAE_Object* aMan) const { return NULL;};
@@ -26,7 +27,7 @@ class CagProvider: public CAE_ProviderBase
 	virtual CAE_TranExBase* CreateTranEx(MCAE_LogRec* aLogger) const { return NULL;};
 	virtual MAE_Opv* CreateViewProxy();
     private:
-	GtkWidget* iWnd;
+	CagWindow* iWnd;
 };
 
 

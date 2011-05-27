@@ -5,14 +5,16 @@
 #include <fapfact.h>
 #include <gtk/gtk.h>
 #include "capopwnd.h"
+#include "mainwndiface.h"
 
 
 class CapSys;
 class CapOpWnd;
+class CagWindow;
 class CagProxy: public MAE_Opv, public MOpWndObserver
 {
     public:
-	CagProxy(GtkWidget* aWnd);
+	CagProxy(CagWindow* aWnd);
 	virtual ~CagProxy();
 	void TurnToComp(CAE_Object* aComp);
 	// From MAE_Opv
@@ -20,6 +22,7 @@ class CagProxy: public MAE_Opv, public MOpWndObserver
 	virtual void SetRoot(CAE_Object::Ctrl* aObj);
 	virtual void SetObj(CAE_Object::Ctrl* aObj);
 	virtual void UnsetObj(CAE_Object::Ctrl* aObj);
+	virtual void UnsetRoot(CAE_Object* aObj);
 	// From MOpWndObserver
 	virtual void OnTurnToComp(CAE_Object* aComp);
 	virtual void OnTurnToSyst(const string& aName);
@@ -31,6 +34,7 @@ class CagProxy: public MAE_Opv, public MOpWndObserver
 	CapOpWnd* iWindow;
 	vector<CAE_Object*> iHistory;
 	vector<CAE_Object*>::iterator iHistItr;
+	MOpMainWnd* iMainWnd;
 };
 
 #endif 

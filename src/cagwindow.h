@@ -16,8 +16,6 @@ class CagWindow: public CagBin
 	virtual ~CagWindow();
     private:
 	static void Init();
-    protected:
-	GtkWidget* iWidget;
 };
 
 #endif 

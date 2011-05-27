@@ -32,6 +32,7 @@ void CagContainer::Remove(CagWidget* aChild)
     _FAP_ASSERT(iChilds.count(aChild->Name()) > 0);
     iChilds.erase(aChild->Name());
     gtk_container_remove(GTK_CONTAINER(iWidget), aChild->iWidget);
+    iChildsWd.erase(aChild->iWidget);
     aChild->ResetParent(this);
 }
 
@@ -67,3 +68,7 @@ void CagContainer::SetFocusChild(CagWidget* aChild)
     gtk_container_set_focus_child(GTK_CONTAINER(iWidget), aChild->iWidget);
 }
 
+CagWidget* CagContainer::Child(const string& aName)
+{
+    return iChilds.count(aName) == 0 ? NULL : iChilds[aName];
+}

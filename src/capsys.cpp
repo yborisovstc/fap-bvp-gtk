@@ -442,6 +442,7 @@ void CapSys::AddState()
     sprintf(name, "noname%d", rand());
     comp.SetAttr(ENa_Id, name);
     free(name);
+    comp.AddChild(ENt_Trans);
     iSys.Object().Mutate();
     Refresh();
 }
@@ -542,7 +543,7 @@ void CapSys::AddStateInp(CapState* aState)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, aState->iState.InstName());
+    smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode addstinp = mutadd.AddChild(ENt_Stinp);
     char *name = (char*) malloc(100);
@@ -586,7 +587,7 @@ void CapSys::ChangeStateTrans(CapState* aState, const string& aTrans)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, aState->iState.InstName());
+    smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, ENt_Trans);
     chnode.SetAttr(ENa_Id, "");

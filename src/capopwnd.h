@@ -19,18 +19,6 @@ class CapOtbDragItem: public CagToolItem
 	string iSel;
 };
 
-class CapOpWndToolbar: public CagToolBar
-{
-    public:
-	CapOpWndToolbar(const string& aName);
-    public:
-	CagToolButton* iBtnBack;
-	CagToolButton* iBtnUp;
-	CapOtbDragItem* iBtnNewSyst;
-	CapOtbDragItem* iBtnNewState;
-	CapOtbDragItem* iBtnNewTrans;
-};
-
 class MOpWndObserver
 {
     public:
@@ -46,12 +34,11 @@ class MOpWndObserver
 	virtual TBool OnCmdUpdateRequest(TCmd aCmd) = 0;
 };
 
-class CapOpWnd: public CagWindow, public MCapSysObserver, public MagToolButtonObserver
+class CapOpWnd: public CagLayout, public MCapSysObserver, public MagToolButtonObserver
 {
     public:
 	static inline const char* Type() { return "CapOpWnd";} ; 
-	CapOpWnd(const string& aName);
-	CapOpWnd(GtkWidget* aWidget, TBool aOwned);
+	CapOpWnd(const string& aName, CagToolBar* aToolbar);
 	virtual ~CapOpWnd();
 	void AddView(CagWidget* aView);
 	void RemoveView(CagWidget* aView);
@@ -69,8 +56,11 @@ class CapOpWnd: public CagWindow, public MCapSysObserver, public MagToolButtonOb
 	// From MagToolButtonObserver
 	virtual void OnClicked(CagToolButton* aBtn);
     private:
+	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
+	virtual void OnSizeRequest(GtkRequisition* aRequisition);
+    private:
 	CagVBox* iVbox;
-	CapOpWndToolbar* iToolbar;
+	CagToolBar* iToolbar;
 	CapSys* iSysWidget;
 	MOpWndObserver* iObs;
 };

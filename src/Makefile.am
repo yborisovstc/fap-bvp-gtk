@@ -57,10 +57,21 @@ libfapbvpgtk_la_SOURCES = \
 		       cagtoolbar.cpp \
 		       cagtoolbar.h \
 		       cagwindow.cpp \
+		       mainwndiface.h \
 		       cagwindow.h 
 
 include_HEADERS = \
-		  cagprov.h
+		  cagprov.h \
+		  widgets.h \
+		  cagbin.h \
+		  cagproxy.h \
+		  cagmenu.h \
+		  cagcontainer.h \
+		  cagbox.h \
+		  cagtoolbar.h \
+		  mainwndiface.h \
+		  caglayout.h \
+		  cagwindow.h 
      
 
 libfapbvpgtk_la_LDFLAGS = -rdynamic -no-undefined

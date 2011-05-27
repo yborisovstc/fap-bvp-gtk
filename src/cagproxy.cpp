@@ -4,13 +4,18 @@
 #include "capopwnd.h"
 
 
+const char* KConf_ProxyRc = "/usr/share/fap-bvp-gtk/conf/cag_proxy.rc";
 
-CagProxy::CagProxy(GtkWidget* aWnd): iSys(NULL), iRoot(NULL)
+CagProxy::CagProxy(CagWindow* aWnd): iSys(NULL), iRoot(NULL)
 {
-    iWindow = new CapOpWnd(aWnd, EFalse);
+    iMainWnd = aWnd->GetObj(iMainWnd);
+    iWindow = new CapOpWnd("OpWnd", iMainWnd->Toolbar());
+    _FAP_ASSERT(iMainWnd != NULL);
+    iMainWnd->ClientWnd()->Add(iWindow);
     iWindow->SetObserver(this);
+    iWindow->Show();
     // Load resource file
-    gtk_rc_parse("cag_proxy.rc");
+    gtk_rc_parse(KConf_ProxyRc);
 }
 
 CagProxy::~CagProxy()
@@ -44,6 +49,13 @@ void CagProxy::UnsetObj(CAE_Object::Ctrl* aObj)
     _FAP_ASSERT(iSys == aObj);
     iWindow->UnsetSys(iSys);
     iSys = NULL;
+}
+
+void CagProxy::UnsetRoot(CAE_Object* aObj)
+{
+    _FAP_ASSERT(&(iRoot->Object()) == aObj);
+    iRoot = NULL;
+    iHistory.clear();
 }
 
 void CagProxy::TurnToComp(CAE_Object* aComp)
