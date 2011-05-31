@@ -418,9 +418,8 @@ void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, Gt
 void CapSys::AddComponent() 
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
-    CAE_ChromoNode comp = mutadd.AddChild(ENt_Object);
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode comp = smutr.AddChild(ENt_Object);
     comp.SetAttr(ENa_Type, "none");
     char *name = (char*) malloc(100);
     sprintf(name, "noname%d", rand());
@@ -433,8 +432,8 @@ void CapSys::AddComponent()
 void CapSys::AddState()
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, "self");
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode comp = mutadd.AddChild(ENt_State);
     comp.SetAttr(ENa_Type, "StInt");
@@ -542,7 +541,8 @@ void CapSys::OnStateAddingInput(CapState* aState)
 void CapSys::AddStateInp(CapState* aState)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode addstinp = mutadd.AddChild(ENt_Stinp);
@@ -606,7 +606,7 @@ void CapSys::AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairNam
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, "self");
+    //smut.SetAttr(ENa_MutNode, "self");
     CAE_ChromoNode ndadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Conn);
     TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
@@ -634,7 +634,7 @@ void CapSys::DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairNam
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, "self");
+    //smut.SetAttr(ENa_MutNode, "self");
     CAE_ChromoNode rm = smut.AddChild(ENt_MutRm);
     CAE_ChromoNode rm_subj = rm.AddChild(ENt_Node);
     rm_subj.SetAttr(ENa_Type, ENt_Conn);

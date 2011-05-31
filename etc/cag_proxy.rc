@@ -1,0 +1,81 @@
+# Colors
+
+
+style "def_label_style" 
+{ 
+    fg[NORMAL] = {0.0, 0, 0}
+}
+
+style "system_style" 
+{ 
+    color["background"] = {0.9, 0.9, 0.9}
+    color["foreground"] = {0.0, 0.0, 0.0}
+    fg[NORMAL] = @foreground
+    bg[NORMAL] = @background
+    text[NORMAL] = @foreground
+    base[NORMAL] = @background
+    GtkLayout::draw-border = {5, 5, 5, 5}
+}
+
+
+style "comp_style" = "system_style"
+{ 
+}
+
+style "state_style" = "system_style"
+{ 
+}
+
+style "state_trans_style" = "state_style"
+{ 
+    GtkTextView::draw-border = {5, 5, 2, 2}
+}
+
+style "cp_style" = "system_style"
+{ 
+}
+
+style "cp_term_style" = "cp_style"
+{ 
+}
+
+style "cp_term_pair_style" = "cp_term_style"
+{
+    color["background"] = {0.5, 0.5, 0.9}
+    color["foreground"] = {0.0, 1.0, 0.0}
+    fg[ACTIVE] = @foreground
+    bg[ACTIVE] = @background
+    text[ACTIVE] = @foreground
+    base[ACTIVE] = @background
+    GtkButton::inner-border = {0, 0, 0, 0}
+    GtkButton::default-border = {20, 20, 20, 20}
+    GtkeButton::default-outside-border = {20, 20, 20, 20}
+    GtkButton::relief = {1}
+}
+
+style "cp_term_info_style" = "cp_term_style"
+{ 
+}
+
+class "GtkLabel" style "def_label_style"
+
+#widget "Trans" style "trans_style"
+class "GtkTextView" style "state_trans_style"
+
+widget "*.System" style "system_style"
+widget "*.System.Inp*" style "cp_style"
+widget "*.System.Out*" style "cp_style"
+widget "*.System.Comp*" style "comp_style"
+widget "*.System.Comp*.Outp*" style "cp_style"
+widget "*.System.Comp*.Outp*.Term" style "cp_term_style"
+widget "*.System.Comp*.Outp*.Term.CtermPair*" style "cp_term_pair_style"
+widget "*.System.Comp*.Outp*.Term.Info" style:highest "cp_term_info_style"
+widget "*.System.Comp*.Inp*" style "cp_style"
+widget "*.System.Comp*.Inp*.Term" style "cp_term_style"
+widget "*.System.Comp*.Inp*.Term.CtermPair*" style "cp_term_pair_style"
+widget "*.System.Comp*.Inp*.Term.Info" style:highest "cp_term_info_style"
+widget "*.System.State*" style "state_style"
+#widget "*.System.State*.Inp*.Term" style "cp_term_style"
+widget "*.System.State*.Inp*.Term.CtermPair*" style "cp_term_pair_style"
+widget "*.System.State*.Outp*.Term.CtermPair*" style "cp_term_pair_style"
+
