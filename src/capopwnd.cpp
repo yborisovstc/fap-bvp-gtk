@@ -6,6 +6,8 @@ const char* KIconsDir = "/usr/share/fap-bvp-gtk/icons/";
 const char* KIcon_NewSyst = "/usr/share/fap-bvp-gtk/icons/tbar_btn_syst.png";
 const char* KIcon_NewState = "/usr/share/fap-bvp-gtk/icons/tbar_btn_state.png";
 const char* KIcon_NewTrans = "/usr/share/fap-bvp-gtk/icons/tbar_btn_trans.png";
+const char* KIcon_NewInp = "/usr/share/fap-bvp-gtk/icons/tbar_btn_inp.png";
+const char* KIcon_NewOutp = "/usr/share/fap-bvp-gtk/icons/tbar_btn_outp.png";
 
 CapOtbDragItem::CapOtbDragItem(const string& aName, GtkTargetEntry* aTes, TInt aTesLen, const string& aSel): 
     CagToolItem(aName), iTes(aTes), iTesLen(aTesLen), iSel(aSel)
@@ -64,7 +66,21 @@ void CapOpWnd::Construct()
     sBtnNewSyst->SetImage(KIcon_NewSyst);
     iToolbar->Insert(sBtnNewSyst, -1);
     sBtnNewSyst->Show();
-
+    // Button "New trans"
+    CapOtbDragItem* sBtnNewTrans = new CapOtbDragItem("BntNewTrans", KTe_NewTrans, KTe_NewTrans_Len, "_new_trans");
+    sBtnNewTrans->SetImage(KIcon_NewTrans);
+    iToolbar->Insert(sBtnNewTrans, -1);
+    sBtnNewTrans->Show();
+    // Button "New Inp"
+    CapOtbDragItem* sBtnNewInp = new CapOtbDragItem("BntNewInp", KTe_NewInp, KTe_NewInp_Len, "_new_inp");
+    sBtnNewInp->SetImage(KIcon_NewInp);
+    iToolbar->Insert(sBtnNewInp, -1);
+    sBtnNewInp->Show();
+    // Button "New Inp"
+    CapOtbDragItem* sBtnNewOutp = new CapOtbDragItem("BntNewOutp", KTe_NewOutp, KTe_NewOutp_Len, "_new_outp");
+    sBtnNewOutp->SetImage(KIcon_NewOutp);
+    iToolbar->Insert(sBtnNewOutp, -1);
+    sBtnNewOutp->Show();
 }
 
 

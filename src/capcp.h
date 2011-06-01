@@ -45,7 +45,7 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, p
 	virtual void OnCpTermAddPairRequested(CapCterm* aCpTerm, const string& aPairName);
 	virtual void OnCpTermDelPairRequested(CapCterm* aCpTerm, CapCtermPair* aPair);
 	// From MapEopEntryObserver
-	virtual void OnUpdateCompleted();
+	virtual void OnUpdateCompleted(CapEopEntry* aEntry);
     public:
 	CAE_ConnPointBase& iCp;
     private:

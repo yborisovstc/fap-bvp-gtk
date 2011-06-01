@@ -83,6 +83,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair);
 	virtual void OnStateNameChanged(CapState* aState, const string& aName);
+	virtual void OnStateTypeChanged(CapState* aState, const string& aTypeName);
 	virtual void OnStateDeleteRequested(CapState* aState);
 	virtual void OnStateAddingInput(CapState* aState);
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName);
@@ -104,14 +105,20 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void AddComponent();
 	void AddState();
 	void AddStateInp(CapState* aState);
+	void AddTrans();
+	void AddInp();
+	void AddOutp();
 	void DeleteState(CapState* aState);
 	void ChangeCompName(CapComp* aComp, const string& aName);
 	void ChangeStateName(CapState* aState, const string& aName);
+	void ChangeStateType(CapState* aState, const string& aTypeName);
 	void ChangeStateTrans(CapState* aState, const string& aTrans);
 	void RenameStateInp(CapState* aState, CapCp* aCp, const string& aName);
+	void RenameInpOutp(CapCp* aCp, const string& aName);
 	void AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName);
 	void DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName);
 	void Refresh();
+	string GetRandomNum() const;
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
     private:

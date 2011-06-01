@@ -141,7 +141,7 @@ void CapSysHead::OnStateChanged(GtkStateType state)
 
 
 CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver): 
-    CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this)
+    CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this), iTrans(NULL)
 {
     Construct();
 }
@@ -194,9 +194,11 @@ void CapSys::Construct()
 	cpw->Show();
     }
     // Add trans
-    iTrans = new CapTran("Transs", iSys.Trans());
-    Add(iTrans);
-    iTrans->Show();
+    if (!iSys.Trans().empty()) {
+	iTrans = new CapTran("Transs", iSys.Trans());
+	Add(iTrans);
+	iTrans->Show();
+    }
 }
 
 CapSys::~CapSys()
@@ -246,12 +248,16 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 	outpb_y += req.height + KViewConnGapHeight;
     }
     // Allocate trans
-    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
+    GtkRequisition tran_req = (GtkRequisition) {0, 0}; 
+    if (iTrans != NULL) {
+	iTrans->SizeRequest(&tran_req);
+    }
     int tranb_x = (outp_w + aAllc->width - inp_w)/2, tranb_y = head_req.height + KViewCompGapHight;
     GtkAllocation tran_alc = { tranb_x - tran_req.width/2, tranb_y, tran_req.width, tran_req.height};
-    iTrans->SizeAllocate(&tran_alc);
+    if (iTrans != NULL) {
+	iTrans->SizeAllocate(&tran_alc);
+    }
     // Allocate states
-//    int statb_x = (outp_w + aAllc->width - inp_w)/2, statb_y = head_req.height + KViewCompGapHight;
     int statb_x = (outp_w + aAllc->width - inp_w)/2, statb_y = tran_alc.y + tran_alc.height + KViewCompGapHight;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
 	CAE_StateBase* state = it->first;
@@ -279,7 +285,10 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 {
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
     // Calculate trans size
-    GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
+    GtkRequisition tran_req = (GtkRequisition) {0, 0}; 
+    if (iTrans != NULL) {
+	iTrans->SizeRequest(&tran_req);
+    }
     // Calculate size of states
     int stat_w = 0, stat_h = 0;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
@@ -413,6 +422,21 @@ void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, Gt
 	AddState();
 	gtk_drag_finish(drag_context, true, false, time);
     }
+    else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_trans") == 0) 
+    {
+	AddTrans();
+	gtk_drag_finish(drag_context, true, false, time);
+    }
+    else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_inp") == 0) 
+    {
+	AddInp();
+	gtk_drag_finish(drag_context, true, false, time);
+    }
+    else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_outp") == 0) 
+    {
+	AddOutp();
+	gtk_drag_finish(drag_context, true, false, time);
+    }
 }
 
 void CapSys::AddComponent() 
@@ -446,11 +470,52 @@ void CapSys::AddState()
     Refresh();
 }
 
+void CapSys::AddTrans()
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode stran = smutr.AddChild(ENt_Trans);
+    stran.SetContent("rem To add transition here");
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+string CapSys::GetRandomNum() const
+{
+    char *name = (char*) malloc(100);
+    sprintf(name, "%d", rand());
+    string res(name);
+    free(name);
+    return res;
+}
+
+void CapSys::AddInp()
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Stinp);
+    smut.SetAttr(ENa_Id, string("inp") + GetRandomNum());
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::AddOutp()
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Soutp);
+    smut.SetAttr(ENa_Id, string("outp") + GetRandomNum());
+    iSys.Object().Mutate();
+    Refresh();
+}
+
 void CapSys::Refresh()
 {
     // Remove all elements
     Remove(iHead);
-    Remove(iTrans);
+    if (iTrans != NULL) {
+	Remove(iTrans);
+    }
     iHead = NULL;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
 	Remove(it->second);
@@ -480,7 +545,8 @@ void CapSys::OnCompNameChanged(CapComp* aComp, const string& aName)
 void CapSys::ChangeCompName(CapComp* aComp, const string& aName)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, "iobject");
     chnode.SetAttr(ENa_Id, aComp->iComp.InstName());
@@ -495,15 +561,35 @@ void CapSys::OnStateNameChanged(CapState* aState, const string& aName)
     ChangeStateName(aState, aName);
 }
 
+void CapSys::OnStateTypeChanged(CapState* aState, const string& aTypeName)
+{
+    ChangeStateType(aState, aTypeName);
+}
+
 void CapSys::ChangeStateName(CapState* aState, const string& aName)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, "state");
     chnode.SetAttr(ENa_Id, aState->iState.InstName());
     chnode.SetAttr(ENa_MutChgAttr, "id");
     chnode.SetAttr(ENa_MutChgVal, aName);
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::ChangeStateType(CapState* aState, const string& aTypeName)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
+    chnode.SetAttr(ENa_Type, ENt_State);
+    chnode.SetAttr(ENa_Id, aState->iState.InstName());
+    chnode.SetAttr(ENa_MutChgAttr, ENa_Type);
+    chnode.SetAttr(ENa_MutChgVal, aTypeName);
     iSys.Object().Mutate();
     Refresh();
 }
@@ -524,7 +610,8 @@ TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
 void CapSys::DeleteState(CapState* aState)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
     CAE_ChromoNode rm_elem = mutrm.AddChild(ENt_Node);
     rm_elem.SetAttr(ENa_Type, ENt_State);
@@ -543,7 +630,7 @@ void CapSys::AddStateInp(CapState* aState)
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smutr = cpx->Mut().Root();
     CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
+    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode addstinp = mutadd.AddChild(ENt_Stinp);
     char *name = (char*) malloc(100);
@@ -557,6 +644,22 @@ void CapSys::AddStateInp(CapState* aState)
 
 void CapSys::OnLabelRenamed(CapCp* aCp, const string& aName)
 {
+    RenameInpOutp(aCp, aName);
+}
+
+void CapSys::RenameInpOutp(CapCp* aCp, const string& aName)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
+    TBool isoutp = iOutputs.count(&(aCp->iCp)) > 0; 
+    chnode.SetAttr(ENa_Type, isoutp ? ENt_Soutp : ENt_Stinp);
+    chnode.SetAttr(ENa_Id, aCp->iCp.Name());
+    chnode.SetAttr(ENa_MutChgAttr, ENa_Id);
+    chnode.SetAttr(ENa_MutChgVal, aName);
+    iSys.Object().Mutate();
+    Refresh();
 }
 
 void CapSys::OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName)
@@ -567,8 +670,9 @@ void CapSys::OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName
 void CapSys::RenameStateInp(CapState* aState, CapCp* aCp, const string& aName)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, ENt_Stinp);
     chnode.SetAttr(ENa_Id, aCp->iCp.Name());
@@ -587,7 +691,7 @@ void CapSys::ChangeStateTrans(CapState* aState, const string& aTrans)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
-    smut.SetAttr(ENa_MutNode, smut.GetTName(ENt_State, aState->iState.InstName()));
+    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.InstName()));
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, ENt_Trans);
     chnode.SetAttr(ENa_Id, "");
@@ -605,18 +709,18 @@ void CapSys::OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const strin
 void CapSys::AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    //smut.SetAttr(ENa_MutNode, "self");
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode ndadd = smut.AddChild(ENt_MutAdd);
     CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Conn);
     TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
     if (cpinp) {
-	nd_add_subj.SetAttr(ENa_Id, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+	nd_add_subj.SetAttr(ENa_Id, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
 	nd_add_subj.SetAttr(ENa_ConnPair, aPairName);
     }
     else {
 	nd_add_subj.SetAttr(ENa_Id, aPairName);
-	nd_add_subj.SetAttr(ENa_ConnPair, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+	nd_add_subj.SetAttr(ENa_ConnPair, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
     }
     iSys.Object().Mutate();
     Refresh();
@@ -633,20 +737,20 @@ void CapSys::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 void CapSys::DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    //smut.SetAttr(ENa_MutNode, "self");
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode rm = smut.AddChild(ENt_MutRm);
     CAE_ChromoNode rm_subj = rm.AddChild(ENt_Node);
     rm_subj.SetAttr(ENa_Type, ENt_Conn);
     rm_subj.SetAttr(ENa_MutChgAttr, "pair");
     TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
     if (cpinp) {
-	rm_subj.SetAttr(ENa_Id, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+	rm_subj.SetAttr(ENa_Id, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
 	rm_subj.SetAttr(ENa_MutChgVal, aPairName);
     }
     else {
 	rm_subj.SetAttr(ENa_Id, aPairName);
-	rm_subj.SetAttr(ENa_MutChgVal, string(aState->iState.InstName()) + "." + aCp->iCp.Name());
+	rm_subj.SetAttr(ENa_MutChgVal, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
     }
     iSys.Object().Mutate();
     Refresh();

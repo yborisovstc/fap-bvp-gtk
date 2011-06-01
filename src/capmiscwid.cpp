@@ -36,7 +36,7 @@ gboolean CapEopEntry::OnKeyPressEvent(GdkEventKey *event)
     if (event->keyval == GDK_Return) {
 	SetEditable(EFalse);
 	if (iObserver != NULL) {
-	    iObserver->OnUpdateCompleted();
+	    iObserver->OnUpdateCompleted(this);
 	}
     }
     return EFalse;

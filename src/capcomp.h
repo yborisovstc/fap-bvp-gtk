@@ -33,7 +33,7 @@ class CapCompHead: public CagHBox, public MWidgetObs, public MapEopEntryObserver
 	// From MWidgetObs
 	virtual TBool OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEvent);
 	// From MapEopEntryObserver
-	virtual void OnUpdateCompleted();
+	virtual void OnUpdateCompleted(CapEopEntry* aEntry);
     private:
 	CAE_Object& iComp;
 	CapEopEntry* iName;

@@ -20,6 +20,7 @@ class MStateHeadObserver
     public:
 	static inline const char* Type() { return "MStateHeadObserver";} ; 
 	virtual void OnStateNameChanged(const string& aName) = 0;
+	virtual void OnStateTypeChanged(const string& aName) = 0;
 };
 
 class CapStateHead: public CagHBox, public MapEopEntryObserver
@@ -29,11 +30,11 @@ class CapStateHead: public CagHBox, public MapEopEntryObserver
 	void SetObserver(MStateHeadObserver* aObs);
     private:
 	// From MapEopEntryObserver
-	virtual void OnUpdateCompleted();
+	virtual void OnUpdateCompleted(CapEopEntry* aEntry);
     private:
 	CAE_StateBase& iState;
 	CapEopEntry* iName;
-	CagELabel* iType;
+	CapEopEntry* iType;
 	MStateHeadObserver* iObs;
 };
 
@@ -44,6 +45,7 @@ class MCapStateObserver
 	static inline const char* Type() { return "MCapStateObserver";} ; 
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair) = 0;
 	virtual void OnStateNameChanged(CapState* aState, const string& aName) = 0;
+	virtual void OnStateTypeChanged(CapState* aState, const string& aTypeName) = 0;
 	virtual void OnStateDeleteRequested(CapState* aState) = 0;
 	virtual void OnStateAddingInput(CapState* aState) = 0;
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName) = 0;
@@ -76,6 +78,7 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
 	// From MStateHeadObserver
 	virtual void OnStateNameChanged(const string& aName);
+	virtual void OnStateTypeChanged(const string& aName);
 	// From MagMenuShellObs 
 	virtual void OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem);
 	// From MWidgetObs

@@ -16,6 +16,7 @@ class CapCtermPair: public CagToggleButton
 	CapCtermPair(const string& aName, CAE_ConnPointBase& aCp);
 	virtual ~CapCtermPair();
 	const CAE_ConnPointBase* Pair() const {return &iCp;};
+	CAE_ConnPointBase* Pair() {return &iCp;};
 	CAE_ConnPointBase* Cp();
 	// From CAE_Base
 	virtual void *DoGetObj(const char *aName);

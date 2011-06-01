@@ -5,10 +5,11 @@
 #include "cagmenu.h"
 #include "capcommon.h"
 
+class CapEopEntry;
 class MapEopEntryObserver
 {
     public:
-	virtual void OnUpdateCompleted() = 0;
+	virtual void OnUpdateCompleted(CapEopEntry* aEntry) = 0;
 };
 
 class CapEopEntry: public CagEntry 

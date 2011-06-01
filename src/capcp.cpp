@@ -21,8 +21,10 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
 	iLabel->SetSizeRequest(0, lab_req.height);
     }
     // Set as source for DnD
+    CAE_Object* obj = iCp.Man().GetFbObj(obj);
+    NodeType type = obj != NULL ? ENt_Object : ENt_State;
     iLabel->DragSourceAdd(GDK_MODIFIER_MASK, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
-    iLabel->SetSelText(string(iCp.Man().InstName()) + "." + iCp.Name());
+    iLabel->SetSelText(MAE_Chromo::GetTName(type, string(iCp.Man().InstName()) + "." + iCp.Name()));
     // Create terminator
     iTerm = new CapCterm("Term", iCp, iExt, iLeft);
     Add(iTerm);
@@ -165,7 +167,7 @@ CapCtermPair* CapCp::GetCpPair(CapCtermPair* aPair)
     return res;
 }
 
-void CapCp::OnUpdateCompleted()
+void CapCp::OnUpdateCompleted(CapEopEntry* aEntry)
 {
     if (iCpObs != NULL) {
 	iCpObs->OnLabelRenamed(this, iLabel->GetText());

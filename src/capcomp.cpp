@@ -48,7 +48,7 @@ TBool CapCompHead::OnWidgetButtonPress(CagWidget* aWidget, GdkEventButton* aEven
 	iObs->OnCompParentClicked();
 }
 
-void CapCompHead::OnUpdateCompleted()
+void CapCompHead::OnUpdateCompleted(CapEopEntry* aEntry)
 {
     if (iObs != NULL) {
 	iObs->OnCompNameChanged(iName->GetText());

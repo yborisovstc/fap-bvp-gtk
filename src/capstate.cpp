@@ -34,8 +34,11 @@ CapStateHead::CapStateHead(const string& aName, CAE_StateBase& aState): CagHBox(
     iName->Show();
     PackStart(iName, false, false, 2);
     // Create Type
-    iType = new CagELabel("Type");
-    iType->SetText(string(" :: ") + iState.TypeName());
+    iType = new CapEopEntry("Type");
+    iType->SetHasFrame(EFalse);
+    iType->SetWidthChars(strlen(iState.TypeName()));
+    iType->SetText(iState.TypeName());
+    iType->SetObserver(this);
     iType->Show();
     PackStart(iType, false, false, 2);
 }
@@ -46,10 +49,15 @@ void CapStateHead::SetObserver(MStateHeadObserver* aObs)
     iObs = aObs;
 }
 
-void CapStateHead::OnUpdateCompleted()
+void CapStateHead::OnUpdateCompleted(CapEopEntry* aEntry)
 {
     if (iObs != NULL) {
-	iObs->OnStateNameChanged(iName->GetText());
+	if (aEntry == iName) {
+	    iObs->OnStateNameChanged(iName->GetText());
+	}
+	else if (aEntry == iType) {
+	    iObs->OnStateTypeChanged(iType->GetText());
+	}
     }
 }
 
@@ -256,6 +264,13 @@ void CapState::OnStateNameChanged(const string& aName)
     }
 }
 
+void CapState::OnStateTypeChanged(const string& aName)
+{
+    if (iObs != NULL) {
+	iObs->OnStateTypeChanged(this, aName);
+    }
+}
+
 TBool CapState::OnButtonPress(GdkEventButton* aEvent)
 {
     if (aEvent->button == 3) {
@@ -309,7 +324,8 @@ TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
 void CapState::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 {
     if (iObs != NULL) {
-	iObs->OnStateCpDelPairRequested(this, aCp, string(aPair->Pair()->Man().InstName()) + "." + aPair->Pair()->Name());
+    CAE_Object* obj = aPair->Pair()->Man().GetFbObj(obj);
+    NodeType type = obj != NULL ? ENt_Object : ENt_State;
+	iObs->OnStateCpDelPairRequested(this, aCp, MAE_Chromo::GetTName(type, string(aPair->Pair()->Man().InstName()) + "." + aPair->Pair()->Name()));
     }
 }
-
