@@ -64,7 +64,8 @@ void CapStateHead::OnUpdateCompleted(CapEopEntry* aEntry)
 vector<TPmenuSpecElem> CapState::iPmenuSpec;
 
 
-CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName), iState(aState), iObs(NULL)
+CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl& aOwner): 
+    CagLayout(aName), iState(aState), iObs(NULL), iOwner(aOwner)
 {
     if (iPmenuSpec.empty()) {
 	iPmenuSpec.push_back(TPmenuSpecElem(KStatePmenu_Del, "Delete"));
@@ -113,6 +114,29 @@ CapState::CapState(const string& aName, CAE_StateBase& aState): CagLayout(aName)
     Add(iTrans);
     iTrans->Show();
     iTrans->SetWidgetObs(this);
+    // Add Init
+    iInit = new CagTextView("Init");
+    GtkTextBuffer* initbuf = gtk_text_buffer_new(NULL);
+    CAE_Object::ChromoPx* cpx = iOwner.Object().ChromoIface();
+    CAE_ChromoNode chroot = cpx->Chr().Root();
+    CAE_ChromoNode::Iterator chrstit = chroot.Find(ENt_State, iState.InstName());
+    _FAP_ASSERT(chrstit != chroot.End());
+    CAE_ChromoNode chrst = *chrstit;
+    const string& init = chrst.Attr(ENa_StInit);
+    // TODO [YB] Hack
+    if (init.empty()) {
+	string buftxt("   ");
+	gtk_text_buffer_set_text(initbuf, buftxt.c_str(), buftxt.size());
+    }
+    else {
+	gtk_text_buffer_set_text(initbuf, init.c_str(), init.size());
+    }
+    iInit->SetBuffer(initbuf);
+    iInit->SetEditable(ETrue);
+    Add(iInit);
+    iInit->Show();
+    iInit->SetWidgetObs(this);
+
 }
 
 CapState::~CapState()
@@ -147,6 +171,9 @@ void CapState::OnExpose(GdkEventExpose* aEvent)
     // Head separator
     GtkAllocation head_alc; iHead->Allocation(&head_alc);
     gdk_draw_line(BinWnd(), Gc(), iBodyAlc.x, head_alc.height, iBodyAlc.x + iBodyAlc.width - 1, head_alc.height);
+    // Draw init rect
+    GtkAllocation init_alc; iInit->Allocation(&init_alc);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, init_alc.x -1 , init_alc.y -1 , init_alc.width + 1, init_alc.height + 1);
     // Draw trans rect
     GtkAllocation tran_alc; iTrans->Allocation(&tran_alc);
     gdk_draw_rectangle(BinWnd(), Gc(), FALSE, tran_alc.x -1 , tran_alc.y -1 , tran_alc.width + 1, tran_alc.height + 1);
@@ -171,6 +198,7 @@ void CapState::OnSizeAllocate(GtkAllocation* aAllc)
     }
 
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    GtkRequisition init_req; iInit->SizeRequest(&init_req);
     GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
 
     // Calculate allocation of comp body
@@ -181,9 +209,14 @@ void CapState::OnSizeAllocate(GtkAllocation* aAllc)
     GtkAllocation head_alc = {iBodyAlc.x, iBodyAlc.y, iBodyAlc.width, head_req.height};
     iHead->SizeAllocate(&head_alc);
 
+    // Allocate init
+    GtkAllocation init_alc = 
+	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, head_alc.y + head_alc.height + KViewCompCpGapHeight, init_req.width, init_req.height};
+    iInit->SizeAllocate(&init_alc);
+
     // Allocate trans
     GtkAllocation tran_alc = 
-	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, head_alc.y + head_alc.height + KViewCompCpGapHeight, tran_req.width, tran_req.height};
+	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, init_alc.y + init_alc.height + KViewCompCpGapHeight, tran_req.width, tran_req.height};
     iTrans->SizeAllocate(&tran_alc);
 
     // Allocate inputs size 
@@ -212,6 +245,8 @@ void CapState::OnSizeRequest(GtkRequisition* aRequisition)
 {
     // Calculate header size
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    // Calculate init size
+    GtkRequisition init_req; iInit->SizeRequest(&init_req);
     // Calculate trans size
     GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
     // Calculate inputs size
@@ -235,7 +270,8 @@ void CapState::OnSizeRequest(GtkRequisition* aRequisition)
 
     int body_width = max(head_req.width, tran_req.width + KViewStateTransBorder*2 + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
     aRequisition->width = outp_term_w + body_width + inp_term_w; 
-    aRequisition->height = head_req.height + max(max(inp_h, outp_h), tran_req.height) + KViewCompCpGapHeight;
+    aRequisition->height = head_req.height + 
+	max(max(inp_h, outp_h), tran_req.height + init_req.height + KViewCompCpGapHeight) + 2*KViewCompCpGapHeight;
 }
 
 CapCtermPair* CapState::GetCpPair(CapCtermPair* aPair)
@@ -316,6 +352,11 @@ TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
     if (aWidget == iTrans) {
 	if (iObs != NULL) {
 	    iObs->OnStateTransUpdated(this, iTrans->GetBuffer());
+	}
+    }
+    else if (aWidget == iInit) {
+	if (iObs != NULL) {
+	    iObs->OnStateInitUpdated(this, iInit->GetBuffer());
 	}
     }
     return res;

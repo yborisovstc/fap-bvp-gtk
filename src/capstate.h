@@ -50,6 +50,7 @@ class MCapStateObserver
 	virtual void OnStateAddingInput(CapState* aState) = 0;
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName) = 0;
 	virtual void OnStateTransUpdated(CapState* aState, const string& aTrans) = 0;
+	virtual void OnStateInitUpdated(CapState* aState, const string& aInit) = 0;
 	virtual void OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName) = 0;
 	virtual void OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const string& aPairName) = 0;
 };
@@ -62,7 +63,7 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
     friend class CapSys;
     public:
 	static inline const char* Type() { return "CapState";} ; 
-	CapState(const string& aName, CAE_StateBase& aState);
+	CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl& aOwner);
 	virtual ~CapState();
 	const CAE_StateBase& State() const { return iState;};
 	void SetObs(MCapStateObserver* aObs);
@@ -91,11 +92,13 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
     private:
     public:
 	CAE_StateBase& iState;
+	CAE_Object::Ctrl& iOwner;
     private:
 	CapStateHead* iHead;
 	map<CAE_ConnPointBase*, CapCp*> iInps;
 	map<CAE_ConnPointBase*, CapCp*> iOutps;
 	CagTextView* iTrans; // Transition
+	CagTextView* iInit; // Initialization
 	GtkAllocation iBodyAlc;
 	MCapStateObserver* iObs;
 	CapStatePopupMenu* iPopupMenu;

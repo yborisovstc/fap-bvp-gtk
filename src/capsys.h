@@ -24,9 +24,10 @@ class CapTran: public CagLayout
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
 	virtual void OnSizeRequest(GtkRequisition* aRequisition);
+    public:
+	CagTextView* iTrans; // Transition
     private:
 	CapTranHead* iHead;
-	CagTextView* iTrans; // Transition
 	const string& iTranData;
 };
 
@@ -88,6 +89,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnStateAddingInput(CapState* aState);
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName);
 	virtual void OnStateTransUpdated(CapState* aState, const string& aTrans);
+	virtual void OnStateInitUpdated(CapState* aState, const string& aInit);
 	virtual void OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName);
 	virtual void OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const string& aPairName);
 	// From MCapCpObserver
@@ -110,9 +112,11 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void AddOutp();
 	void DeleteState(CapState* aState);
 	void ChangeCompName(CapComp* aComp, const string& aName);
+	void ChangeTrans(const string& aTrans);
 	void ChangeStateName(CapState* aState, const string& aName);
 	void ChangeStateType(CapState* aState, const string& aTypeName);
 	void ChangeStateTrans(CapState* aState, const string& aTrans);
+	void ChangeStateInit(CapState* aState, const string& aInit);
 	void RenameStateInp(CapState* aState, CapCp* aCp, const string& aName);
 	void RenameInpOutp(CapCp* aCp, const string& aName);
 	void AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName);
