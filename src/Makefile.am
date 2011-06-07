@@ -18,6 +18,8 @@ libfapbvpgtk_la_SOURCES = \
 		       capcterm.h \
 		       capcp.cpp \
 		       capcp.h \
+		       caplogdlg.cpp \
+		       caplogdlg.h \
 		       capstate.cpp \
 		       capstate.h \
 		       capcomp.cpp \
@@ -34,6 +36,8 @@ libfapbvpgtk_la_SOURCES = \
 		       widgets.h \
 		       cagcontainer.cpp \
 		       cagcontainer.h \
+		       cagpaned.cpp \
+		       cagpaned.h \
 		       cagbox.cpp \
 		       cagbox.h \
 		       caglayout.cpp \
@@ -44,6 +48,8 @@ libfapbvpgtk_la_SOURCES = \
 		       caglabel.h \
 		       cagentry.cpp \
 		       cagentry.h \
+		       cagdialog.cpp \
+		       cagdialog.h \
 		       cagimage.cpp \
 		       cagimage.h \
 		       cagbin.cpp \
@@ -71,6 +77,8 @@ include_HEADERS = \
 		  cagtoolbar.h \
 		  mainwndiface.h \
 		  caglayout.h \
+		  cagpaned.h \
+		  cagtextview.h \
 		  cagwindow.h 
      
 

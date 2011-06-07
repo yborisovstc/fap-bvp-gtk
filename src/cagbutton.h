@@ -48,12 +48,19 @@ class CagToggleButton: public CagButton
 	TBool IsActive() const;
 	void SetObs(CagWidget* aObs);
     protected:
+	CagToggleButton(GType aType, const string& aName);
 	// From CAE_Base
 	virtual void *DoGetObj(const char *aName);
     private:
 	static void handle_toggled_event(GtkToggleButton *togglebutton, gpointer user_data);
 };
 
+// Check button
+class CagCheckButton: public CagToggleButton 
+{
+    public:
+	CagCheckButton(const string& aName);
+};
 
 
 #endif 

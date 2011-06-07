@@ -615,9 +615,8 @@ void CapSys::DeleteState(CapState* aState)
     CAE_ChromoNode smutr = cpx->Mut().Root();
     CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
-    CAE_ChromoNode rm_elem = mutrm.AddChild(ENt_Node);
-    rm_elem.SetAttr(ENa_Type, ENt_State);
-    rm_elem.SetAttr(ENa_Id, aState->iState.InstName());
+    mutrm.SetAttr(ENa_Type, ENt_State);
+    mutrm.SetAttr(ENa_Id, aState->iState.InstName());
     iSys.Object().Mutate();
     Refresh();
 }
@@ -760,17 +759,16 @@ void CapSys::DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairNam
     CAE_ChromoNode smutr = cpx->Mut().Root();
     CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode rm = smut.AddChild(ENt_MutRm);
-    CAE_ChromoNode rm_subj = rm.AddChild(ENt_Node);
-    rm_subj.SetAttr(ENa_Type, ENt_Conn);
-    rm_subj.SetAttr(ENa_MutChgAttr, "pair");
+    rm.SetAttr(ENa_Type, ENt_Conn);
+    rm.SetAttr(ENa_MutChgAttr, "pair");
     TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
     if (cpinp) {
-	rm_subj.SetAttr(ENa_Id, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
-	rm_subj.SetAttr(ENa_MutChgVal, aPairName);
+	rm.SetAttr(ENa_Id, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
+	rm.SetAttr(ENa_MutChgVal, aPairName);
     }
     else {
-	rm_subj.SetAttr(ENa_Id, aPairName);
-	rm_subj.SetAttr(ENa_MutChgVal, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
+	rm.SetAttr(ENa_Id, aPairName);
+	rm.SetAttr(ENa_MutChgVal, MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName()) + "." + aCp->iCp.Name()));
     }
     iSys.Object().Mutate();
     Refresh();
@@ -803,3 +801,30 @@ void CapSys::ChangeTrans(const string& aTrans)
 }
 
 
+void CapSys::OnStateLogspecChanged(CapState* aState, map<TInt, TInt>& aLogSpec)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    // Remove current log first
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.InstName()));
+    CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
+    mutrm.SetAttr(ENa_Type, ENt_Logspec);
+    // Then add logspec
+    TInt data = aLogSpec[KBaseLe_Updated];
+    if (data != NULL) {
+	CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
+	CAE_ChromoNode nlsp = mutadd.AddChild(ENt_Logspec);
+	nlsp.SetAttr(ENa_Logevent, "upd");
+	if (data & KBaseDa_Curr) {
+	    CAE_ChromoNode nlda = nlsp.AddChild(ENt_Logdata);
+	    nlda.SetAttr(ENa_Id, "cur");
+	}
+	if (data & KBaseDa_New) {
+	    CAE_ChromoNode nlda = nlsp.AddChild(ENt_Logdata);
+	    nlda.SetAttr(ENa_Id, "new");
+	}
+    }
+    iSys.Object().Mutate();
+    Refresh();
+}

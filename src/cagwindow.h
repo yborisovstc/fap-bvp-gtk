@@ -13,6 +13,7 @@ class CagWindow: public CagBin
     public:
 	CagWindow(const string& aName);
 	CagWindow(GtkWidget* aWidget, TBool aOwned = ETrue);
+	CagWindow(GType aType, const string& aName);
 	virtual ~CagWindow();
     private:
 	static void Init();

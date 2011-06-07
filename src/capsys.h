@@ -85,6 +85,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair);
 	virtual void OnStateNameChanged(CapState* aState, const string& aName);
 	virtual void OnStateTypeChanged(CapState* aState, const string& aTypeName);
+	virtual void OnStateLogspecChanged(CapState* aState, map<TInt, TInt>& aLogSpec);
 	virtual void OnStateDeleteRequested(CapState* aState);
 	virtual void OnStateAddingInput(CapState* aState);
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName);

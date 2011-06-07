@@ -49,6 +49,10 @@ CagToggleButton::CagToggleButton(const string& aName): CagButton(GTK_TYPE_TOGGLE
 {
 }
 
+CagToggleButton::CagToggleButton(GType aType, const string& aName): CagButton(aType, aName)
+{
+}
+
 void CagToggleButton::SetActive(TBool aActive)
 {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(iWidget), aActive);
@@ -103,3 +107,9 @@ void CagToggleButton::handle_toggled_event(GtkToggleButton *button, gpointer use
     obs->OnToggled(btn);
 }
 
+
+
+
+CagCheckButton::CagCheckButton(const string& aName): CagToggleButton(GTK_TYPE_CHECK_BUTTON, aName)
+{
+}

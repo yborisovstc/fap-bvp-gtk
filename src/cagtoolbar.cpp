@@ -51,6 +51,11 @@ void CagToolButton::SetStockId(const string& aStockId)
     gtk_tool_button_set_stock_id(GTK_TOOL_BUTTON(iWidget), aStockId.c_str());
 }
 
+void CagToolButton::SetLabel(const string& aLabel)
+{
+    gtk_tool_button_set_label(GTK_TOOL_BUTTON(iWidget), aLabel.c_str());
+}
+
 void CagToolButton::SetObserver(CagWidget* aObs)
 {
     MagToolButtonObserver* obs = aObs->GetObj(obs);

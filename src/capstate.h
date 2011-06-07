@@ -46,6 +46,7 @@ class MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair) = 0;
 	virtual void OnStateNameChanged(CapState* aState, const string& aName) = 0;
 	virtual void OnStateTypeChanged(CapState* aState, const string& aTypeName) = 0;
+	virtual void OnStateLogspecChanged(CapState* aState, map<TInt, TInt>& aLogSpec) = 0;
 	virtual void OnStateDeleteRequested(CapState* aState) = 0;
 	virtual void OnStateAddingInput(CapState* aState) = 0;
 	virtual void OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName) = 0;

@@ -20,6 +20,10 @@ CagWindow::CagWindow(GtkWidget* aWidget, TBool aOwned): CagBin(aWidget, "", aOwn
 {
 }
 
+CagWindow::CagWindow(GType aType, const string& aName): CagBin(aType, aName)
+{
+}
+
 CagWindow::~CagWindow()
 {
 }

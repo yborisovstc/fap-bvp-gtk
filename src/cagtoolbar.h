@@ -36,6 +36,7 @@ class CagToolButton: public CagToolItem
 	CagToolButton(const string& aName);
 	CagToolButton(const string& aName, const string& aStockId);
 	void SetStockId(const string& aStockId);
+	void SetLabel(const string& aLabel);
 	void SetObserver(CagWidget* aObs);
     protected:
 	CagToolButton(GType aType, const string& aName);

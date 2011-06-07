@@ -2,10 +2,12 @@
 #include "capcommon.h"
 #include "caglabel.h"
 #include "cagtextview.h"
+#include "caplogdlg.h"
 
 
 const char* KStatePmenu_Del = "Del";
 const char* KStatePmenu_AddInp = "AddInp";
+const char* KStatePmenu_Log = "Log";
 
 
 
@@ -70,6 +72,7 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
     if (iPmenuSpec.empty()) {
 	iPmenuSpec.push_back(TPmenuSpecElem(KStatePmenu_Del, "Delete"));
 	iPmenuSpec.push_back(TPmenuSpecElem(KStatePmenu_AddInp, "Add Input"));
+	iPmenuSpec.push_back(TPmenuSpecElem(KStatePmenu_Log, "Logging"));
     }
     // Popup Menu
     iPopupMenu = new CapStatePopupMenu("Menu", iPmenuSpec);
@@ -326,6 +329,17 @@ void CapState::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
 	    }
 	    else if (aItem->Name().compare(KStatePmenu_AddInp) == 0) {
 		iObs->OnStateAddingInput(this);
+	    }
+	    else if (aItem->Name().compare(KStatePmenu_Log) == 0) {
+		CapLogDlg* dlg = new CapLogDlg("LogDlg", iState);
+		TInt res = dlg->Run();
+		if (res == CapLogDlg::EActionOK) {
+		    map<TInt, TInt> logspec;
+		    dlg->GetLogSpec(logspec);
+		    TInt dd = logspec[KBaseLe_Trans];
+		    iObs->OnStateLogspecChanged(this, logspec);
+		}
+		delete dlg;
 	    }
 	}
     }
