@@ -19,6 +19,7 @@ class CagMenuItem: public CagBin
 	CagMenuItem(const string& aName);
 	CagMenuItem(const string& aName, const string& aLabel);
 	void SetMenuItemObs(CagWidget* aObs);
+	void SetSubmenu(CagWidget* aSubmenu);
     private:
 	static void handle_activate(GtkMenuItem *menuitem, gpointer user_data);
 };

@@ -15,6 +15,9 @@ class CagWindow: public CagBin
 	CagWindow(GtkWidget* aWidget, TBool aOwned = ETrue);
 	CagWindow(GType aType, const string& aName);
 	virtual ~CagWindow();
+	void SetTitle(const string& aTitle);
+	void Fullscrean();
+	void Maximize();
     private:
 	static void Init();
 };

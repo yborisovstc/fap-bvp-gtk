@@ -10,6 +10,7 @@ class CagToolBar: public CagContainer
     public:
 	CagToolBar(const string& aName);
 	void Insert(CagToolItem* aItem, int aPos);
+	void InsertSeparator(int aPos, TBool aAsLine);
 };
 
 class CagToolItem: public CagBin
@@ -21,6 +22,16 @@ class CagToolItem: public CagBin
 	CagToolItem(GType aType, const string& aName);
 };
 
+class CagLabel;
+class CagLabelToolItem: public CagToolItem
+{
+    public:
+	CagLabelToolItem(const string& aName);
+	void SetLabel(const string& aText);
+    private:
+	CagLabel* iLabel;
+};
+
 class CagToolButton;
 class MagToolButtonObserver
 {
@@ -29,13 +40,14 @@ class MagToolButtonObserver
 	virtual void OnClicked(CagToolButton* aBtn) = 0;
 };
 
-
 class CagToolButton: public CagToolItem
 {
     public:
 	CagToolButton(const string& aName);
 	CagToolButton(const string& aName, const string& aStockId);
 	void SetStockId(const string& aStockId);
+	void SetIcon(CagWidget* aIcon);
+	void SetImage(const string& aPath);
 	void SetLabel(const string& aLabel);
 	void SetObserver(CagWidget* aObs);
     protected:

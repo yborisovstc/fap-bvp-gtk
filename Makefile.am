@@ -26,5 +26,6 @@ EXTRA_DIST = \
 	     img/tbar_btn_outp.png \
 	     img/dect_btn_less.png \
 	     img/dect_btn_more.png \
+	     files/ \
 	     etc/cag_proxy.rc
 	

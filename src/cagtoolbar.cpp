@@ -1,5 +1,6 @@
 #include "cagimage.h"
 #include "cagtoolbar.h"
+#include "caglabel.h"
 
 CagToolBar::CagToolBar(const string& aName): CagContainer(GTK_TYPE_TOOLBAR, aName)
 {
@@ -12,6 +13,13 @@ void CagToolBar::Insert(CagToolItem* aItem, int aPos)
     Add(aItem, EFalse);
 }
 
+void CagToolBar::InsertSeparator(int aPos, TBool aAsLine)
+{
+    GtkToolItem* sep = gtk_separator_tool_item_new();
+    gtk_separator_tool_item_set_draw(GTK_SEPARATOR_TOOL_ITEM(sep), aAsLine);
+    gtk_widget_show(GTK_WIDGET(sep));
+    gtk_toolbar_insert(GTK_TOOLBAR(iWidget), sep, aPos);
+}
 
 
 
@@ -31,8 +39,20 @@ void CagToolItem::SetImage(const string& aPath)
     img->Show();
 }
 
+// Label Tool Item
+CagLabelToolItem::CagLabelToolItem(const string& aName): CagToolItem(aName)
+{
+    iLabel = new CagLabel("Lbl");
+    Add(iLabel);
+    iLabel->Show();
+}
 
+void CagLabelToolItem::SetLabel(const string& aText)
+{
+    iLabel->SetText(aText);
+}
 
+// Tool button
 CagToolButton::CagToolButton(const string& aName): CagToolItem(GTK_TYPE_TOOL_BUTTON, aName)
 {
 }
@@ -54,6 +74,20 @@ void CagToolButton::SetStockId(const string& aStockId)
 void CagToolButton::SetLabel(const string& aLabel)
 {
     gtk_tool_button_set_label(GTK_TOOL_BUTTON(iWidget), aLabel.c_str());
+}
+
+void CagToolButton::SetIcon(CagWidget* aIcon)
+{
+    gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(iWidget), aIcon->iWidget);
+}
+
+void CagToolButton::SetImage(const string& aPath)
+{
+    CagEImage* img =  new CagEImage("Img");
+    img->SetFromFile(aPath.c_str());
+    Add(img);
+    img->Show();
+    SetIcon(img);
 }
 
 void CagToolButton::SetObserver(CagWidget* aObs)

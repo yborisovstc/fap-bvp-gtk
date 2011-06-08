@@ -25,6 +25,9 @@ void CagWidget::Construct()
     gtk_widget_set_name(iWidget, iName.c_str());
     gtk_widget_set_events (iWidget, GDK_ALL_EVENTS_MASK);
 
+    g_signal_connect(G_OBJECT(iWidget), "delete_event", G_CALLBACK(handle_delete_event), this);
+    g_signal_connect(G_OBJECT(iWidget), "destroy_event", G_CALLBACK(handle_destroy_event), this);
+    g_signal_connect(G_OBJECT(iWidget), "destroy", G_CALLBACK(handle_destroy), this);
     g_signal_connect(G_OBJECT(iWidget), "expose_event", G_CALLBACK(handle_expose_event), this);
     g_signal_connect(G_OBJECT(iWidget), "button_press_event", G_CALLBACK (handle_button_press_event), this);
     g_signal_connect(G_OBJECT(iWidget), "button_release_event", G_CALLBACK (handle_button_release_event), this);
@@ -324,6 +327,23 @@ gboolean CagWidget::handle_key_press_event(GtkWidget *widget, GdkEventKey *event
     return self->OnKeyPressEvent(event);
 }
 
+gboolean CagWidget::handle_delete_event(GtkWidget *widget, GdkEvent*event, gpointer data)
+{
+    CagWidget* self = (CagWidget*) data;
+    return self->OnDelete(event);
+}
+
+gboolean CagWidget::handle_destroy_event(GtkWidget *widget, GdkEvent*event, gpointer data)
+{
+    CagWidget* self = (CagWidget*) data;
+    return self->OnDestroyEvent(event);
+}
+
+void CagWidget::handle_destroy(GtkObject *object, gpointer   user_data)
+{
+    CagWidget* self = (CagWidget*) user_data;
+    self->OnDestroy();
+}
 
 
 

@@ -79,6 +79,9 @@ class CagWidget: public CagBase, public MWidgetRes
 	CagWidget(GtkWidget* aWidget, const string& aName, TBool aOwned = ETrue);
 	void Construct();
     public:
+	virtual TBool OnDelete(GdkEvent* aEvent) { return EFalse;};
+	virtual TBool OnDestroyEvent(GdkEvent* aEvent) { return EFalse;};
+	virtual void OnDestroy() {};
 	virtual void OnExpose(GdkEventExpose* aEvent) {};
 	virtual TBool OnButtonPress(GdkEventButton* aEvent) { return EFalse;};
 	virtual TBool OnButtonRelease(GdkEventButton* aEvent) { return EFalse;};
@@ -101,6 +104,9 @@ class CagWidget: public CagBase, public MWidgetRes
 	// From CAE_Base
 	virtual void *DoGetObj(const char *aName);
     private:
+	static gboolean handle_delete_event(GtkWidget *widget, GdkEvent*event, gpointer data);
+	static gboolean handle_destroy_event(GtkWidget *widget, GdkEvent*event, gpointer data);
+	static void     handle_destroy(GtkObject *object, gpointer   user_data);
 	static gboolean handle_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data);
 	static gboolean handle_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data);
 	static gboolean handle_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data);

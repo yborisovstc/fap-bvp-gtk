@@ -28,7 +28,6 @@ void CapOtbDragItem::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionDat
 }
 
 
-
 CapOpWnd::CapOpWnd(const string& aName, CagToolBar* aToolbar): 
     CagLayout(aName), iSysWidget(NULL), iObs(NULL), iToolbar(aToolbar)
 {
@@ -56,6 +55,8 @@ void CapOpWnd::Construct()
     sBtnUp->SetObserver(this);
     iToolbar->Insert(sBtnUp, 0);
     sBtnUp->Show();
+    // Separator
+    iToolbar->InsertSeparator(-1, ETrue);
     // Button "New state"
     CapOtbDragItem* sBtnNewState = new CapOtbDragItem("BntNewState", KTe_NewState, KTe_NewState_Len, "_new_state");
     sBtnNewState->SetImage(KIcon_NewState);
@@ -71,16 +72,25 @@ void CapOpWnd::Construct()
     sBtnNewTrans->SetImage(KIcon_NewTrans);
     iToolbar->Insert(sBtnNewTrans, -1);
     sBtnNewTrans->Show();
+    // Button "New Outp"
+    CapOtbDragItem* sBtnNewOutp = new CapOtbDragItem("BntNewOutp", KTe_NewOutp, KTe_NewOutp_Len, "_new_outp");
+    sBtnNewOutp->SetImage(KIcon_NewOutp);
+    iToolbar->Insert(sBtnNewOutp, -1);
+    sBtnNewOutp->Show();
     // Button "New Inp"
     CapOtbDragItem* sBtnNewInp = new CapOtbDragItem("BntNewInp", KTe_NewInp, KTe_NewInp_Len, "_new_inp");
     sBtnNewInp->SetImage(KIcon_NewInp);
     iToolbar->Insert(sBtnNewInp, -1);
     sBtnNewInp->Show();
-    // Button "New Inp"
-    CapOtbDragItem* sBtnNewOutp = new CapOtbDragItem("BntNewOutp", KTe_NewOutp, KTe_NewOutp_Len, "_new_outp");
-    sBtnNewOutp->SetImage(KIcon_NewOutp);
-    iToolbar->Insert(sBtnNewOutp, -1);
-    sBtnNewOutp->Show();
+    // Separator
+    iToolbar->InsertSeparator(-1, ETrue);
+    // Cursor
+    iCursName = new CagLabelToolItem("CursName");
+    iCursName->SetLabel("Test");
+    iToolbar->Insert(iCursName, -1);
+    iCursName->Show();
+    // Separator
+    iToolbar->InsertSeparator(-1, ETrue);
 }
 
 
@@ -106,6 +116,7 @@ void CapOpWnd::SetSys(CAE_Object::Ctrl* aObj)
     iSysWidget = new CapSys("System", *aObj, this);
     AddView(iSysWidget);
     iSysWidget->Show();
+    iCursName->SetLabel(aObj->Object().InstName());
 }
 
 void CapOpWnd::UnsetSys(CAE_Object::Ctrl* aObj)

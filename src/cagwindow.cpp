@@ -27,3 +27,19 @@ CagWindow::CagWindow(GType aType, const string& aName): CagBin(aType, aName)
 CagWindow::~CagWindow()
 {
 }
+
+void CagWindow::SetTitle(const string& aTitle)
+{
+    gtk_window_set_title(GTK_WINDOW(iWidget), aTitle.c_str());
+}
+
+void CagWindow::Fullscrean()
+{
+    gtk_window_fullscreen(GTK_WINDOW(iWidget));
+}
+
+void CagWindow::Maximize()
+{
+    gtk_window_maximize(GTK_WINDOW(iWidget));
+}
+

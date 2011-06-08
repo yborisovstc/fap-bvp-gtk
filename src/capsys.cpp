@@ -74,72 +74,6 @@ void CapTran::OnSizeRequest(GtkRequisition* aRequisition)
 
 
 
-CapSysHead::CapSysHead(const string& aName, CAE_Object::Ctrl& aSys): CagLayout(aName), iSys(aSys)
-{
-    PangoLayout* plo =  pango_layout_new(PangoCtext());
-    pango_layout_set_text(plo, iSys.Object().InstName(), strlen(iSys.Object().InstName()));
-    int w, h; pango_layout_get_pixel_size(plo, &w, &h);
-    gtk_widget_set_size_request(iWidget, w, h);
-    g_object_unref(plo);
-}
-
-CapSysHead::~CapSysHead()
-{
-}
-
-
-void CapSysHead::OnExpose(GdkEventExpose* aEvent)
-{
-    PangoLayout* plo =  pango_layout_new(PangoCtext());
-    pango_layout_set_text(plo, iSys.Object().InstName(), strlen(iSys.Object().InstName()));
-    gdk_draw_layout(BinWnd(), Gc(), 0, 0, plo);
-    GtkAllocation alc; gtk_widget_get_allocation(iWidget, &alc);
-    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, alc.x, alc.y, alc.width - 1, alc.height - 1);
-    g_object_unref(plo);
-}
-
-TBool CapSysHead::OnButtonPress(GdkEventButton* aEvent)
-{
-    if (aEvent->type == GDK_BUTTON_PRESS) {
-	SetState(GTK_STATE_SELECTED);
-    }
-}
-
-TBool CapSysHead::OnButtonRelease(GdkEventButton* aEvent)
-{
-}
-
-void CapSysHead::OnSizeAllocate(GtkAllocation* aAllocation)
-{
-    
-}
-
-void CapSysHead::OnSizeRequest(GtkRequisition* aRequisition)
-{
-}
-
-void CapSysHead::OnMotion(GdkEventMotion *aEvent)
-{
-}
-
-void CapSysHead::OnEnter(GdkEventCrossing *aEvent)
-{
-}
-
-void CapSysHead::OnLeave(GdkEventCrossing *aEvent)
-{
-}
-
-void CapSysHead::OnStateChanged(GtkStateType state)
-{
-    if (State() == GTK_STATE_SELECTED) {
-	iParent->OnChildStateChanged(this, state);
-    }
-}
-
-
-
-
 CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver): 
     CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this), iTrans(NULL)
 {
@@ -148,11 +82,6 @@ CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aOb
 
 void CapSys::Construct()
 {
-    // Add header
-    iHead = new CapSysHead("Title", iSys);
-    Add(iHead);
-    iHead->Show();
-
     // Add states
     for (map<string, CAE_StateBase*>::iterator it = iSys.States().begin(); it != iSys.States().end(); it++) {
 	CAE_StateBase* state = it->second;
@@ -222,12 +151,8 @@ void CapSys::OnExpose(GdkEventExpose* aEvent)
 void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 {
     GtkAllocation alc; Allocation(&alc);
-    // Allocate header
-    GtkRequisition head_req; iHead->SizeRequest(&head_req);
-    GtkAllocation head_alc = { 0, 0, alc.width, head_req.height};
-    iHead->SizeAllocate(&head_alc);
     // Allocate inputs
-    int inpb_x = aAllc->width - iInpReq.width, inpb_y = head_req.height + KViewCompGapHight;
+    int inpb_x = aAllc->width - iInpReq.width, inpb_y = KViewCompGapHight;
     int inp_w = 0, inp_h = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end(); it++) {
 	CapCp* cpw = it->second;
@@ -238,7 +163,7 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 	inpb_y += req.height + KViewConnGapHeight;
     }
     // Allocate outputs
-    int outpb_x = 0, outpb_y = head_req.height + KViewCompGapHight;
+    int outpb_x = 0, outpb_y = KViewCompGapHight;
     int outp_w = 0, outp_h = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutputs.begin(); it != iOutputs.end(); it++) {
 	CapCp* cpw = it->second;
@@ -253,7 +178,7 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
     if (iTrans != NULL) {
 	iTrans->SizeRequest(&tran_req);
     }
-    int tranb_x = (outp_w + aAllc->width - inp_w)/2, tranb_y = head_req.height + KViewCompGapHight;
+    int tranb_x = (outp_w + aAllc->width - inp_w)/2, tranb_y = KViewCompGapHight;
     GtkAllocation tran_alc = { tranb_x - tran_req.width/2, tranb_y, tran_req.width, tran_req.height};
     if (iTrans != NULL) {
 	iTrans->SizeAllocate(&tran_alc);
@@ -284,7 +209,6 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
 
 void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 {
-    GtkRequisition head_req; iHead->SizeRequest(&head_req);
     // Calculate trans size
     GtkRequisition tran_req = (GtkRequisition) {0, 0}; 
     if (iTrans != NULL) {
@@ -325,7 +249,7 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
     }
 
     aRequisition->width = outp_w + KViewExtCompGapWidth*2 + max(max(stat_w, comp_w), tran_req.width) + inp_w; 
-    aRequisition->height = head_req.height + max(max(outp_h, comp_h + stat_h + tran_req.height + KViewExtCompGapWidth), inp_h);
+    aRequisition->height = max(max(outp_h, comp_h + stat_h + tran_req.height + KViewExtCompGapWidth), inp_h);
 }
 
 
@@ -514,11 +438,9 @@ void CapSys::AddOutp()
 void CapSys::Refresh()
 {
     // Remove all elements
-    Remove(iHead);
     if (iTrans != NULL) {
 	Remove(iTrans);
     }
-    iHead = NULL;
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end(); it++) {
 	Remove(it->second);
     }

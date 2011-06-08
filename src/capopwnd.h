@@ -63,6 +63,7 @@ class CapOpWnd: public CagLayout, public MCapSysObserver, public MagToolButtonOb
 	CagToolBar* iToolbar;
 	CapSys* iSysWidget;
 	MOpWndObserver* iObs;
+	CagLabelToolItem* iCursName; // Not owned
 };
 
 #endif 

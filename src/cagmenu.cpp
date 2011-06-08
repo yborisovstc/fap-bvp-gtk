@@ -85,3 +85,10 @@ void CagMenuItem::handle_activate(GtkMenuItem *item, gpointer user_data)
     _FAP_ASSERT(mitem != NULL);
     obs->OnActivated(mitem);
 }
+
+void CagMenuItem::SetSubmenu(CagWidget* aSubmenu)
+{
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(iWidget), aSubmenu->iWidget);
+    Add(aSubmenu); 
+}
+

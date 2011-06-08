@@ -32,25 +32,6 @@ class CapTran: public CagLayout
 };
 
 
-class CapSysHead: public CagLayout
-{
-    public:
-	CapSysHead(const string& aName, CAE_Object::Ctrl& aSys);
-	virtual ~CapSysHead();
-    private:
-	virtual void OnExpose(GdkEventExpose* aEvent);
-	virtual TBool OnButtonPress(GdkEventButton* aEvent);
-	virtual TBool OnButtonRelease(GdkEventButton* aEvent);
-	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
-	virtual void OnSizeRequest(GtkRequisition* aRequisition);
-	virtual void OnMotion(GdkEventMotion *aEvent);
-	virtual void OnEnter(GdkEventCrossing *aEvent);
-	virtual void OnLeave(GdkEventCrossing *aEvent);
-	virtual void OnStateChanged(GtkStateType state);
-    private:
-	CAE_Object::Ctrl& iSys;
-};
-
 class MCapSysObserver
 {
     public:
@@ -136,8 +117,6 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	    CapSys& iSupw;
     };
 	friend class CpPairObs;
-    public:
-	CapSysHead* iHead; // Not owned
     private:
 	CAE_Object::Ctrl& iSys;
 	map<CAE_StateBase*, CapState*> iStates; 
