@@ -25,3 +25,8 @@ string CagTextView::GetBuffer()
     return string((char*) text);
 }
 
+gboolean CagTextView::ScrollToIter(GtkTextIter *iter, gdouble within_margin, gboolean use_align, gdouble xalign, gdouble yalign)
+{
+    return gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(iWidget), iter, within_margin, use_align, xalign, yalign);
+}
+

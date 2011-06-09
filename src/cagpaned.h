@@ -10,6 +10,8 @@ class CagPaned: public CagContainer
     public:
 	void Add1(CagWidget* aChild);
 	void Add2(CagWidget* aChild);
+	void Pack1(CagWidget* aChild, TBool aResize, TBool aCanShrink);
+	void Pack2(CagWidget* aChild, TBool aResize, TBool aCanShrink);
 };
 
 class CagVPaned: public CagPaned
