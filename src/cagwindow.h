@@ -22,4 +22,12 @@ class CagWindow: public CagBin
 	static void Init();
 };
 
+class CagScrolledWindow: public CagBin
+{
+    public:
+	CagScrolledWindow(const string& aName);
+	void AddWithViewport(CagWidget* aChild);
+};
+
+
 #endif 

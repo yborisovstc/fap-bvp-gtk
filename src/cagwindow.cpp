@@ -43,3 +43,14 @@ void CagWindow::Maximize()
     gtk_window_maximize(GTK_WINDOW(iWidget));
 }
 
+
+
+
+CagScrolledWindow::CagScrolledWindow(const string& aName): CagBin(GTK_TYPE_SCROLLED_WINDOW, aName)
+{
+}
+
+void CagScrolledWindow::AddWithViewport(CagWidget* aChild)
+{
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(iWidget), aChild->iWidget);
+}

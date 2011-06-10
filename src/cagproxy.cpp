@@ -11,7 +11,7 @@ CagProxy::CagProxy(CagWindow* aWnd): iSys(NULL), iRoot(NULL)
     iMainWnd = aWnd->GetObj(iMainWnd);
     iWindow = new CapOpWnd("OpWnd", iMainWnd->Toolbar());
     _FAP_ASSERT(iMainWnd != NULL);
-    iMainWnd->ClientWnd()->Add(iWindow);
+    iMainWnd->ClientWnd()->AddWithViewport(iWindow);
     iWindow->SetObserver(this);
     iWindow->Show();
     // Load resource file

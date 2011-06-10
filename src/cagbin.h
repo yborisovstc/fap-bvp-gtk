@@ -25,5 +25,11 @@ class CagItem: public CagBin
 	CagItem(const string& aName);
 };
 
+class CagAlignment: public CagBin
+{
+    public: 
+	CagAlignment(const string& aName, gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale);
+};
+
 
 #endif 

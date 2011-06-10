@@ -734,7 +734,7 @@ void CapSys::OnStateLogspecChanged(CapState* aState, map<TInt, TInt>& aLogSpec)
     mutrm.SetAttr(ENa_Type, ENt_Logspec);
     // Then add logspec
     TInt data = aLogSpec[KBaseLe_Updated];
-    if (data != NULL) {
+    if (data != 0) {
 	CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
 	CAE_ChromoNode nlsp = mutadd.AddChild(ENt_Logspec);
 	nlsp.SetAttr(ENa_Logevent, "upd");
@@ -747,6 +747,17 @@ void CapSys::OnStateLogspecChanged(CapState* aState, map<TInt, TInt>& aLogSpec)
 	    nlda.SetAttr(ENa_Id, "new");
 	}
     }
+    data = aLogSpec[KBaseLe_Trans];
+    if (data != 0) {
+	CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
+	CAE_ChromoNode nlsp = mutadd.AddChild(ENt_Logspec);
+	nlsp.SetAttr(ENa_Logevent, "tran");
+	if (data & KBaseDa_Trex) {
+	    CAE_ChromoNode nlda = nlsp.AddChild(ENt_Logdata);
+	    nlda.SetAttr(ENa_Id, "trex");
+	}
+    }
+
     iSys.Object().Mutate();
     Refresh();
 }

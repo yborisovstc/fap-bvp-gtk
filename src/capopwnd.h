@@ -34,7 +34,7 @@ class MOpWndObserver
 	virtual TBool OnCmdUpdateRequest(TCmd aCmd) = 0;
 };
 
-class CapOpWnd: public CagLayout, public MCapSysObserver, public MagToolButtonObserver
+class CapOpWnd: public CagAlignment, public MCapSysObserver, public MagToolButtonObserver
 {
     public:
 	static inline const char* Type() { return "CapOpWnd";} ; 
@@ -55,9 +55,6 @@ class CapOpWnd: public CagLayout, public MCapSysObserver, public MagToolButtonOb
 	virtual void OnSystSelected(const string& aName);
 	// From MagToolButtonObserver
 	virtual void OnClicked(CagToolButton* aBtn);
-    private:
-	virtual void OnSizeAllocate(GtkAllocation* aAllocation);
-	virtual void OnSizeRequest(GtkRequisition* aRequisition);
     private:
 	CagVBox* iVbox;
 	CagToolBar* iToolbar;

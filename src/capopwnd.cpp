@@ -29,7 +29,7 @@ void CapOtbDragItem::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionDat
 
 
 CapOpWnd::CapOpWnd(const string& aName, CagToolBar* aToolbar): 
-    CagLayout(aName), iSysWidget(NULL), iObs(NULL), iToolbar(aToolbar)
+    CagAlignment(aName, 1.0, 1.0, 1.0, 1.0), iSysWidget(NULL), iObs(NULL), iToolbar(aToolbar)
 {
     Construct();
 }
@@ -41,9 +41,8 @@ CapOpWnd::~CapOpWnd()
 void CapOpWnd::Construct()
 {
     // Vertical layot - toolbar - view
-    iVbox = new CagVBox("Vbox");
-    Add(iVbox);
-    iVbox->Show();
+    //iVbox = new CagVBox("Vbox");
+    //iVbox->Show();
     // Adding buttons to toolbar
     // Button "Back"
     CagToolButton* sBtnBack = new CagToolButton("BtnBack", GTK_STOCK_GO_BACK);
@@ -96,7 +95,8 @@ void CapOpWnd::Construct()
 
 void CapOpWnd::AddView(CagWidget* aView)
 {
-    iVbox->PackStart(aView, false, false, 1);
+//    iVbox->PackStart(aView, true, true, 1);
+    Add(aView);
     gtk_drag_dest_set(aView->iWidget, GTK_DEST_DEFAULT_ALL, KTe_NewObject, KTe_NewObject_Len, GDK_ACTION_COPY);
 //    GtkTargetList* tarlist = gtk_target_list_new(KTe_NewObject, KTe_NewObject_Len);
 //    gtk_target_list_add_table(tarlist, KTe_NewState, KTe_NewState_Len);
@@ -107,7 +107,8 @@ void CapOpWnd::AddView(CagWidget* aView)
 
 void CapOpWnd::RemoveView(CagWidget* aView)
 {
-    iVbox->Remove(aView);
+   // iVbox->Remove(aView);
+    Remove(aView);
 }
 
 void CapOpWnd::SetSys(CAE_Object::Ctrl* aObj)
@@ -182,16 +183,6 @@ void* CapOpWnd::DoGetObj(const char *aName)
 	return (MagToolButtonObserver*) this;
     else if (strcmp(aName, Type()) == 0) 
 	return this;
-    else return CagLayout::DoGetObj(aName);
-}
-
-void CapOpWnd::OnSizeAllocate(GtkAllocation* aAllocation)
-{
-}
-
-void CapOpWnd::OnSizeRequest(GtkRequisition* aRequisition)
-{
-    GtkRequisition child_req; iVbox->SizeRequest(&child_req);
-    *aRequisition = child_req;
+    else return CagAlignment::DoGetObj(aName);
 }
 

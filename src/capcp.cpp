@@ -46,7 +46,7 @@ int CapCp::GetLabelWidth() const
     if (iLabel != NULL) {
 	iLabel->SizeRequest(&lab_req);
     }
-    return lab_req.width; 
+    return lab_req.width + KViewConnLabelGapWidth; 
 }
 
 int CapCp::GetTermWidth()
@@ -65,12 +65,12 @@ void CapCp::OnExpose(GdkEventExpose* aEvent)
 	iLabel->Allocation(&lab_alc);
 	gdk_draw_rectangle(BinWnd(), Gc(), FALSE, lab_alc.x, lab_alc.y, lab_alc.width - 1, lab_alc.height - 1);
     }
+    // Draw Label separator
     if (iLineSep) { 
-	// Draw Label separator
 	gint x1, y1, x2, y2;
 	if (iLeft) {
 	    if (iLabel != NULL) {
-		x1 = lab_alc.x; y1 = lab_alc.y; x2 = x1; y2 = y1 + alc.height;
+		x1 = lab_alc.x - KViewConnLabelGapWidth; y1 = lab_alc.y; x2 = x1; y2 = y1 + alc.height;
 	    }
 	    else {
 		x1 = alc.width; y1 = alc.y; x2 = x1; y2 = y1 + alc.height;
@@ -78,7 +78,7 @@ void CapCp::OnExpose(GdkEventExpose* aEvent)
 	}
 	else {
 	    if (iLabel != NULL) {
-		x1 = lab_alc.x + lab_alc.width - 1; y1 = lab_alc.y; x2 = x1; y2 = y1 + alc.height;
+		x1 = lab_alc.x + lab_alc.width + KViewConnLabelGapWidth - 1; y1 = lab_alc.y; x2 = x1; y2 = y1 + alc.height;
 	    }
 	    else {
 		x1 = 0; y1 = alc.y; x2 = x1; y2 = y1 + alc.height;
@@ -86,6 +86,15 @@ void CapCp::OnExpose(GdkEventExpose* aEvent)
 	}
 	gdk_draw_line(BinWnd(), Gc(), x1, y1, x2, y2);
     }
+    // Draw connection line
+    gint x1, y1, x2, y2;
+    if (iLeft) {
+	x1 = lab_alc.x - KViewConnLabelGapWidth - KViewConnLineLen; y1 = lab_alc.y + lab_alc.height/2; x2 = x1 + KViewConnLineLen; y2 = y1;
+    }
+    else {
+	x1 = lab_alc.x + lab_alc.width + KViewConnLabelGapWidth; y1 = lab_alc.y + lab_alc.height/2; x2 = x1 + KViewConnLineLen; y2 = y1;
+    }
+    gdk_draw_line(BinWnd(), Gc(), x1, y1, x2, y2);
 }
 
 TBool CapCp::OnButtonPress(GdkEventButton* aEvent)
@@ -119,7 +128,7 @@ void CapCp::OnSizeRequest(GtkRequisition* aReq)
     }
     // Get size request for term
     GtkRequisition term_req; iTerm->SizeRequest(&term_req);
-    *aReq = (GtkRequisition) {lab_req.width + term_req.width + KViewConnLineLen, max(lab_req.height, term_req.height)};
+    *aReq = (GtkRequisition) {lab_req.width + KViewConnLabelGapWidth + term_req.width + KViewConnLineLen, max(lab_req.height, term_req.height)};
 }
 
 void CapCp::OnMotion(GdkEventMotion *aEvent)

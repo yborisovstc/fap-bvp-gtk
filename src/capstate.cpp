@@ -102,6 +102,7 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
     cpw->Show();
     // Add trans
     iTrans = new CagTextView("Trans");
+    iTrans->SetBorderWidth(KViewStateTransIntBorder);
     GtkTextBuffer* buf = gtk_text_buffer_new(NULL);
     // TODO [YB] Hack
     const TTransInfo& tinfo = iState.GetTrans(); 

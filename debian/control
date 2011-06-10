@@ -1,0 +1,24 @@
+Source: fap-bvp-gtk
+Section: unknown
+Priority: extra
+Maintainer: Yuri Borisov <yuri.borisov.v@gmail.com>
+Build-Depends: debhelper (>= 7), fapws-dev (>= 0.0.4)
+Standards-Version: 3.7.3
+
+Package: fap-bvp-gtk
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fapws (>= 0.0.4)
+Description: GTK view proxy for Finite Automata Framework (FAP)
+
+Package: fap-bvp-gtk-dev
+Architecture: any
+Depends: fap-bvp-gtk (= ${binary:Version})
+Description: Finite Automata Framework (FAP) GTK view proxy development pkg
+
+Package: fap-bvp-gtk-dbg
+Section: libdevel
+Priority: extra
+Architecture: any
+Depends: fap-bvp-gtk (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Finite Automata Framework (FAP) GTK view proxy development pkg debug symbols
+ 
