@@ -55,6 +55,8 @@ class CapOpWnd: public CagAlignment, public MCapSysObserver, public MagToolButto
 	virtual void OnSystSelected(const string& aName);
 	// From MagToolButtonObserver
 	virtual void OnClicked(CagToolButton* aBtn);
+	// From MWidgetRes
+	virtual CagWidget* GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester = NULL);
     private:
 	CagVBox* iVbox;
 	CagToolBar* iToolbar;

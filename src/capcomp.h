@@ -51,6 +51,8 @@ class MCapCompObserver
 	virtual void OnCompNameClicked(CapComp* aComp) = 0;
 	virtual void OnCompParentClicked(CapComp* aComp) = 0;
 	virtual void OnCompNameChanged(CapComp* aComp, const string& aName) = 0;
+	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp) = 0;
+	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
 };
 
 
@@ -89,6 +91,8 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState);
+    private:
+	void RenameCp(CapCp* aCp, const string& aName);
     public:
 	CAE_Object& iComp;
     private:

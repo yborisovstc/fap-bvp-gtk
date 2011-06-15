@@ -7,7 +7,7 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
     // Create Name
     iName = new CapEopEntry("Name");
     iName->SetHasFrame(EFalse);
-    GtkBorder name_brd = (GtkBorder) {0, 0, 0, 0};
+    GtkBorder name_brd = (GtkBorder) {5, 10, 0, 0};
     iName->SetInnerBorder(&name_brd);
     iName->SetWidthChars(strlen(iComp.InstName()));
     iName->SetText(iComp.InstName());
@@ -147,38 +147,45 @@ TBool CapComp::OnButtonRelease(GdkEventButton* aEvent)
 void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
 {
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
-     // Calculate inputs lables width
-    TInt inp_w = 0;
+    // Calculate inputs terms and labels width
+    int inp_h = 0;
+    int iterm_maxw = 0; // Max term with
+    int ilab_maxw = 0; // Max label width 
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
 	CapCp* cpw = it->second;
-	inp_w = max(inp_w, cpw->GetLabelWidth());
+	GtkRequisition req; cpw->SizeRequest(&req);
+	TInt labw = cpw->GetLabelWidth();
+	ilab_maxw = max(ilab_maxw, labw);
+	iterm_maxw = max(iterm_maxw, req.width - labw);
+	inp_h += req.height + KViewCompCpGapHeight;
     }
-     // Calculate outputs labels width
-    TInt outp_w = 0;
-    int outp_maxw = 0; // Max output with
-    int outp_maxw_l = 0; // Label width of output with max width
+    // Calculate outputs terms and labels width
+    int outp_h = 0;
+    int oterm_maxw = 0; // Max term with
+    int olab_maxw = 0; // Max label width
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutps.begin(); it != iOutps.end(); it++) {
 	CapCp* cpw = it->second;
-	outp_w = max(outp_w, cpw->GetLabelWidth());
-	GtkRequisition outp_req; cpw->SizeRequest(&outp_req);
-	outp_maxw = max(outp_maxw, outp_req.width);
-	if (outp_req.width == outp_maxw)
-	    outp_maxw_l = cpw->GetLabelWidth();
+	GtkRequisition req; cpw->SizeRequest(&req);
+	TInt labw = cpw->GetLabelWidth();
+	olab_maxw = max(olab_maxw, labw);
+	oterm_maxw = max(oterm_maxw, req.width - labw);
+	outp_h += req.height + KViewCompCpGapHeight;
     }
+
     // Calculate allocation of comp body
-    iBodyAlc = (GtkAllocation) {outp_maxw - outp_maxw_l, 0, max(head_req.width, KViewCompInpOutpGapWidth + inp_w + outp_w), aAllc->height};
+    iBodyAlc = (GtkAllocation) {oterm_maxw, 0, max(head_req.width, KViewCompInpOutpGapWidth + ilab_maxw + olab_maxw), aAllc->height};
 
     // Allocate header
     GtkAllocation head_alc = {iBodyAlc.x, iBodyAlc.y, iBodyAlc.width, head_req.height};
     iHead->SizeAllocate(&head_alc);
 
     // Allocate inputs size 
-    TInt inpb_x = aAllc->width - inp_w, inpb_y = head_alc.height + KViewCompCpGapHeight;
+    TInt inpb_x = iBodyAlc.x + iBodyAlc.width, inpb_y = head_alc.height + KViewCompCpGapHeight;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
 	CapCp* cpw = it->second;
 	int lab_w = cpw->GetLabelWidth();
 	GtkRequisition inp_req; cpw->SizeRequest(&inp_req);
-	GtkAllocation inp_alc = {iBodyAlc.x + iBodyAlc.width - lab_w, inpb_y, inp_req.width, inp_req.height};
+	GtkAllocation inp_alc = {inpb_x - lab_w, inpb_y, inp_req.width, inp_req.height};
 	cpw->SizeAllocate(&inp_alc);
 	inpb_y += inp_req.height + KViewCompCpGapHeight;
     }
@@ -197,24 +204,34 @@ void CapComp::OnSizeAllocate(GtkAllocation* aAllc)
 void CapComp::OnSizeRequest(GtkRequisition* aRequisition)
 {
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
-    // Calculate inputs size
-    TInt inp_w = 0, inp_h = 0;
+    // Calculate inputs terms and labels width
+    int inp_h = 0;
+    int iterm_maxw = 0; // Max term with
+    int ilab_maxw = 0; // Max label width 
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInps.begin(); it != iInps.end(); it++) {
 	CapCp* cpw = it->second;
-	GtkRequisition inp_req; cpw->SizeRequest(&inp_req);
-	inp_w = max(inp_w, inp_req.width);
-	inp_h += inp_req.height + KViewCompCpGapHeight;
+	GtkRequisition req; cpw->SizeRequest(&req);
+	TInt labw = cpw->GetLabelWidth();
+	ilab_maxw = max(ilab_maxw, labw);
+	iterm_maxw = max(iterm_maxw, req.width - labw);
+	inp_h += req.height + KViewCompCpGapHeight;
     }
-    // Calculate outputs size
-    TInt outp_w = 0, outp_h = 0;
+    // Calculate outputs terms and labels width
+    int outp_h = 0;
+    int oterm_maxw = 0; // Max term with
+    int olab_maxw = 0; // Max label width
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutps.begin(); it != iOutps.end(); it++) {
 	CapCp* cpw = it->second;
-	GtkRequisition outp_req; cpw->SizeRequest(&outp_req);
-	outp_w = max(outp_w, outp_req.width);
-	outp_h += outp_req.height + KViewCompCpGapHeight;
+	GtkRequisition req; cpw->SizeRequest(&req);
+	TInt labw = cpw->GetLabelWidth();
+	olab_maxw = max(olab_maxw, labw);
+	oterm_maxw = max(oterm_maxw, req.width - labw);
+	outp_h += req.height + KViewCompCpGapHeight;
     }
 
-    aRequisition->width = max(head_req.width, inp_w + outp_w + KViewCompInpOutpGapWidth); 
+    // Body width
+    TInt body_w = max(head_req.width, KViewCompInpOutpGapWidth + ilab_maxw + olab_maxw);
+    aRequisition->width = oterm_maxw + body_w + iterm_maxw; 
     aRequisition->height = head_req.height + max(inp_h, outp_h) + KViewCompCpGapHeight;
 }
 
@@ -293,13 +310,25 @@ void CapComp::ChangeName(const string& aName)
 
 void CapComp::OnLabelRenamed(CapCp* aCp, const string& aName)
 {
+    RenameCp(aCp, aName);
 }
 
 void CapComp::OnCpAddPairRequested(CapCp* aCp, const string& aPairName)
 {
+    if (iObs != NULL) {
+	iObs->OnCompCpAddPairRequested(this, aCp, aPairName);
+    }
 }
 
 void CapComp::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 {
+}
+
+void CapComp::RenameCp(CapCp* aCp, const string& aName)
+{
+    TBool isoutp = iOutps.count(&(aCp->iCp));
+    if (iObs != NULL) {
+	iObs->OnCompCpRenamed(this, aCp, aName, isoutp);
+    }
 }
 

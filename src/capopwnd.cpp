@@ -186,3 +186,12 @@ void* CapOpWnd::DoGetObj(const char *aName)
     else return CagAlignment::DoGetObj(aName);
 }
 
+CagWidget* CapOpWnd::GetWidget(GtkWidget* aGtkWidget, CagWidget* aRequester)
+{
+    CagWidget* res = CagAlignment::GetWidget(aGtkWidget, aRequester);
+    if (res == NULL) {
+	res = iToolbar->GetWidget(aGtkWidget, aRequester);
+    }
+    return res;
+}
+

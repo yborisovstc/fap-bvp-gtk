@@ -13,16 +13,18 @@ class CapCtermPair: public CagToggleButton
 {
     public:
 	static inline const char* Type() { return "CapCtermPair";} ; 
-	CapCtermPair(const string& aName, CAE_ConnPointBase& aCp);
+	CapCtermPair(const string& aName, CAE_ConnPointBase& aCp, TBool aLocalCtx = EFalse);
 	virtual ~CapCtermPair();
 	const CAE_ConnPointBase* Pair() const {return &iCp;};
 	CAE_ConnPointBase* Pair() {return &iCp;};
 	CAE_ConnPointBase* Cp();
+	string GetFullName();
 	// From CAE_Base
 	virtual void *DoGetObj(const char *aName);
     private:
 	CAE_ConnPointBase& iCp;
 	string iLabel;
+	TBool iLocalCtx;
 };
 
 class CapCterm;

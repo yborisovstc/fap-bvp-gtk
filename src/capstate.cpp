@@ -380,8 +380,6 @@ TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
 void CapState::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 {
     if (iObs != NULL) {
-    CAE_Object* obj = aPair->Pair()->Man().GetFbObj(obj);
-    NodeType type = obj != NULL ? ENt_Object : ENt_State;
-	iObs->OnStateCpDelPairRequested(this, aCp, MAE_Chromo::GetTName(type, string(aPair->Pair()->Man().InstName()) + "." + aPair->Pair()->Name()));
+	iObs->OnStateCpDelPairRequested(this, aCp, aPair->GetFullName());
     }
 }
