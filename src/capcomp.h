@@ -53,12 +53,14 @@ class MCapCompObserver
 	virtual void OnCompNameChanged(CapComp* aComp, const string& aName) = 0;
 	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp) = 0;
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
+	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
 };
 
 
 class CapCp;
 class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, public MCompHeadObserver
 {
+    friend class CapSys;
     public:
 	CapComp(const string& aName, CAE_Object& aComp);
 	virtual ~CapComp();

@@ -685,6 +685,7 @@ void CapSys::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 {
 }
 
+// TODO [YB] To be removed as obsolete
 void CapSys::DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName)
 {
     TBool islocinp = iSys.Object().Inputs().count(aPairName) > 0;
@@ -719,7 +720,8 @@ void CapSys::DelStateCpPair(CapState* aState, CapCp* aCp, const string& aPairNam
 
 void CapSys::OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const string& aPairName)
 {
-    DelStateCpPair(aState, aCp, aPairName);
+//    DelStateCpPair(aState, aCp, aPairName);
+    DelCpPair(MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName())), aState->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
 }
 
 TBool CapSys::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
@@ -821,6 +823,43 @@ void CapSys::AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName)
 	CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Cext);
 	nd_add_subj.SetAttr(ENa_Id, aPairName);
 	nd_add_subj.SetAttr(ENa_ConnPair, string(aComp->iComp.InstName()) + "." + aCp->iCp.Name());
+    }
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName)
+{
+    DelCpPair(MAE_Chromo::GetTName(ENt_Object, string(aComp->iComp.InstName())), aComp->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
+}
+
+void CapSys::DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName)
+{
+    TBool islocinp = iSys.Object().Inputs().count(aPairName) > 0;
+    TBool islocoutp = iSys.Object().Outputs().count(aPairName) > 0;
+    TBool islocext = islocinp || islocoutp;
+    string fname = aMansFullName + "." + aCp->iCp.Name();
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    CAE_ChromoNode rm = smut.AddChild(ENt_MutRm);
+    if (islocext) {
+	rm.SetAttr(ENa_Type, ENt_Cext);
+	rm.SetAttr(ENa_MutChgAttr, "pair");
+	rm.SetAttr(ENa_Id, aPairName);
+	rm.SetAttr(ENa_MutChgVal, fname);
+    }
+    else {
+	rm.SetAttr(ENa_Type, ENt_Conn);
+	rm.SetAttr(ENa_MutChgAttr, "pair");
+	if (aIsInp) {
+	    rm.SetAttr(ENa_Id, fname);
+	    rm.SetAttr(ENa_MutChgVal, aPairName);
+	}
+	else {
+	    rm.SetAttr(ENa_Id, aPairName);
+	    rm.SetAttr(ENa_MutChgVal, fname);
+	}
     }
     iSys.Object().Mutate();
     Refresh();
