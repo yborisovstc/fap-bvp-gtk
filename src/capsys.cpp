@@ -824,6 +824,19 @@ void CapSys::AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName)
 	nd_add_subj.SetAttr(ENa_Id, aPairName);
 	nd_add_subj.SetAttr(ENa_ConnPair, string(aComp->iComp.InstName()) + "." + aCp->iCp.Name());
     }
+    else {
+	CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Conn);
+	TBool cpinp = aComp->iInps.count(&(aCp->iCp)) > 0;
+	string cpname = MAE_Chromo::GetTName(ENt_Object, string(aComp->iComp.InstName()) + "." + aCp->iCp.Name());
+	if (cpinp) {
+	    nd_add_subj.SetAttr(ENa_Id, cpname);
+	    nd_add_subj.SetAttr(ENa_ConnPair, aPairName);
+	}
+	else {
+	    nd_add_subj.SetAttr(ENa_Id, aPairName);
+	    nd_add_subj.SetAttr(ENa_ConnPair, cpname);
+	}
+    }
     iSys.Object().Mutate();
     Refresh();
 }
