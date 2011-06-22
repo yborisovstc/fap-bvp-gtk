@@ -2,7 +2,7 @@
 #include "cagprov.h"
 
 
-CagProvider::CagProvider(CagWindow* aWnd): iWnd(aWnd)
+CagProvider::CagProvider(CagWindow* aWnd): CAE_ProviderBase("cagprov"), iWnd(aWnd)
 {
 }
 
