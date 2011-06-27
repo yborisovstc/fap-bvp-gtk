@@ -33,3 +33,7 @@ CagVPaned::CagVPaned(const string& aName): CagPaned(GTK_TYPE_VPANED, aName)
 {
 }
 
+CagHPaned::CagHPaned(const string& aName): CagPaned(GTK_TYPE_HPANED, aName)
+{
+}
+

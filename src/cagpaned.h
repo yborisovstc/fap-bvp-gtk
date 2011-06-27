@@ -20,5 +20,12 @@ class CagVPaned: public CagPaned
 	CagVPaned(const string& aName);
 };
 
+class CagHPaned: public CagPaned
+{
+    public:
+	CagHPaned(const string& aName);
+};
+
+
 
 #endif 
