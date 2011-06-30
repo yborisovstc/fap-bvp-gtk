@@ -1,6 +1,9 @@
 #include "capcomp.h"
 #include "capcommon.h"
 
+
+const char* KCompPmenu_Del = "Del";
+
 CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName), iComp(aComp), iObs(NULL)
 {
     SetBorderWidth(1);
@@ -65,8 +68,19 @@ void* CapCompHead::DoGetObj(const char *aName)
 }
 
 
+vector<TPmenuSpecElem> CapComp::iPmenuSpec;
+
 CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iComp(aComp), iObs(NULL)
 {
+    if (iPmenuSpec.empty()) {
+	iPmenuSpec.push_back(TPmenuSpecElem(KCompPmenu_Del, "Delete"));
+    }
+    // Popup Menu
+    iPopupMenu = new CapPopupMenu("Menu", iPmenuSpec);
+    iPopupMenu->SetTitle("cont menu");
+    iPopupMenu->Show();
+    iPopupMenu->SetMenuShellObs(this);
+
     // Add header
     iHead = new CapCompHead("Title", iComp);
     iHead->SetObserver(this);
@@ -138,6 +152,12 @@ void CapComp::OnExpose(GdkEventExpose* aEvent)
 
 TBool CapComp::OnButtonPress(GdkEventButton* aEvent)
 {
+    if (aEvent->button == 3) {
+	// Popup context menu
+	iPopupMenu->Popup(aEvent->button, aEvent->time);
+	return ETrue;
+    }
+    return EFalse;
 }
 
 TBool CapComp::OnButtonRelease(GdkEventButton* aEvent)
@@ -231,8 +251,10 @@ void CapComp::OnSizeRequest(GtkRequisition* aRequisition)
 
     // Body width
     TInt body_w = max(head_req.width, KViewCompInpOutpGapWidth + ilab_maxw + olab_maxw);
+    TInt body_io_h = max(inp_h, outp_h);
+    TInt body_h = body_io_h == 0 ? KViewCompEmptyBodyHight: body_io_h + KViewCompCpGapHeight;
     aRequisition->width = oterm_maxw + body_w + iterm_maxw; 
-    aRequisition->height = head_req.height + max(inp_h, outp_h) + KViewCompCpGapHeight;
+    aRequisition->height = head_req.height + body_h;
 }
 
 void CapComp::OnMotion(GdkEventMotion *aEvent)
@@ -335,3 +357,12 @@ void CapComp::RenameCp(CapCp* aCp, const string& aName)
     }
 }
 
+void CapComp::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
+{
+    if (iObs != NULL) {
+	if (aMenuShell == iPopupMenu) {
+	    if (aItem->Name().compare(KCompPmenu_Del) == 0) 
+		iObs->OnCompDeleteRequested(this);
+	}
+    }
+}

@@ -23,6 +23,7 @@ const TInt KViewTransHeight = 100;
 const TInt KViewStateGapTransInp = 20;
 const TInt KViewCompInpOutpGapWidth = 20;
 const TInt KViewCompCpGapHeight = 3;
+const TInt KViewCompEmptyBodyHight = 40;
 const TInt KViewDectGapWidth = 0;
 const TInt KViewExtCompGapWidth = 40;
 const TInt KViewStateTransBorder = 1;

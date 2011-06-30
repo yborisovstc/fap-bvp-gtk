@@ -8,6 +8,13 @@
 #include "capcommon.h"
 #include "capcterm.h"
 #include "cagtextview.h"
+#include "caplogdlg.h"
+#include <dirent.h>
+
+const char* KFapModulesPath = "file:/usr/share/fapws/modules/";
+
+
+vector<string> CapSys::iModulesPaths;
 
 CapTranHead::CapTranHead(const string& aName): CagHBox(aName)
 {
@@ -77,6 +84,9 @@ void CapTran::OnSizeRequest(GtkRequisition* aRequisition)
 CapSys::CapSys(const string& aName, CAE_Object::Ctrl& aSys, MCapSysObserver* aObserver): 
     CagLayout(aName), iSys(aSys), iObserver(aObserver), iCpPairObs(*this), iTrans(NULL)
 {
+    if (iModulesPaths.size() == 0) {
+	iModulesPaths.push_back(KFapModulesPath);
+    }
     Construct();
 }
 
@@ -339,7 +349,17 @@ void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, Gt
    // if (info == KTei_NewObject)
     {
 	//gdk_drag_status(drag_context, GDK_ACTION_COPY, time);
-	AddComponent();
+	vector<string> sTypes;
+	GetCompTypesAvailable(sTypes);
+	CapCompDlg* dlg = new CapCompDlg("CompDlg", sTypes, ETrue, "", "");
+	TInt res = dlg->Run();
+	if (res == CapLogDlg::EActionOK) {
+	    string sName, sType;
+	    dlg->GetName(sName);
+	    dlg->GetType(sType);
+	    AddComponent(sName, sType);
+	}
+	delete dlg;
 	gtk_drag_finish(drag_context, true, false, time);
     }
     else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_state") == 0) 
@@ -364,15 +384,15 @@ void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, Gt
     }
 }
 
-void CapSys::AddComponent() 
+void CapSys::AddComponent(const string& aName, const string& aType) 
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smutr = cpx->Mut().Root();
     CAE_ChromoNode comp = smutr.AddChild(ENt_Object);
-    comp.SetAttr(ENa_Type, "none");
+    comp.SetAttr(ENa_Type, aType);
     char *name = (char*) malloc(100);
     sprintf(name, "noname%d", rand());
-    comp.SetAttr(ENa_Id, name);
+    comp.SetAttr(ENa_Id, aName);
     free(name);
     iSys.Object().Mutate();
     Refresh();
@@ -539,6 +559,18 @@ void CapSys::DeleteState(CapState* aState)
     CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
     mutrm.SetAttr(ENa_Type, ENt_State);
     mutrm.SetAttr(ENa_Id, aState->iState.InstName());
+    iSys.Object().Mutate();
+    Refresh();
+}
+
+void CapSys::DeleteComp(CapComp* aComp)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
+    mutrm.SetAttr(ENa_Type, ENt_Object);
+    mutrm.SetAttr(ENa_Id, aComp->iComp.InstName());
     iSys.Object().Mutate();
     Refresh();
 }
@@ -876,5 +908,52 @@ void CapSys::DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const str
     }
     iSys.Object().Mutate();
     Refresh();
+}
+
+void CapSys::OnCompDeleteRequested(CapComp* aComp)
+{
+    DeleteComp(aComp);
+}
+
+void CapSys::GetCompTypesAvailable(vector<string>& aList) const
+{
+    aList.push_back("<none>");
+    for (map<string, CAE_Object*>::const_iterator it = iSys.Comps().begin(); it != iSys.Comps().end(); it++) 
+    {
+	aList.push_back(it->first);
+    }
+    AddCompTypesFromModPaths(aList);
+}
+
+void CapSys::AddCompTypesFromModPaths(vector<string>& aList) const
+{
+    for (vector<string>::const_iterator it = iModulesPaths.begin(); it != iModulesPaths.end(); it++) {
+	const string& uristr = *it;
+	Uri uri(uristr);
+	if (uri.Scheme().compare("file") == 0 && uri.Auth().empty()) {
+	    // Local host
+	    AddCompTypesFromLocModPath(uristr, uri.Path(), aList);
+	}
+    }
+}
+
+int CapSys::FilterModulesDirEntries(const struct dirent *aEntry)
+{
+    string name = aEntry->d_name;
+    size_t ppos = name.find_first_of(".");
+    string suff = name.substr(ppos + 1);
+    int res = suff.compare("xml"); 
+    return (res == 0) ? 1 : 0;
+}
+
+void CapSys::AddCompTypesFromLocModPath(const string& aDirUri, const string& aPath, vector<string>& aList) const
+{
+    // List modules directory
+    struct dirent **entlist;
+    int n = scandir (aPath.c_str(), &entlist, FilterModulesDirEntries, alphasort);
+    // Add root systems 
+    for (int cnt = 0; cnt < n; ++cnt) {
+	aList.push_back(aDirUri + entlist[cnt]->d_name);
+    }
 }
 

@@ -32,4 +32,29 @@ class CagAlignment: public CagBin
 };
 
 
+class CagComboBox: public CagBin
+{
+    public:
+	CagComboBox(const string& aName);
+	CagComboBox(GType aType, const string& aName);
+	void GetText(string& aText);
+	void AppendText(const string& aText);
+	void SetActiveItem(TInt aInd);
+	void SetButtonSensitivity(GtkSensitivityType aSens);
+    protected:
+	CagComboBox(GtkWidget* aWidget, const string& aName);
+};
+
+class CagComboBoxEntry: public CagComboBox
+{
+    public:
+	CagComboBoxEntry(const string& aName);
+};
+
+class CagComboBoxListEntry: public CagComboBoxEntry
+{
+    public:
+	CagComboBoxListEntry(const string& aName, const vector<string>& aList, vector<string>::const_iterator aCurrent);
+};
+
 #endif 

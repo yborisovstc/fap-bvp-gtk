@@ -9,6 +9,7 @@
 #include "cagentry.h"
 #include "capmiscwid.h"
 
+
 class MCompHeadObserver
 {
     public:
@@ -17,8 +18,6 @@ class MCompHeadObserver
 	virtual void OnCompParentClicked() = 0;
 	virtual void OnCompNameChanged(const string& aName) = 0;
 };
-
-
 
 class CapCompHead: public CagHBox, public MWidgetObs, public MapEopEntryObserver
 {
@@ -54,11 +53,12 @@ class MCapCompObserver
 	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp) = 0;
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
 	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
+	virtual void OnCompDeleteRequested(CapComp* aComp) = 0;
 };
 
 
 class CapCp;
-class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, public MCompHeadObserver
+class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, public MCompHeadObserver, public MagMenuShellObs
 {
     friend class CapSys;
     public:
@@ -82,6 +82,8 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	virtual void OnCompNameClicked();
 	virtual void OnCompParentClicked();
 	virtual void OnCompNameChanged(const string& aName);
+	// From MagMenuShellObs 
+	virtual void OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem);
     private:
 	virtual void OnExpose(GdkEventExpose* aEvent);
 	virtual TBool OnButtonPress(GdkEventButton* aEvent);
@@ -103,6 +105,8 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	map<CAE_ConnPointBase*, CapCp*> iOutps;
 	GtkAllocation iBodyAlc;
 	MCapCompObserver* iObs;
+	CapPopupMenu* iPopupMenu;
+	static vector<TPmenuSpecElem> iPmenuSpec;
 };
 
 #endif

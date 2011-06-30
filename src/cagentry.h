@@ -10,6 +10,7 @@ class CagEntry: public CagWidget
 	void SetText(const string& aText);
 	TInt GetTextLen();
 	string GetText();
+	void GetText(string& aText);
 	void SetHasFrame(TBool aHas);
 	void SetInnerBorder(const GtkBorder *border);
 	void SetWidthChars(TInt aNchars);

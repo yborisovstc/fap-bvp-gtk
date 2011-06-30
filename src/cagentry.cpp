@@ -15,6 +15,11 @@ string CagEntry::GetText()
     return string((const char*) gtk_entry_get_text(GTK_ENTRY(iWidget)));
 }
 
+void CagEntry::GetText(string& aText)
+{
+    aText = string((const char*) gtk_entry_get_text(GTK_ENTRY(iWidget)));
+}
+
 TInt CagEntry::GetTextLen()
 {
     return gtk_entry_get_text_length(GTK_ENTRY(iWidget));

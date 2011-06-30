@@ -62,6 +62,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnCompNameClicked(CapComp* aComp);
 	virtual void OnCompParentClicked(CapComp* aComp);
 	virtual void OnCompNameChanged(CapComp* aComp, const string& aName);
+	virtual void OnCompDeleteRequested(CapComp* aComp);
 	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp);
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName);
 	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName);
@@ -89,13 +90,14 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
     private:
 	CapComp* Comp(CagWidget* aWidget);
 	void ActivateConn(CapCtermPair* aPair);
-	void AddComponent();
+	void AddComponent(const string& aName, const string& aType);
 	void AddState();
 	void AddStateInp(CapState* aState);
 	void AddTrans();
 	void AddInp();
 	void AddOutp();
 	void DeleteState(CapState* aState);
+	void DeleteComp(CapComp* aComp);
 	void ChangeCompName(CapComp* aComp, const string& aName);
 	void ChangeTrans(const string& aTrans);
 	void ChangeStateName(CapState* aState, const string& aName);
@@ -111,6 +113,10 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName);
 	void Refresh();
 	string GetRandomNum() const;
+	void GetCompTypesAvailable(vector<string>& aList) const;
+	void AddCompTypesFromLocModPath(const string& aDirUri, const string& aPath, vector<string>& aList) const;
+	void AddCompTypesFromModPaths(vector<string>& aList) const;
+	static int FilterModulesDirEntries(const struct dirent *aEntry);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
     private:
@@ -134,6 +140,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	CpPairObs iCpPairObs;
 	// Size requested parameters
 	GtkRequisition iInpReq;
+	static vector<string> iModulesPaths;
 };
 
 #endif 
