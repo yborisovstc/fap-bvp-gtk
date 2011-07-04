@@ -95,6 +95,7 @@ class CapComp: public CagLayout, public MCapCpObserver, public MCapCpPairRes, pu
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
 	virtual void OnChildStateChanged(CagWidget* aChild, GtkStateType aPrevState);
+	virtual void OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time); 
     private:
 	void RenameCp(CapCp* aCp, const string& aName);
     public:

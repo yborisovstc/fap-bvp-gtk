@@ -40,6 +40,7 @@ const TInt KTei_Conn = 3; // Connection point
 const TInt KTei_NewTrans = 4;
 const TInt KTei_NewInp = 5;
 const TInt KTei_NewOutp = 6;
+const TInt KTei_MoveComp = 7;
 
 static GtkTargetEntry KTe_NewObject[] = { 
     { (gchar*) "STRING", 0, KTei_NewObject } 
@@ -71,6 +72,10 @@ static GtkTargetEntry KTe_NewOutp[] = {
 };
 const TInt KTe_NewOutp_Len = sizeof(KTe_NewOutp)/sizeof(GtkTargetEntry);
 
+static GtkTargetEntry KTe_MoveComp[] = { 
+    { (gchar*) "STRING", 0, KTei_MoveComp } 
+};
+const TInt KTe_MoveComp_Len = sizeof(KTe_MoveComp)/sizeof(GtkTargetEntry);
 
 
 struct TPmenuSpecElem {

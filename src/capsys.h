@@ -91,7 +91,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	CapComp* Comp(CagWidget* aWidget);
 	void ActivateConn(CapCtermPair* aPair);
 	void AddComponent(const string& aName, const string& aType);
-	void AddState();
+	void AddState(const string& aName, const string& aType);
 	void AddStateInp(CapState* aState);
 	void AddTrans();
 	void AddInp();
@@ -114,9 +114,12 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void Refresh();
 	string GetRandomNum() const;
 	void GetCompTypesAvailable(vector<string>& aList) const;
+	void GetStateTypesAvailable(vector<string>& aList) const;
 	void AddCompTypesFromLocModPath(const string& aDirUri, const string& aPath, vector<string>& aList) const;
 	void AddCompTypesFromModPaths(vector<string>& aList) const;
 	static int FilterModulesDirEntries(const struct dirent *aEntry);
+	void MoveComp(const string& aName, gint aX, gint aY);
+	void FindCompByPosY(string& aCompName, gint aY);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
     private:
@@ -132,7 +135,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
     private:
 	CAE_Object::Ctrl& iSys;
 	map<CAE_StateBase*, CapState*> iStates; 
-	map<CAE_Object*, CapComp*> iComps; // Components
+	vector<CapComp*> iComps; // Components
 	map<CAE_ConnPointBase*, CapCp*> iOutputs;
 	map<CAE_ConnPointBase*, CapCp*> iInputs;
 	CapTran* iTrans; // Transition

@@ -104,12 +104,12 @@ void CapSys::Construct()
 	}
     }
     // Add components
-    for (map<string, CAE_Object*>::iterator it = iSys.Comps().begin(); it != iSys.Comps().end(); it++) {
-	CAE_Object* obj = it->second;
+    for (vector<CAE_Object*>::iterator it = iSys.CompsOrd().begin(); it != iSys.CompsOrd().end(); it++) {
+	CAE_Object* obj = *it;
 	if (obj != NULL) {
 	    CapComp* comp = new CapComp("Comp~" + string(obj->InstName()), *obj);
 	    Add(comp);
-	    iComps[obj] = comp;
+	    iComps.push_back(comp);
 	    comp->SetObs(this);
 	    comp->Show();
 	}
@@ -206,9 +206,8 @@ void CapSys::OnSizeAllocate(GtkAllocation* aAllc)
     }
     // Allocate components
     int compb_x = (outp_w + aAllc->width - inp_w)/2, compb_y = statb_y;
-    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	CAE_Object* obj = it->first;
-	CapComp* comp = it->second;
+    for (vector<CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	CapComp* comp = *it;
 	GtkRequisition req; comp->SizeRequest(&req);
 	int comp_body_center_x = comp->GetBodyCenterX();
 	GtkAllocation allc = {compb_x - comp_body_center_x, compb_y, req.width, req.height};
@@ -234,8 +233,8 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
     }
     // Calculate size of comps
     int comp_w = 0, comp_h = 0;
-    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	CapComp* comp = it->second;
+    for (vector<CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	CapComp* comp = *it;
 	GtkRequisition req; comp->SizeRequest(&req);
 	comp_w = max(comp_w, req.width);
 	comp_h += req.height + KViewCompGapHight ;
@@ -266,9 +265,9 @@ void CapSys::OnSizeRequest(GtkRequisition* aRequisition)
 CapComp* CapSys::Comp(CagWidget* aWidget)
 {
     CapComp* res = NULL;
-    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	if (it->second == aWidget) {
-	    res = it->second; break;
+    for (vector<CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	if (*it == aWidget) {
+	    res = *it; break;
 	}
     }
     return res;
@@ -313,8 +312,8 @@ void CapSys::OnCompParentClicked(CapComp* aComp)
 CapCtermPair* CapSys::GetCpPair(CapCtermPair* aPair)
 {
     CapCtermPair* res = NULL;
-    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
-	res = it->second->GetCpPair(aPair);
+    for (vector<CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	res = (*it)->GetCpPair(aPair);
     }
     for (map<CAE_StateBase*, CapState*>::iterator it = iStates.begin(); it != iStates.end() && res == NULL; it++) {
 	res = it->second->GetCpPair(aPair);
@@ -344,7 +343,10 @@ TBool CapSys::OnDragDrop(GdkDragContext *drag_context, gint x, gint y, guint tim
 
 void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time)
 {
-    if (strcmp((char*) gtk_selection_data_get_text(data), "_new_object") == 0) 
+    string dtext = (char*) gtk_selection_data_get_text(data);
+    size_t act_end = dtext.find_first_of(":");
+    string act = dtext.substr(0, act_end);
+    if (act.compare("_new_object") == 0) 
 	// TODO [YB] info received is incorrect for some reason. Consider
    // if (info == KTei_NewObject)
     {
@@ -364,7 +366,17 @@ void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, Gt
     }
     else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_state") == 0) 
     {
-	AddState();
+	vector<string> sTypes;
+	GetStateTypesAvailable(sTypes);
+	CapCompDlg* dlg = new CapCompDlg("CompDlg", sTypes, ETrue, "", "");
+	TInt res = dlg->Run();
+	if (res == CapLogDlg::EActionOK) {
+	    string sName, sType;
+	    dlg->GetName(sName);
+	    dlg->GetType(sType);
+	    AddState(sName, sType);
+	}
+	delete dlg;
 	gtk_drag_finish(drag_context, true, false, time);
     }
     else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_trans") == 0) 
@@ -380,6 +392,12 @@ void CapSys::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, Gt
     else if (strcmp((char*) gtk_selection_data_get_text(data), "_new_outp") == 0) 
     {
 	AddOutp();
+	gtk_drag_finish(drag_context, true, false, time);
+    }
+    else if (act.compare("_move_comp") == 0) 
+    {
+	string cname = dtext.substr(act_end+1);
+	MoveComp(cname, x, y);
 	gtk_drag_finish(drag_context, true, false, time);
     }
 }
@@ -398,17 +416,15 @@ void CapSys::AddComponent(const string& aName, const string& aType)
     Refresh();
 }
 
-void CapSys::AddState()
+void CapSys::AddState(const string& aName, const string& aType)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
     CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
-    CAE_ChromoNode comp = mutadd.AddChild(ENt_State);
-    comp.SetAttr(ENa_Type, "StInt");
+    CAE_ChromoNode comp = smutr.AddChild(ENt_State);
+    comp.SetAttr(ENa_Type, aType);
     char *name = (char*) malloc(100);
     sprintf(name, "noname%d", rand());
-    comp.SetAttr(ENa_Id, name);
+    comp.SetAttr(ENa_Id, aName);
     comp.SetAttr(ENa_StInit, "");
     free(name);
     comp.AddChild(ENt_Trans);
@@ -465,8 +481,8 @@ void CapSys::Refresh()
 	Remove(it->second);
     }
     iStates.erase(iStates.begin(), iStates.end());
-    for (map<CAE_Object*, CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	Remove(it->second);
+    for (vector<CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	Remove(*it);
     }
     iComps.erase(iComps.begin(), iComps.end());
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iInputs.begin(); it != iInputs.end(); it++) {
@@ -915,9 +931,16 @@ void CapSys::OnCompDeleteRequested(CapComp* aComp)
     DeleteComp(aComp);
 }
 
+void CapSys::GetStateTypesAvailable(vector<string>& aList) const
+{
+    aList.push_back("StInt");
+    aList.push_back("Vector");
+}
+
 void CapSys::GetCompTypesAvailable(vector<string>& aList) const
 {
     aList.push_back("<none>");
+    iSys.Object().AppendCompList(aList, NULL);
     for (map<string, CAE_Object*>::const_iterator it = iSys.Comps().begin(); it != iSys.Comps().end(); it++) 
     {
 	aList.push_back(it->first);
@@ -954,6 +977,35 @@ void CapSys::AddCompTypesFromLocModPath(const string& aDirUri, const string& aPa
     // Add root systems 
     for (int cnt = 0; cnt < n; ++cnt) {
 	aList.push_back(aDirUri + entlist[cnt]->d_name);
+    }
+}
+
+void CapSys::MoveComp(const string& aName, gint aX, gint aY)
+{
+    string targ;
+    FindCompByPosY(targ, aY);
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutMove);
+    chnode.SetAttr(ENa_Id, aName);
+    if (!targ.empty()) {
+	chnode.SetAttr(ENa_MutNode, targ);
+    }
+    iSys.Object().Mutate();
+    Refresh();
+
+}
+
+void CapSys::FindCompByPosY(string& aCompName, gint aY)
+{
+    for (vector<CapComp*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	CapComp* comp = *it;
+	GtkAllocation alloc;
+	comp->Allocation(&alloc);
+	if (aY >= alloc.y && aY < (alloc.y + alloc.height + KViewExtCompGapWidth)) {
+	    aCompName = comp->iComp.InstName();
+	}
     }
 }
 

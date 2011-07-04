@@ -75,4 +75,18 @@ class CapCompDlg: public CagDialog
 	CapCboxEntryDlgLine* iLineType;
 };
 
+class CapMoveDlg: public CagDialog
+{
+    public:
+	enum {
+	    EActionCancel,
+	    EActionOK
+	};
+    public:
+	CapMoveDlg(const string& aName, const vector<string>& aNodes, const string& aInitSel);
+	void GetSelNode(string& aName);
+    private:
+	CapCboxEntryDlgLine* iLineNode;
+};
+
 #endif

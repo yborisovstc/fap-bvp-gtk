@@ -121,12 +121,17 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
     // Add Init
     iInit = new CagTextView("Init");
     GtkTextBuffer* initbuf = gtk_text_buffer_new(NULL);
+    // TODO [YB] There is the problem with attr not presenting in run-time when wrapped appr is used (ref md#sec_desg_chromo_full_sol_1)
+    // -- to consider if it makes sense to move such attr in run-time
+#if 0
     CAE_Object::ChromoPx* cpx = iOwner.Object().ChromoIface();
     CAE_ChromoNode chroot = cpx->Chr().Root();
     CAE_ChromoNode::Iterator chrstit = chroot.Find(ENt_State, iState.InstName());
     _FAP_ASSERT(chrstit != chroot.End());
     CAE_ChromoNode chrst = *chrstit;
     const string& init = chrst.Attr(ENa_StInit);
+#endif
+    const string& init = iState.ValStr();
     // TODO [YB] Hack
     if (init.empty()) {
 	string buftxt("   ");

@@ -139,3 +139,19 @@ void CapCompDlg::GetType(string& aType)
     }
 }
 
+// Move dialog
+CapMoveDlg::CapMoveDlg(const string& aName, const vector<string>& aNodes, const string& aInitSel): CagDialog(aName)
+{
+    // Buttons
+    AddButton("Cancel", EActionCancel);
+    AddButton("OK", EActionOK);
+    // Line "Nodes"
+    iLineNode = new CapCboxEntryDlgLine("Nodes", "Nodes", aNodes, aInitSel);
+    iLineNode->Show();
+    AddContentWidget(iLineNode, EFalse, ETrue, 1);
+}
+
+void CapMoveDlg::GetSelNode(string& aName)
+{
+    iLineNode->GetData(aName);
+}

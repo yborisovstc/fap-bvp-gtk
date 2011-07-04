@@ -152,12 +152,25 @@ void CapComp::OnExpose(GdkEventExpose* aEvent)
 
 TBool CapComp::OnButtonPress(GdkEventButton* aEvent)
 {
-    if (aEvent->button == 3) {
+    if (aEvent->button == 1) {
+	GtkTargetList* tarlist = gtk_target_list_new(KTe_MoveComp, KTe_MoveComp_Len);
+	GdkDragContext* ctx = gtk_drag_begin(iWidget, tarlist, GDK_ACTION_COPY, 1, (GdkEvent*) aEvent);
+    }
+    else if (aEvent->button == 3) {
 	// Popup context menu
 	iPopupMenu->Popup(aEvent->button, aEvent->time);
 	return ETrue;
     }
     return EFalse;
+}
+
+void CapComp::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data, guint info, guint time)
+{
+    if (info == KTe_MoveComp->info) {
+	string sel = "_move_comp:";
+	sel.append(iComp.InstName());
+	gtk_selection_data_set_text(data, sel.c_str(), -1);
+    }
 }
 
 TBool CapComp::OnButtonRelease(GdkEventButton* aEvent)
