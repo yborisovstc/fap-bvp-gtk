@@ -3,6 +3,7 @@
 
 
 const char* KCompPmenu_Del = "Del";
+const char* KCompPmenu_Quiet = "Quiet";
 
 CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName), iComp(aComp), iObs(NULL)
 {
@@ -24,6 +25,11 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
     iParent->Show();
     iParent->SetWidgetObs(this);
     PackStart(iParent, false, false, 2);
+    // Create Quiet
+    iQuiet = new CagLabel("Quiet");
+    iQuiet->SetText(string(iComp.IsQuiet() ? "quiet": ""));
+    iQuiet->Show();
+    PackStart(iQuiet, false, false, 2);
 }
 
 void CapCompHead::SetObserver(MCompHeadObserver* aObs)
@@ -74,6 +80,7 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
 {
     if (iPmenuSpec.empty()) {
 	iPmenuSpec.push_back(TPmenuSpecElem(KCompPmenu_Del, "Delete"));
+	iPmenuSpec.push_back(TPmenuSpecElem(KCompPmenu_Quiet, iComp.IsQuiet()? "Reset Quiet" : "Set Quiet"));
     }
     // Popup Menu
     iPopupMenu = new CapPopupMenu("Menu", iPmenuSpec);
@@ -376,6 +383,8 @@ void CapComp::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
 	if (aMenuShell == iPopupMenu) {
 	    if (aItem->Name().compare(KCompPmenu_Del) == 0) 
 		iObs->OnCompDeleteRequested(this);
+	    else if (aItem->Name().compare(KCompPmenu_Quiet) == 0) 
+		iObs->OnCompChangeQuietRequested(this, !iComp.IsQuiet());
 	}
     }
 }

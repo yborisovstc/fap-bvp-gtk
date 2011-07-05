@@ -37,6 +37,7 @@ void CagProxy::SetObj(CAE_Object::Ctrl* aObj)
 {
     _FAP_ASSERT(iSys == NULL);
     iSys = aObj;
+    iSys->Object().SetBaseViewProxy(this);
     if (iHistory.empty()) {
 	iHistory.push_back(&(iSys->Object()));
 	iHistItr = iHistory.end() - 1;
@@ -46,7 +47,8 @@ void CagProxy::SetObj(CAE_Object::Ctrl* aObj)
 
 void CagProxy::UnsetObj(CAE_Object::Ctrl* aObj)
 {
-    _FAP_ASSERT(iSys == aObj);
+    _FAP_ASSERT(aObj == NULL || iSys == aObj);
+    iSys->Object().RemoveBaseViewProxy(this);
     iWindow->UnsetSys(iSys);
     iSys = NULL;
 }
@@ -61,8 +63,11 @@ void CagProxy::UnsetRoot(CAE_Object* aObj)
 void CagProxy::TurnToComp(CAE_Object* aComp)
 {
     // Move cursor to component
-    iSys->Object().RemoveBaseViewProxy(this);
-    aComp->SetBaseViewProxy(this);
+    CAE_Object::Ctrl& newsys = iSys->GetCtrl(aComp);
+    UnsetObj(iSys);
+    SetObj(&newsys);
+    //iSys->Object().RemoveBaseViewProxy(this);
+    //aComp->SetBaseViewProxy(this);
 }
 
 void CagProxy::OnTurnToComp(CAE_Object* aComp)

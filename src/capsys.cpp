@@ -1009,3 +1009,17 @@ void CapSys::FindCompByPosY(string& aCompName, gint aY)
     }
 }
 
+void CapSys::OnCompChangeQuietRequested(CapComp* aComp, TBool aQuiet)
+{
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
+    chnode.SetAttr(ENa_Type, ENt_Object);
+    chnode.SetAttr(ENa_Id, aComp->iComp.InstName());
+    chnode.SetAttr(ENa_MutChgAttr, ENa_ObjQuiet);
+    chnode.SetAttr(ENa_MutChgVal, aQuiet? "yes" : "no");
+    iSys.Object().Mutate();
+    Refresh();
+}
+

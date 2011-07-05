@@ -37,6 +37,7 @@ class CapCompHead: public CagHBox, public MWidgetObs, public MapEopEntryObserver
 	CAE_Object& iComp;
 	CapEopEntry* iName;
 	CagELabel* iParent;
+	CagLabel* iQuiet;
 	MCompHeadObserver* iObs;
 };
 
@@ -54,6 +55,7 @@ class MCapCompObserver
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
 	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
 	virtual void OnCompDeleteRequested(CapComp* aComp) = 0;
+	virtual void OnCompChangeQuietRequested(CapComp* aComp, TBool aQuiet) = 0;
 };
 
 

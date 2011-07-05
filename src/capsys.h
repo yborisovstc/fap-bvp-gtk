@@ -66,6 +66,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp);
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName);
 	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName);
+	virtual void OnCompChangeQuietRequested(CapComp* aComp, TBool aQuiet);
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair);
 	virtual void OnStateNameChanged(CapState* aState, const string& aName);

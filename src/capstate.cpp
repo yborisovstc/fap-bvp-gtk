@@ -211,7 +211,8 @@ void CapState::OnSizeAllocate(GtkAllocation* aAllc)
     GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
 
     // Calculate allocation of comp body
-    int body_width = max(head_req.width, tran_req.width + KViewStateTransBorder*2 + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
+    int body_int_width = max(tran_req.width + KViewStateTransBorder*2 , init_req.width);
+    int body_width = max(head_req.width, body_int_width + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
     iBodyAlc = (GtkAllocation) {outp_term_w, 0, body_width, aAllc->height};
 
     // Allocate header
@@ -277,7 +278,8 @@ void CapState::OnSizeRequest(GtkRequisition* aRequisition)
 	outp_h += outp_req.height + KViewCompCpGapHeight;
     }
 
-    int body_width = max(head_req.width, tran_req.width + KViewStateTransBorder*2 + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
+    int body_int_width = max(tran_req.width + KViewStateTransBorder*2 , init_req.width);
+    int body_width = max(head_req.width, body_int_width + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
     aRequisition->width = outp_term_w + body_width + inp_term_w; 
     aRequisition->height = head_req.height + 
 	max(max(inp_h, outp_h), tran_req.height + init_req.height + KViewCompCpGapHeight) + 2*KViewCompCpGapHeight;
