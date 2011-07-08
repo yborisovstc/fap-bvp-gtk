@@ -6,6 +6,7 @@
 #include <gtk/gtk.h>
 #include "capopwnd.h"
 #include "mainwndiface.h"
+#include "cagprov.h"
 
 
 class CapSys;

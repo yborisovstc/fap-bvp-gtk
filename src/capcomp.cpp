@@ -80,7 +80,7 @@ CapComp::CapComp(const string& aName, CAE_Object& aComp): CagLayout(aName), iCom
 {
     if (iPmenuSpec.empty()) {
 	iPmenuSpec.push_back(TPmenuSpecElem(KCompPmenu_Del, "Delete"));
-	iPmenuSpec.push_back(TPmenuSpecElem(KCompPmenu_Quiet, iComp.IsQuiet()? "Reset Quiet" : "Set Quiet"));
+	iPmenuSpec.push_back(TPmenuSpecElem(KCompPmenu_Quiet, "Switch Quiet"));
     }
     // Popup Menu
     iPopupMenu = new CapPopupMenu("Menu", iPmenuSpec);

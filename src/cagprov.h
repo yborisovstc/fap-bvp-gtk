@@ -5,6 +5,7 @@
 #include <fapfact.h>
 #include <gtk/gtk.h>
 
+
 class CagWindow;
 // Provider
 class CagProvider: public CAE_ProviderBase
