@@ -570,11 +570,10 @@ TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
 void CapSys::DeleteState(CapState* aState)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
-    mutrm.SetAttr(ENa_Type, ENt_State);
-    mutrm.SetAttr(ENa_Id, aState->iState.InstName());
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode mutrm = smut.AddChild(ENt_Rm);
+    DesUri uri(&(aState->iState), &(iSys.Object()));
+    mutrm.SetAttr(ENa_MutNode, uri.GetUri());
     iSys.Object().Mutate();
     Refresh();
 }
@@ -582,11 +581,10 @@ void CapSys::DeleteState(CapState* aState)
 void CapSys::DeleteComp(CapComp* aComp)
 {
     CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode mutrm = smut.AddChild(ENt_MutRm);
-    mutrm.SetAttr(ENa_Type, ENt_Object);
-    mutrm.SetAttr(ENa_Id, aComp->iComp.InstName());
+    CAE_ChromoNode smut = cpx->Mut().Root();
+    CAE_ChromoNode mutrm = smut.AddChild(ENt_Rm);
+    DesUri uri(&(aComp->iComp), &(iSys.Object()));
+    mutrm.SetAttr(ENa_MutNode, uri.GetUri());
     iSys.Object().Mutate();
     Refresh();
 }
@@ -665,15 +663,17 @@ void CapSys::OnStateInitUpdated(CapState* aState, const string& aInit)
 
 void CapSys::ChangeStateInit(CapState* aState, const string& aInit)
 {
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
+    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
     CAE_ChromoNode smutr = cpx->Mut().Root();
     CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
+    smut.SetAttr(ENa_MutNode, iSys.Object().InstName());
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutChange);
     chnode.SetAttr(ENa_Type, ENt_State);
     chnode.SetAttr(ENa_Id, aState->iState.InstName());
     chnode.SetAttr(ENa_MutChgAttr, ENa_StInit);
     chnode.SetAttr(ENa_MutChgVal, aInit);
-    iSys.Object().Mutate();
+    mutmgr->Mutate();
     Refresh();
 }
 
