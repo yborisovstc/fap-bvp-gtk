@@ -569,23 +569,25 @@ TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
 
 void CapSys::DeleteState(CapState* aState)
 {
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
+    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
     CAE_ChromoNode mutrm = smut.AddChild(ENt_Rm);
-    DesUri uri(&(aState->iState), &(iSys.Object()));
+    DesUri uri(&(aState->iState), (CAE_Base*) mutmgr);
     mutrm.SetAttr(ENa_MutNode, uri.GetUri());
-    iSys.Object().Mutate();
+    mutmgr->Mutate();
     Refresh();
 }
 
 void CapSys::DeleteComp(CapComp* aComp)
 {
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
+    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
     CAE_ChromoNode mutrm = smut.AddChild(ENt_Rm);
-    DesUri uri(&(aComp->iComp), &(iSys.Object()));
+    DesUri uri(&(aComp->iComp), (CAE_Base*) mutmgr);
     mutrm.SetAttr(ENa_MutNode, uri.GetUri());
-    iSys.Object().Mutate();
+    mutmgr->Mutate();
     Refresh();
 }
 
@@ -770,6 +772,8 @@ void CapSys::OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, const strin
 {
 //    DelStateCpPair(aState, aCp, aPairName);
     DelCpPair(MAE_Chromo::GetTName(ENt_State, string(aState->iState.InstName())), aState->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
+    // Not completed yet. Waiting for fapws RmNode getting ready.
+//    DelCpPair_v1(&(aState->iState), aState->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
 }
 
 TBool CapSys::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
@@ -892,6 +896,27 @@ void CapSys::AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName)
 void CapSys::OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName)
 {
     DelCpPair(MAE_Chromo::GetTName(ENt_Object, string(aComp->iComp.InstName())), aComp->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
+}
+
+void CapSys::DelCpPair_v1(CAE_EBase* aCpOwner, TBool aIsInp, CapCp* aCp, const string& aPairName)
+{
+    TBool islocinp = iSys.Object().Inputs().count(aPairName) > 0;
+    TBool islocoutp = iSys.Object().Outputs().count(aPairName) > 0;
+    TBool islocext = islocinp || islocoutp;
+
+    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
+    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode rm = smutr.AddChild(ENt_Rm);
+    DesUri uri(&(iSys.Object()), (CAE_Base*) mutmgr);
+    if (islocext) {
+	uri.AppendElem(ENt_Cext, aPairName);
+	DesUri pairuri(aCpOwner, &(iSys.Object()));
+	uri.AppendQueryElem(DesUri::EQop_Unknown, ENa_ConnPair, pairuri.GetUri());
+    }
+    rm.SetAttr(ENa_MutNode, uri.GetUri());
+    mutmgr->Mutate();
+    Refresh();
 }
 
 void CapSys::DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName)

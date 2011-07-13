@@ -112,6 +112,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void RenameCompCp(CapComp* aState, CapCp* aCp, const string& aName, TBool aIsOutp);
 	void AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName);
 	void DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName);
+	void DelCpPair_v1(CAE_EBase* aCpOwner, TBool aIsInp, CapCp* aCp, const string& aPairName);
 	void Refresh();
 	string GetRandomNum() const;
 	void GetCompTypesAvailable(vector<string>& aList) const;
