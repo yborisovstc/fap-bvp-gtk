@@ -16,7 +16,7 @@ CapCtermPair::CapCtermPair(const string& aName, CAE_ConnPointBase& aCp, TBool aL
 	SetLabel(iCp.Name());
     }
     else {
-	SetLabel(string(iCp.Man().InstName()) + "." + iCp.Name());
+	SetLabel(string(iCp.Man().Name()) + "." + iCp.Name());
     }
 }
 
@@ -41,8 +41,8 @@ void* CapCtermPair::DoGetObj(const char *aName)
 string CapCtermPair::GetFullName()
 {
     CAE_Object* obj = Pair()->Man().GetFbObj(obj);
-    NodeType type = obj != NULL ? ENt_Object : ENt_State;
-    return MAE_Chromo::GetTName(type, (iLocalCtx ? string() :  string(Pair()->Man().InstName()) + ".")  + Pair()->Name());
+    TNodeType type = obj != NULL ? ENt_Object : ENt_State;
+    return MAE_Chromo::GetTName(type, (iLocalCtx ? string() :  string(Pair()->Man().Name()) + ".")  + Pair()->Name());
 }
 
 // *************************************************************
@@ -70,7 +70,7 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
 	if (cpe != NULL) {
 	    CAE_ConnPointBase* pair = cpe->Ref();
 	    if (pair != NULL) {
-		CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().InstName()) + "." + pair->Name(), *pair);
+		CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().Name()) + "." + pair->Name(), *pair);
 		iPairs[pair] = pairw;
 		Add(pairw);
 		pairw->SetObs(this);
@@ -81,7 +81,7 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
     else {
 	for (vector<CAE_ConnPointBase*>::const_iterator it = iCp.Conns().begin(); it != iCp.Conns().end(); it++) {
 	    CAE_ConnPointBase* pair = *it;
-	    CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().InstName()) + "." + pair->Name(), *pair);
+	    CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().Name()) + "." + pair->Name(), *pair);
 	    iPairs[pair] = pairw;
 	    Add(pairw);
 	    pairw->SetObs(this);

@@ -60,14 +60,20 @@ CapLogDlg::CapLogDlg(const string& aName, CAE_EBase& aElem): CagDialog(aName)
     AddContentWidget(iLineCreat, EFalse, ETrue, 1);
 }
 
-void CapLogDlg::GetLogSpec(map<TInt, TInt>& aLogSpec)
+void CapLogDlg::GetLogSpecUpdate(map<TLeBase, TInt>& aUpdate)
 {
-    aLogSpec[KBaseLe_Trans] = iLineTrans->GetChecked("Execution") ? KBaseDa_Trex: 0;
+    TInt trans = iLineTrans->GetChecked("Execution") ? KBaseDa_Trex: 0;
+    if (iLogSpec[KBaseLe_Trans] != trans) 
+	aUpdate[KBaseLe_Trans] = trans;
     TInt upd_curr = iLineUpdate->GetChecked("Current") ? KBaseDa_Curr: 0;
     TInt upd_new = iLineUpdate->GetChecked("New") ? KBaseDa_New: 0;
     TInt upd_deps = iLineUpdate->GetChecked("Dependencies") ? KBaseDa_Dep: 0;
-    aLogSpec[KBaseLe_Updated] = upd_curr | upd_new | upd_deps;
-    aLogSpec[KBaseLe_Creation] = iLineCreat->GetChecked("All") ? KBaseDa_New: 0;
+    TInt upd = upd_curr | upd_new | upd_deps;
+    if (iLogSpec[KBaseLe_Updated] != upd)
+	aUpdate[KBaseLe_Updated] = upd;
+    TInt cre = iLineCreat->GetChecked("All") ? KBaseDa_New: 0;
+    if (iLogSpec[KBaseLe_Creation] != cre)
+	aUpdate[KBaseLe_Creation] = cre;
 }
 
 

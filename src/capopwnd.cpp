@@ -117,7 +117,7 @@ void CapOpWnd::SetSys(CAE_Object::Ctrl* aObj)
     iSysWidget = new CapSys("System", *aObj, this);
     AddView(iSysWidget);
     iSysWidget->Show();
-    iCursName->SetLabel(aObj->Object().InstName());
+    iCursName->SetLabel(aObj->Object().Name());
 }
 
 void CapOpWnd::UnsetSys(CAE_Object::Ctrl* aObj)

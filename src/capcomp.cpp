@@ -13,8 +13,8 @@ CapCompHead::CapCompHead(const string& aName, CAE_Object& aComp): CagHBox(aName)
     iName->SetHasFrame(EFalse);
     GtkBorder name_brd = (GtkBorder) {5, 10, 0, 0};
     iName->SetInnerBorder(&name_brd);
-    iName->SetWidthChars(strlen(iComp.InstName()));
-    iName->SetText(iComp.InstName());
+    iName->SetWidthChars(iComp.Name().size());
+    iName->SetText(iComp.Name());
     iName->SetWidgetObs(this);
     iName->SetObserver(this);
     iName->Show();
@@ -175,7 +175,7 @@ void CapComp::OnDragDataGet(GdkDragContext *drag_context, GtkSelectionData *data
 {
     if (info == KTe_MoveComp->info) {
 	string sel = "_move_comp:";
-	sel.append(iComp.InstName());
+	sel.append(iComp.Name());
 	gtk_selection_data_set_text(data, sel.c_str(), -1);
     }
 }

@@ -30,8 +30,8 @@ CapStateHead::CapStateHead(const string& aName, CAE_StateBase& aState): CagHBox(
     iName->SetHasFrame(EFalse);
     GtkBorder name_brd = (GtkBorder) {0, 4, 0, 0};
     iName->SetInnerBorder(&name_brd);
-    iName->SetWidthChars(strlen(iState.InstName()));
-    iName->SetText(iState.InstName());
+    iName->SetWidthChars(iState.Name().size());
+    iName->SetText(iState.Name());
     iName->SetObserver(this);
     iName->Show();
     PackStart(iName, false, false, 2);
@@ -126,7 +126,7 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
 #if 0
     CAE_Object::ChromoPx* cpx = iOwner.Object().ChromoIface();
     CAE_ChromoNode chroot = cpx->Chr().Root();
-    CAE_ChromoNode::Iterator chrstit = chroot.Find(ENt_State, iState.InstName());
+    CAE_ChromoNode::Iterator chrstit = chroot.Find(ENt_State, iState.Name());
     _FAP_ASSERT(chrstit != chroot.End());
     CAE_ChromoNode chrst = *chrstit;
     const string& init = chrst.Attr(ENa_StInit);
@@ -342,9 +342,8 @@ void CapState::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
 		CapLogDlg* dlg = new CapLogDlg("LogDlg", iState);
 		TInt res = dlg->Run();
 		if (res == CapLogDlg::EActionOK) {
-		    map<TInt, TInt> logspec;
-		    dlg->GetLogSpec(logspec);
-		    TInt dd = logspec[KBaseLe_Trans];
+		    map<TLeBase, TInt> logspec;
+		    dlg->GetLogSpecUpdate(logspec);
 		    iObs->OnStateLogspecChanged(this, logspec);
 		}
 		delete dlg;
@@ -387,6 +386,6 @@ TBool CapState::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
 void CapState::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 {
     if (iObs != NULL) {
-	iObs->OnStateCpDelPairRequested(this, aCp, aPair->GetFullName());
+	iObs->OnStateCpDelPairRequested(this, aCp, aPair);
     }
 }

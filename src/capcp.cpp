@@ -22,14 +22,16 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
     }
     // Set as source for DnD
     CAE_Object* obj = iCp.Man().GetFbObj(obj);
-    NodeType type = obj != NULL ? ENt_Object : ENt_State;
+    TNodeType type = obj != NULL ? ENt_Object : ENt_State;
     iLabel->DragSourceAdd(GDK_MODIFIER_MASK, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
     if (aExt) {
 	// Don't specify man if cp is local extention
 	iLabel->SetSelText(iCp.Name());
     }
     else {
-	iLabel->SetSelText(MAE_Chromo::GetTName(type, string(iCp.Man().InstName()) + "." + iCp.Name()));
+	//iLabel->SetSelText(MAE_Chromo::GetTName(type, string(iCp.Man().Name()) + "." + iCp.Name()));
+	DesUri cpuri(&iCp, iCp.Owner()->Owner());
+	iLabel->SetSelText(cpuri.GetUri());
     }
     // Create terminator
     iTerm = new CapCterm("Term", iCp, iExt, iLeft);

@@ -25,9 +25,9 @@ class CapLogDlg: public CagDialog
 	};
     public:
 	CapLogDlg(const string& aName, CAE_EBase& aElem);
-	void GetLogSpec(map<TInt, TInt>& aLogSpec);
+	void GetLogSpecUpdate(map<TLeBase, TInt>& aUpdate);
     private:
-	map<TInt, TInt> iLogSpec;
+	map<TLeBase, TInt> iLogSpec;
 	CapLogDlgLine* iLineTrans;
 	CapLogDlgLine* iLineUpdate;
 	CapLogDlgLine* iLineCreat;
