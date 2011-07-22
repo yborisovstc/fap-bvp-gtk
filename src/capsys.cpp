@@ -514,7 +514,7 @@ void CapSys::OnStateTypeChanged(CapState* aState, const string& aTypeName)
 
 void CapSys::OnStateDeleteRequested(CapState* aState)
 {
-    DeleteState(aState);
+    DeleteNode(&aState->iState);
 }
 
 TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
@@ -525,25 +525,13 @@ TBool CapSys::OnButtonPress(GdkEventButton* aEvent)
     return EFalse;
 }
 
-void CapSys::DeleteState(CapState* aState)
+void CapSys::DeleteNode(CAE_NBase* aNode)
 {
     CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
     CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
     CAE_ChromoNode smut = cpx->Mut().Root();
     CAE_ChromoNode mutrm = smut.AddChild(ENt_Rm);
-    DesUri uri(&aState->iState, mutmgr);
-    mutrm.SetAttr(ENa_MutNode, uri.GetUri());
-    mutmgr->Mutate();
-    Refresh();
-}
-
-void CapSys::DeleteComp(CapComp* aComp)
-{
-    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
-    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
-    CAE_ChromoNode smut = cpx->Mut().Root();
-    CAE_ChromoNode mutrm = smut.AddChild(ENt_Rm);
-    DesUri uri(&aComp->iComp, mutmgr);
+    DesUri uri(aNode, mutmgr);
     mutrm.SetAttr(ENa_MutNode, uri.GetUri());
     mutmgr->Mutate();
     Refresh();
@@ -588,7 +576,7 @@ void CapSys::OnStateInpRenamed(CapState* aState, CapCp* aCp, const string& aName
 
 void CapSys::OnStateTransUpdated(CapState* aState, const string& aTrans)
 {
-    ChangeStateTrans(aState, aTrans);
+    ChangeNodeContent(&aState->iState, aTrans);
 }
 
 void CapSys::OnStateInitUpdated(CapState* aState, const string& aInit)
@@ -610,16 +598,17 @@ void CapSys::ChangeNodeAttr(CAE_NBase* aNode, TNodeAttr aAttr, const string& aVa
     Refresh();
 }
 
-void CapSys::ChangeStateTrans(CapState* aState, const string& aTrans)
+void CapSys::ChangeNodeContent(CAE_NBase* aNode, const string& aVal)
 {
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
+    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
     CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.Name()));
-    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChangeCont);
-    chnode.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_Trans, ""));
-    chnode.SetAttr(ENa_MutChgVal, aTrans);
-    iSys.Object().Mutate();
+    CAE_ChromoNode chg = smutr.AddChild(ENt_MutChangeCont);
+    DesUri uri(aNode, mutmgr);
+    uri.AppendElem(ENt_Trans, "");
+    chg.SetAttr(ENa_MutNode, uri.GetUri());
+    chg.SetAttr(ENa_MutChgVal, aVal);
+    mutmgr->Mutate();
     Refresh();
 }
 
@@ -679,23 +668,10 @@ TBool CapSys::OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent)
 {
     TBool res = EFalse;
     if (aWidget == iTrans->iTrans) {
-	ChangeTrans(iTrans->iTrans->GetBuffer());
+	ChangeNodeContent(&iSys.Object(), iTrans->iTrans->GetBuffer());
     }
     return res;
 }
-
-void CapSys::ChangeTrans(const string& aTrans)
-{
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode chnode = smut.AddChild(ENt_MutChangeCont);
-    chnode.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_Trans, ""));
-    chnode.SetAttr(ENa_MutChgVal, aTrans);
-    iSys.Object().Mutate();
-    Refresh();
-}
-
 
 void CapSys::OnStateLogspecChanged(CapState* aState, map<TLeBase, TInt>& aLogSpec)
 {
@@ -862,7 +838,7 @@ void CapSys::DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const str
 
 void CapSys::OnCompDeleteRequested(CapComp* aComp)
 {
-    DeleteComp(aComp);
+    DeleteNode(&aComp->iComp);
 }
 
 void CapSys::GetStateTypesAvailable(vector<string>& aList) const
@@ -914,6 +890,7 @@ void CapSys::AddCompTypesFromLocModPath(const string& aDirUri, const string& aPa
     }
 }
 
+#if 0
 void CapSys::MoveComp(const string& aName, gint aX, gint aY)
 {
     string targ;
@@ -922,6 +899,23 @@ void CapSys::MoveComp(const string& aName, gint aX, gint aY)
     CAE_ChromoNode smutr = cpx->Mut().Root();
     CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
     CAE_ChromoNode chnode = smut.AddChild(ENt_MutMove);
+    chnode.SetAttr(ENa_Id, aName);
+    if (!targ.empty()) {
+	chnode.SetAttr(ENa_MutNode, targ);
+    }
+    iSys.Object().Mutate();
+    Refresh();
+
+}
+#endif
+
+void CapSys::MoveComp(const string& aName, gint aX, gint aY)
+{
+    string targ;
+    FindCompByPosY(targ, aY);
+    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_ChromoNode smutr = cpx->Mut().Root();
+    CAE_ChromoNode chnode = smutr.AddChild(ENt_MutMove);
     chnode.SetAttr(ENa_Id, aName);
     if (!targ.empty()) {
 	chnode.SetAttr(ENa_MutNode, targ);
