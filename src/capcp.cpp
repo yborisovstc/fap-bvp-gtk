@@ -3,9 +3,23 @@
 #include "capcterm.h"
 #include "capcommon.h"
 
+
+const char* KCpPmenu_Del = "Del";
+
+vector<TPmenuSpecElem> CapCp::iPmenuSpec;
+
 CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft, TBool aLineSep, TBool aNoLabel): 
     CagLayout(aName), iCp(aCp), iLeft(aLeft), iLabel(NULL), iLineSep(aLineSep), iCpObs(NULL), iNoLabel(aNoLabel), iExt(aExt)
 {
+    if (iPmenuSpec.empty()) {
+	iPmenuSpec.push_back(TPmenuSpecElem(KCpPmenu_Del, "Delete"));
+    }
+    // Popup Menu
+    iPopupMenu = new CapPopupMenu("Menu", iPmenuSpec);
+    iPopupMenu->SetTitle("cont menu");
+    iPopupMenu->Show();
+    iPopupMenu->SetMenuShellObs(this);
+
     // Create label
     iLabel = new CapEopEntry("Label");
     iLabel->SetText(iCp.Name());
@@ -107,6 +121,12 @@ void CapCp::OnExpose(GdkEventExpose* aEvent)
 
 TBool CapCp::OnButtonPress(GdkEventButton* aEvent)
 {
+    if (aEvent->button == 3) {
+	// Popup context menu
+	iPopupMenu->Popup(aEvent->button, aEvent->time);
+	return ETrue;
+    }
+    return EFalse;
 }
 
 TBool CapCp::OnButtonRelease(GdkEventButton* aEvent)
@@ -198,3 +218,13 @@ void CapCp::OnCpTermDelPairRequested(CapCterm* aCpTerm, CapCtermPair* aPair)
     }
 }
 
+void CapCp::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
+{
+    if (aMenuShell == iPopupMenu) {
+	if (aItem->Name().compare(KCpPmenu_Del) == 0) {
+	    if (iCpObs != NULL) {
+		iCpObs->OnCpDelRequested(this);
+	    }
+	}
+    }
+}

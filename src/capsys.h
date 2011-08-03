@@ -79,11 +79,13 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnStateInitUpdated(CapState* aState, const string& aInit);
 	virtual void OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName);
 	virtual void OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, CapCtermPair* aPair);
+	virtual void OnStateNodeDelRequested(CapState* aState, CAE_NBase* aNode);
 	// From MCapCpObserver
 	virtual void OnCpPairToggled(CapCp* aCp, CapCtermPair* aPair);
 	virtual void OnLabelRenamed(CapCp* aCp, const string& aName);
 	virtual void OnCpAddPairRequested(CapCp* aCp, const string& aPairName);
 	virtual void OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair);
+	virtual void OnCpDelRequested(CapCp* aCp);
 	// From MWidgetObs
 	virtual TBool OnWidgetFocusOut(CagWidget* aWidget, GdkEventFocus* aEvent);
     protected:
@@ -97,13 +99,11 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void AddTrans();
 	void AddInp();
 	void AddOutp();
-	void DeleteState(CapState* aState);
-	void DeleteComp(CapComp* aComp);
-	void ChangeTrans(const string& aTrans);
-	void ChangeStateTrans(CapState* aState, const string& aTrans);
 	void ChangeNodeAttr(CAE_NBase* aNode, TNodeAttr aAttr, const string& aVal);
+	void ChangeNodeContent(CAE_NBase* aNode, const string& aVal);
 	void RenameNode(CAE_NBase* aNode, const string& aName);
-	void AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName);
+	void DeleteNode(CAE_NBase* aNode);
+	void AddCpPair(CapCp* aCp, const string& aPairName, TBool aInp);
 	void AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName);
 	void DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName);
 	void DelCpPair_v1(CAE_EBase* aCpOwner, TBool aIsInp, CapCp* aCp, CapCtermPair* aPair);

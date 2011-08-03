@@ -54,6 +54,7 @@ class MCapStateObserver
 	virtual void OnStateInitUpdated(CapState* aState, const string& aInit) = 0;
 	virtual void OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName) = 0;
 	virtual void OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, CapCtermPair* aPair) = 0;
+	virtual void OnStateNodeDelRequested(CapState* aState, CAE_NBase* aNode) = 0;
 };
 
 class CapCp;
@@ -76,6 +77,7 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
 	virtual void OnLabelRenamed(CapCp* aCp, const string& aName);
 	virtual void OnCpAddPairRequested(CapCp* aCp, const string& aPairName);
 	virtual void OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair);
+	virtual void OnCpDelRequested(CapCp* aCp);
 	// From MCapCpPairRes
 	virtual CapCtermPair* GetCpPair(CapCtermPair* aPair);
 	// From MStateHeadObserver

@@ -389,3 +389,11 @@ void CapState::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 	iObs->OnStateCpDelPairRequested(this, aCp, aPair);
     }
 }
+void CapState::OnCpDelRequested(CapCp* aCp)
+{
+    if (iObs != NULL) {
+	iObs->OnStateNodeDelRequested(this, &aCp->iCp);
+    }
+}
+
+

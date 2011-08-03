@@ -544,20 +544,20 @@ void CapSys::OnStateAddingInput(CapState* aState)
 
 void CapSys::AddStateInp(CapState* aState)
 {
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
+    CAE_Object* mutmgr = iSys.Object().FindMutableMangr();
+    CAE_Object::ChromoPx* cpx = mutmgr->ChromoIface();
     CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.Name()));
-    CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
-    CAE_ChromoNode addstinp = mutadd.AddChild(ENt_Stinp);
+    CAE_ChromoNode smut = smutr.AddChild(ENt_MutAdd);
+    DesUri uri(&aState->iState, mutmgr);
+    smut.SetAttr(ENa_MutNode, uri.GetUri());
+    CAE_ChromoNode addstinp = smut.AddChild(ENt_Stinp);
     char *name = (char*) malloc(100);
     sprintf(name, "noname%d", rand());
     addstinp.SetAttr(ENa_Id, name);
     free(name);
-    iSys.Object().Mutate();
+    mutmgr->Mutate();
     Refresh();
 }
-
 
 void CapSys::OnLabelRenamed(CapCp* aCp, const string& aName)
 {
@@ -614,10 +614,10 @@ void CapSys::ChangeNodeContent(CAE_NBase* aNode, const string& aVal)
 
 void CapSys::OnStateCpAddPairRequested(CapState* aState, CapCp* aCp, const string& aPairName)
 {
-    AddStateCpPair(aState, aCp, aPairName);
+    AddCpPair(aCp, aPairName, aState->iInps.count(&(aCp->iCp)) > 0);
 }
 
-void CapSys::AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairName)
+void CapSys::AddCpPair(CapCp* aCp, const string& aPairName, TBool aInp)
 {
     TBool islocinp = iSys.Object().Inputs().count(aPairName) > 0;
     TBool islocoutp = iSys.Object().Outputs().count(aPairName) > 0;
@@ -634,9 +634,9 @@ void CapSys::AddStateCpPair(CapState* aState, CapCp* aCp, const string& aPairNam
     }
     else {
 	CAE_ChromoNode nd_add_subj = smutr.AddChild(ENt_Conn);
-	TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
+	//TBool cpinp = aState->iInps.count(&(aCp->iCp)) > 0;
 	DesUri iduri(&aCp->iCp, &iSys.Object());
-	if (cpinp) {
+	if (aInp) {
 	    nd_add_subj.SetAttr(ENa_Id, iduri.GetUri());
 	    nd_add_subj.SetAttr(ENa_ConnPair, aPairName);
 	}
@@ -690,9 +690,9 @@ void CapSys::OnStateLogspecChanged(CapState* aState, map<TLeBase, TInt>& aLogSpe
 	}
 	// Then add logspec
 	if (data != KBaseDa_None) {
-	    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-	    smut.SetAttr(ENa_MutNode, MAE_Chromo::GetTName(ENt_State, aState->iState.Name()));
-	    CAE_ChromoNode mutadd = smut.AddChild(ENt_MutAdd);
+	    CAE_ChromoNode mutadd = smutr.AddChild(ENt_MutAdd);
+	    DesUri uri(&aState->iState, &iSys.Object());
+	    mutadd.SetAttr(ENa_MutNode, uri.GetUri());
 	    CAE_ChromoNode nlsp = mutadd.AddChild(ENt_Logspec);
 	    nlsp.SetAttr(ENa_Logevent, DesUri::LeventName(event));
 	    if (event == KBaseLe_Updated) {
@@ -730,7 +730,8 @@ void CapSys::OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TB
 
 void CapSys::OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName)
 {
-    AddCompCpPair(aComp, aCp, aPairName);
+    //AddCompCpPair(aComp, aCp, aPairName);
+    AddCpPair(aCp, aPairName, aComp->iInps.count(&(aCp->iCp)) > 0);
 }
 
 void CapSys::AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName)
@@ -890,25 +891,6 @@ void CapSys::AddCompTypesFromLocModPath(const string& aDirUri, const string& aPa
     }
 }
 
-#if 0
-void CapSys::MoveComp(const string& aName, gint aX, gint aY)
-{
-    string targ;
-    FindCompByPosY(targ, aY);
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode chnode = smut.AddChild(ENt_MutMove);
-    chnode.SetAttr(ENa_Id, aName);
-    if (!targ.empty()) {
-	chnode.SetAttr(ENa_MutNode, targ);
-    }
-    iSys.Object().Mutate();
-    Refresh();
-
-}
-#endif
-
 void CapSys::MoveComp(const string& aName, gint aX, gint aY)
 {
     string targ;
@@ -940,5 +922,15 @@ void CapSys::FindCompByPosY(string& aCompName, gint aY)
 void CapSys::OnCompChangeQuietRequested(CapComp* aComp, TBool aQuiet)
 {
     ChangeNodeAttr(&aComp->iComp, ENa_ObjQuiet, aQuiet? "yes" : "no");
+}
+
+void CapSys::OnCpDelRequested(CapCp* aCp)
+{
+    DeleteNode(&aCp->iCp);
+}
+
+void CapSys::OnStateNodeDelRequested(CapState* aState, CAE_NBase* aNode)
+{
+    DeleteNode(aNode);
 }
 

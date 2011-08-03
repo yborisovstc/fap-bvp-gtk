@@ -7,6 +7,7 @@
 #include "capcterm.h"
 #include "capmiscwid.h"
 
+
 class CagToggleButton;
 class CapCp;
 class MCapCpObserver
@@ -17,10 +18,12 @@ class MCapCpObserver
 	virtual void OnLabelRenamed(CapCp* aCp, const string& aName) = 0;
 	virtual void OnCpAddPairRequested(CapCp* aCp, const string& aPairName) = 0;
 	virtual void OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair) = 0;
+	virtual void OnCpDelRequested(CapCp* aCp) = 0;
 };
 
 class CapCterm;
-class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, public MapEopEntryObserver
+class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, public MapEopEntryObserver,
+    public MagMenuShellObs 
 {
     public:
 	CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft, TBool aLineSep = EFalse, TBool aNoLabel = EFalse);
@@ -46,6 +49,8 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, p
 	virtual void OnCpTermDelPairRequested(CapCterm* aCpTerm, CapCtermPair* aPair);
 	// From MapEopEntryObserver
 	virtual void OnUpdateCompleted(CapEopEntry* aEntry);
+	// From MagMenuShellObs 
+	virtual void OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem);
     public:
 	CAE_ConnPointBase& iCp;
     private:
@@ -56,6 +61,8 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, p
 	MCapCpObserver* iCpObs;
 	TBool iNoLabel; // No label displayed (case of state output)
 	TBool iExt; // The role - extender
+	CapPopupMenu* iPopupMenu;
+	static vector<TPmenuSpecElem> iPmenuSpec;
 };
 
 #endif 
