@@ -27,6 +27,7 @@ class CagProvider: public CAE_ProviderBase
 	virtual CAE_ChromoBase* CreateChromo() const { return NULL;};
 	virtual CAE_TranExBase* CreateTranEx(MCAE_LogRec* aLogger) const { return NULL;};
 	virtual MAE_Opv* CreateViewProxy();
+	virtual void GetRegisteredStates(vector<const TStateInfo*>& aInfo) const {};
     private:
 	CagWindow* iWnd;
 };

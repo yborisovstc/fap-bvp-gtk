@@ -53,7 +53,7 @@ class MCapCompObserver
 	virtual void OnCompNameChanged(CapComp* aComp, const string& aName) = 0;
 	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp) = 0;
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
-	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName) = 0;
+	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, CapCtermPair* aPair) = 0;
 	virtual void OnCompDeleteRequested(CapComp* aComp) = 0;
 	virtual void OnCompChangeQuietRequested(CapComp* aComp, TBool aQuiet) = 0;
 };

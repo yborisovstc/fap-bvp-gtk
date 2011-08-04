@@ -659,7 +659,6 @@ void CapSys::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 
 void CapSys::OnStateCpDelPairRequested(CapState* aState, CapCp* aCp, CapCtermPair* aPair)
 {
-//    DelCpPair(MAE_Chromo::GetTName(ENt_State, string(aState->iState.Name())), aState->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
     // Not completed yet. Waiting for fapws RmNode getting ready.
     DelCpPair_v1(&(aState->iState), aState->iInps.count(&(aCp->iCp)) > 0, aCp, aPair);
 }
@@ -730,44 +729,12 @@ void CapSys::OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TB
 
 void CapSys::OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName)
 {
-    //AddCompCpPair(aComp, aCp, aPairName);
     AddCpPair(aCp, aPairName, aComp->iInps.count(&(aCp->iCp)) > 0);
 }
 
-void CapSys::AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName)
+void CapSys::OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, CapCtermPair* aPair)
 {
-    TBool islocinp = iSys.Object().Inputs().count(aPairName) > 0;
-    TBool islocoutp = iSys.Object().Outputs().count(aPairName) > 0;
-    TBool islocext = islocinp || islocoutp;
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode ndadd = smut.AddChild(ENt_MutAdd);
-    if (islocext) {
-	CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Cext);
-	nd_add_subj.SetAttr(ENa_Id, aPairName);
-	nd_add_subj.SetAttr(ENa_ConnPair, string(aComp->iComp.Name()) + "." + aCp->iCp.Name());
-    }
-    else {
-	CAE_ChromoNode nd_add_subj = ndadd.AddChild(ENt_Conn);
-	TBool cpinp = aComp->iInps.count(&(aCp->iCp)) > 0;
-	string cpname = MAE_Chromo::GetTName(ENt_Object, string(aComp->iComp.Name()) + "." + aCp->iCp.Name());
-	if (cpinp) {
-	    nd_add_subj.SetAttr(ENa_Id, cpname);
-	    nd_add_subj.SetAttr(ENa_ConnPair, aPairName);
-	}
-	else {
-	    nd_add_subj.SetAttr(ENa_Id, aPairName);
-	    nd_add_subj.SetAttr(ENa_ConnPair, cpname);
-	}
-    }
-    iSys.Object().Mutate();
-    Refresh();
-}
-
-void CapSys::OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName)
-{
-    DelCpPair(MAE_Chromo::GetTName(ENt_Object, string(aComp->iComp.Name())), aComp->iInps.count(&(aCp->iCp)) > 0, aCp, aPairName);
+    DelCpPair_v1(&aComp->iComp, aComp->iInps.count(&(aCp->iCp)) > 0, aCp, aPair);
 }
 
 void CapSys::DelCpPair_v1(CAE_EBase* aCpOwner, TBool aIsInp, CapCp* aCp, CapCtermPair* aPair)
@@ -805,38 +772,6 @@ void CapSys::DelCpPair_v1(CAE_EBase* aCpOwner, TBool aIsInp, CapCp* aCp, CapCter
     Refresh();
 }
 
-void CapSys::DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName)
-{
-    TBool islocinp = iSys.Object().Inputs().count(aPairName) > 0;
-    TBool islocoutp = iSys.Object().Outputs().count(aPairName) > 0;
-    TBool islocext = islocinp || islocoutp;
-    string fname = aMansFullName + "." + aCp->iCp.Name();
-    CAE_Object::ChromoPx* cpx = iSys.Object().ChromoIface();
-    CAE_ChromoNode smutr = cpx->Mut().Root();
-    CAE_ChromoNode smut = smutr.AddChild(ENt_Mut);
-    CAE_ChromoNode rm = smut.AddChild(ENt_MutRm);
-    if (islocext) {
-	rm.SetAttr(ENa_Type, ENt_Cext);
-	rm.SetAttr(ENa_MutChgAttr, "pair");
-	rm.SetAttr(ENa_Id, aPairName);
-	rm.SetAttr(ENa_MutChgVal, fname);
-    }
-    else {
-	rm.SetAttr(ENa_Type, ENt_Conn);
-	rm.SetAttr(ENa_MutChgAttr, "pair");
-	if (aIsInp) {
-	    rm.SetAttr(ENa_Id, fname);
-	    rm.SetAttr(ENa_MutChgVal, aPairName);
-	}
-	else {
-	    rm.SetAttr(ENa_Id, aPairName);
-	    rm.SetAttr(ENa_MutChgVal, fname);
-	}
-    }
-    iSys.Object().Mutate();
-    Refresh();
-}
-
 void CapSys::OnCompDeleteRequested(CapComp* aComp)
 {
     DeleteNode(&aComp->iComp);
@@ -844,8 +779,12 @@ void CapSys::OnCompDeleteRequested(CapComp* aComp)
 
 void CapSys::GetStateTypesAvailable(vector<string>& aList) const
 {
-    aList.push_back("StInt");
-    aList.push_back("Vector");
+    MAE_Provider* prov = iSys.Env()->Provider();
+    vector<const TStateInfo*> sinfos;
+    prov->GetRegisteredStates(sinfos);
+    for (vector<const TStateInfo*>::const_iterator it = sinfos.begin(); it != sinfos.end(); it++) {
+	aList.push_back((*it)->iType);
+    }
 }
 
 void CapSys::GetCompTypesAvailable(vector<string>& aList) const

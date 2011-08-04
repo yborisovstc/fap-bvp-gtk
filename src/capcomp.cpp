@@ -365,7 +365,7 @@ void CapComp::OnCpAddPairRequested(CapCp* aCp, const string& aPairName)
 void CapComp::OnCpDelPairRequested(CapCp* aCp, CapCtermPair* aPair)
 {
     if (iObs != NULL) {
-	iObs->OnCompCpDelPairRequested(this, aCp, aPair->GetFullName());
+	iObs->OnCompCpDelPairRequested(this, aCp, aPair);
     }
 }
 

@@ -65,7 +65,7 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	virtual void OnCompDeleteRequested(CapComp* aComp);
 	virtual void OnCompCpRenamed(CapComp* aComp, CapCp* aCp, const string& aName, TBool aIsOutp);
 	virtual void OnCompCpAddPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName);
-	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, const string& aPairName);
+	virtual void OnCompCpDelPairRequested(CapComp* aComp, CapCp* aCp, CapCtermPair* aPair);
 	virtual void OnCompChangeQuietRequested(CapComp* aComp, TBool aQuiet);
 	// From MCapStateObserver
 	virtual void OnStateCpPairToggled(CapState* aState, CapCtermPair* aPair);
@@ -104,8 +104,6 @@ class CapSys: public CagLayout, public MCapCompObserver, public MCapCpPairRes, p
 	void RenameNode(CAE_NBase* aNode, const string& aName);
 	void DeleteNode(CAE_NBase* aNode);
 	void AddCpPair(CapCp* aCp, const string& aPairName, TBool aInp);
-	void AddCompCpPair(CapComp* aComp, CapCp* aCp, const string& aPairName);
-	void DelCpPair(string aMansFullName, TBool aIsInp, CapCp* aCp, const string& aPairName);
 	void DelCpPair_v1(CAE_EBase* aCpOwner, TBool aIsInp, CapCp* aCp, CapCtermPair* aPair);
 	void Refresh();
 	string GetRandomNum() const;

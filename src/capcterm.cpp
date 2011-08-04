@@ -68,8 +68,9 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
     if (iExt) {
 	CAE_ConnPointExt* cpe = aCp.GetFbObj(cpe);
 	if (cpe != NULL) {
-	    CAE_ConnPointBase* pair = cpe->Ref();
-	    if (pair != NULL) {
+	    vector<CAE_ConnPointBase*>& refs = cpe->Ref();
+	    for (vector<CAE_ConnPointBase*>::iterator it = refs.begin(); it != refs.end(); it++) {
+		CAE_ConnPointBase* pair = *it;
 		CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().Name()) + "." + pair->Name(), *pair);
 		iPairs[pair] = pairw;
 		Add(pairw);
