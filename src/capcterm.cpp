@@ -65,40 +65,23 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
     iPopupMenu->Show();
     iPopupMenu->SetMenuShellObs(this);
     // Create pairs
-    if (iExt) {
-	CAE_ConnPointExt* cpe = aCp.GetFbObj(cpe);
-	if (cpe != NULL) {
-	    vector<CAE_ConnPointBase*>& refs = cpe->Ref();
-	    for (vector<CAE_ConnPointBase*>::iterator it = refs.begin(); it != refs.end(); it++) {
-		CAE_ConnPointBase* pair = *it;
-		CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().Name()) + "." + pair->Name(), *pair);
-		iPairs[pair] = pairw;
-		Add(pairw);
-		pairw->SetObs(this);
-		pairw->SetWidgetObs(this);
-	    }
-	}
-    }
-    else {
-	for (vector<CAE_ConnPointBase*>::const_iterator it = iCp.Conns().begin(); it != iCp.Conns().end(); it++) {
-	    CAE_ConnPointBase* pair = *it;
-	    CapCtermPair* pairw = new CapCtermPair("CtermPair~" + string(pair->Man().Name()) + "." + pair->Name(), *pair);
-	    iPairs[pair] = pairw;
-	    Add(pairw);
-	    pairw->SetObs(this);
-	    pairw->SetWidgetObs(this);
-	}
-	for (vector<CAE_ConnPointBase*>::const_iterator it = iCp.Exts().begin(); it != iCp.Exts().end(); it++) {
-	    CAE_ConnPointBase* pair = *it;
-	    // Use short name because extentions are always local
-	    CapCtermPair* pairw = new CapCtermPair("CtermPair~" + pair->Name(), *pair, ETrue);
+    for (vector<CAE_ConnBase*>::const_iterator it = iCp.Conns().begin(); it != iCp.Conns().end(); it++) {
+	CAE_ConnBase* conn = *it;
+	CAE_ConnPointBase* pair = &iCp == conn->Point() ? conn->Pair() : conn->Point();
+	CAE_NBase* syst = iExt ? iCp.Owner() : iCp.Owner()->Owner(); // System having view context
+	if (pair->Owner() == syst || pair->Owner()->Owner() == syst) {
+	    CapCtermPair* pairw = new CapCtermPair("CtermPair~" + pair->Owner()->Name() + "." + pair->Name(), *pair);
 	    iPairs[pair] = pairw;
 	    Add(pairw);
 	    pairw->SetObs(this);
 	    pairw->SetWidgetObs(this);
 	}
     }
-    if (iPairs.size() == 1) {
+    if (iPairs.size() == 0) {
+	iDetLevel = 1;
+	SetVisible(EFalse);
+    }
+    else if (iPairs.size() == 1) {
 	iDetLevel = 2;
     }
     else {
@@ -114,7 +97,7 @@ CapCterm::CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBoo
 	// Create info
 	char* buf = (char *) malloc(9);
 	memset(buf, 0, 10);
-	sprintf(buf, "%d", iCp.Conns().size());
+	sprintf(buf, "%d", iPairs.size());
 	iInfo = new CagButton("Info");
 	iInfo->SetLabel(string(buf) + " conn");
 	GtkRcStyle* style = gtk_widget_get_modifier_style(iInfo->iWidget);
