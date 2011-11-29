@@ -102,6 +102,7 @@ class CapState: public CagLayout, public MCapCpObserver, public MCapCpPairRes, p
 	map<CAE_ConnPointBase*, CapCp*> iOutps;
 	CagTextView* iTrans; // Transition
 	CagTextView* iInit; // Initialization
+	CagTextView* iValue; // State's value
 	GtkAllocation iBodyAlc;
 	MCapStateObserver* iObs;
 	CapStatePopupMenu* iPopupMenu;

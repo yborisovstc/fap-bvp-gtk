@@ -785,6 +785,12 @@ void CapSys::GetStateTypesAvailable(vector<string>& aList) const
     for (vector<const TStateInfo*>::const_iterator it = sinfos.begin(); it != sinfos.end(); it++) {
 	aList.push_back((*it)->iType);
     }
+    MAE_TranEx* tranex = iSys.Env()->Tranex();
+    vector<string> constrs;
+    tranex->GetConstructors(constrs);
+    for (vector<string>::const_iterator it = constrs.begin(); it != constrs.end(); it++) {
+	aList.push_back(*it);
+    }
 }
 
 void CapSys::GetCompTypesAvailable(vector<string>& aList) const

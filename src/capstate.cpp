@@ -118,7 +118,24 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
     Add(iTrans);
     iTrans->Show();
     iTrans->SetWidgetObs(this);
-    // Add Init
+    // Add Value
+    iValue = new CagTextView("Value");
+    GtkTextBuffer* valuebuf = gtk_text_buffer_new(NULL);
+    const string& val = iState.ValStr();
+    // TODO [YB] Hack
+    if (val.empty()) {
+	string buftxt("   ");
+	gtk_text_buffer_set_text(valuebuf, buftxt.c_str(), buftxt.size());
+    }
+    else {
+	gtk_text_buffer_set_text(valuebuf, val.c_str(), val.size());
+    }
+    iValue->SetBuffer(valuebuf);
+    iValue->SetEditable(ETrue);
+    Add(iValue);
+    iValue->Show();
+    iValue->SetWidgetObs(this);
+    // Add init
     iInit = new CagTextView("Init");
     GtkTextBuffer* initbuf = gtk_text_buffer_new(NULL);
     // TODO [YB] There is the problem with attr not presenting in run-time when wrapped appr is used (ref md#sec_desg_chromo_full_sol_1)
@@ -131,7 +148,7 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
     CAE_ChromoNode chrst = *chrstit;
     const string& init = chrst.Attr(ENa_StInit);
 #endif
-    const string& init = iState.ValStr();
+    const string& init = iState.Init();
     // TODO [YB] Hack
     if (init.empty()) {
 	string buftxt("   ");
@@ -145,7 +162,6 @@ CapState::CapState(const string& aName, CAE_StateBase& aState, CAE_Object::Ctrl&
     Add(iInit);
     iInit->Show();
     iInit->SetWidgetObs(this);
-
 }
 
 CapState::~CapState()
@@ -180,6 +196,9 @@ void CapState::OnExpose(GdkEventExpose* aEvent)
     // Head separator
     GtkAllocation head_alc; iHead->Allocation(&head_alc);
     gdk_draw_line(BinWnd(), Gc(), iBodyAlc.x, head_alc.height, iBodyAlc.x + iBodyAlc.width - 1, head_alc.height);
+    // Draw value rect
+    GtkAllocation val_alc; iValue->Allocation(&val_alc);
+    gdk_draw_rectangle(BinWnd(), Gc(), FALSE, val_alc.x -1 , val_alc.y -1 , val_alc.width + 1, val_alc.height + 1);
     // Draw init rect
     GtkAllocation init_alc; iInit->Allocation(&init_alc);
     gdk_draw_rectangle(BinWnd(), Gc(), FALSE, init_alc.x -1 , init_alc.y -1 , init_alc.width + 1, init_alc.height + 1);
@@ -199,19 +218,22 @@ void CapState::OnSizeAllocate(GtkAllocation* aAllc)
     }
     inp_w = inp_term_w + inp_lab_w;
     // Calculate outputs size
-    TInt outp_term_w = 0, outp_lab_w = 0;
+    TInt outp_term_w = 0, outp_lab_w = 0, outp_h = 0;
     for (map<CAE_ConnPointBase*, CapCp*>::iterator it = iOutps.begin(); it != iOutps.end(); it++) {
 	CapCp* cpw = it->second;
 	outp_term_w = max(outp_term_w, cpw->GetTermWidth());
 	outp_lab_w = max(outp_lab_w, cpw->GetLabelWidth());
+	GtkRequisition outp_req; cpw->SizeRequest(&outp_req);
+	outp_h += outp_req.height + KViewCompCpGapHeight;
     }
 
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    GtkRequisition value_req; iValue->SizeRequest(&value_req);
     GtkRequisition init_req; iInit->SizeRequest(&init_req);
     GtkRequisition tran_req; iTrans->SizeRequest(&tran_req);
 
     // Calculate allocation of comp body
-    int body_int_width = max(tran_req.width + KViewStateTransBorder*2 , init_req.width);
+    int body_int_width = max(tran_req.width + KViewStateTransBorder*2 , max(init_req.width, value_req.width));
     int body_width = max(head_req.width, body_int_width + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
     iBodyAlc = (GtkAllocation) {outp_term_w, 0, body_width, aAllc->height};
 
@@ -219,9 +241,16 @@ void CapState::OnSizeAllocate(GtkAllocation* aAllc)
     GtkAllocation head_alc = {iBodyAlc.x, iBodyAlc.y, iBodyAlc.width, head_req.height};
     iHead->SizeAllocate(&head_alc);
 
+    // Allocate value
+    GtkAllocation val_alc = 
+	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, head_alc.y + head_alc.height + KViewCompCpGapHeight, 
+	    value_req.width, value_req.height};
+    iValue->SizeAllocate(&val_alc);
+
     // Allocate init
     GtkAllocation init_alc = 
-	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, head_alc.y + head_alc.height + KViewCompCpGapHeight, init_req.width, init_req.height};
+	(GtkAllocation) {iBodyAlc.x + KViewStateTransBorder, val_alc.y + val_alc.height + KViewCompCpGapHeight, 
+	    init_req.width, init_req.height};
     iInit->SizeAllocate(&init_alc);
 
     // Allocate trans
@@ -255,6 +284,8 @@ void CapState::OnSizeRequest(GtkRequisition* aRequisition)
 {
     // Calculate header size
     GtkRequisition head_req; iHead->SizeRequest(&head_req);
+    // Calculate value size
+    GtkRequisition value_req; iValue->SizeRequest(&value_req);
     // Calculate init size
     GtkRequisition init_req; iInit->SizeRequest(&init_req);
     // Calculate trans size
@@ -278,11 +309,11 @@ void CapState::OnSizeRequest(GtkRequisition* aRequisition)
 	outp_h += outp_req.height + KViewCompCpGapHeight;
     }
 
-    int body_int_width = max(tran_req.width + KViewStateTransBorder*2 , init_req.width);
+    int body_int_width = max(tran_req.width + KViewStateTransBorder*2 , max(init_req.width, value_req.width));
     int body_width = max(head_req.width, body_int_width + inp_lab_w + outp_lab_w + KViewCompInpOutpGapWidth);
     aRequisition->width = outp_term_w + body_width + inp_term_w; 
     aRequisition->height = head_req.height + 
-	max(max(inp_h, outp_h), tran_req.height + init_req.height + KViewCompCpGapHeight) + 2*KViewCompCpGapHeight;
+	max(inp_h, max(outp_h, value_req.height) + tran_req.height + init_req.height + 2*KViewCompCpGapHeight) + 2*KViewCompCpGapHeight;
 }
 
 CapCtermPair* CapState::GetCpPair(CapCtermPair* aPair)
