@@ -49,6 +49,7 @@ class MCapCpPairRes
 class CapCterm: public CagLayout, public MDectObserver, public MCagToggleButtonObs, public MCapCpPairRes,
     public MagMenuShellObs, public MWidgetObs
 {
+    friend class CapCp;
     public:
 	CapCterm(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLeft);
 	virtual ~CapCterm();

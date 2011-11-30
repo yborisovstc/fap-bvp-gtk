@@ -38,6 +38,7 @@ CapCp::CapCp(const string& aName, CAE_ConnPointBase& aCp, TBool aExt, TBool aLef
     CAE_Object* obj = iCp.Man().GetFbObj(obj);
     TNodeType type = obj != NULL ? ENt_Object : ENt_State;
     iLabel->DragSourceAdd(GDK_MODIFIER_MASK, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
+    DragDestAdd(GTK_DEST_DEFAULT_ALL, KTe_Conn, KTe_Conn_Len, GDK_ACTION_COPY);
     if (aExt) {
 	// Don't specify man if cp is local extention
 	iLabel->SetSelText(iCp.Name());
@@ -228,3 +229,9 @@ void CapCp::OnItemActivated(CagMenuShell* aMenuShell, CagMenuItem* aItem)
 	}
     }
 }
+
+void CapCp::OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time)
+{
+    iTerm->OnDragDataReceived(drag_context, x, y, data, info, time);
+}
+

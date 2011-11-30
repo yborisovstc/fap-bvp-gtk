@@ -43,6 +43,7 @@ class CapCp: public CagLayout, public MCapCtermObserver, public MCapCpPairRes, p
 	virtual void OnEnter(GdkEventCrossing *aEvent);
 	virtual void OnLeave(GdkEventCrossing *aEvent);
 	virtual void OnStateChanged(GtkStateType state);
+	virtual void OnDragDataReceived(GdkDragContext *drag_context, gint x, gint y, GtkSelectionData *data, guint info, guint time);
 	// From MCapCtermObserver
 	virtual void OnCpTermPairToggled(CapCtermPair* aPair);
 	virtual void OnCpTermAddPairRequested(CapCterm* aCpTerm, const string& aPairName);
